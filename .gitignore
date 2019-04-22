@@ -1,1 +1,9 @@
 /.idea
+/node_modules
+/npm-debug.log
+/dist
+/vendor
+/includes
+/assets
+/.vscode
+/.DS_Store
