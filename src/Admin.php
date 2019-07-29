@@ -12,7 +12,6 @@ namespace TrackMage\WordPress;
 
 use TrackMage\Client\TrackMageClient;
 use TrackMage\Client\Swagger\ApiException;
-use TrackMage\WordPress\Utils;
 
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
@@ -121,26 +120,34 @@ class Admin {
 	 */
 	public function toggle_webhook() {
 		$toggle = $_POST['toggle'];
-		$client = TrackMage::get_client();
+		$workspace = $_POST['workspace'];
+		$client = Plugin::get_client();
 
 		if ( 'enable' === $toggle ) {
 			$url = $_POST['url'];
+
+			// Generate random username and password.
+			$username = wp_get_current_user()->user_login . '_' . substr( md5( time() . rand( 0, 1970 ) ), 0, 5 );
+			$password = md5( $username . rand( 1, 337 ) );
+			update_option( 'trackmage_test', $workspace );
+			update_option( 'trackmage_webhook_username', $username );
+			update_option( 'trackmage_webhook_password', $password );
 
 			$integration = [
 				'type' => 'webhook',
 				'credentials' => [
 					'url' => $url,
 					'authType' => 'basic',
-					'username' => 'webhook_user',
-					'password' => 'password',
+					'username' => $username,
+					'password' => $password,
 				],
 			];
 
 			$workflow = [
 				'direction' => 'out',
 				'period' => 'immediately',
-				'title' => 'Test add/remove webhook from WP',
-				'workspace' => '/workspaces/' . 261,
+				'title' => get_bloginfo( 'name' ),
+				'workspace' => '/workspaces/' . $workspace,
 				'integration' => $integration,
 				'enabled' => true,
 			];

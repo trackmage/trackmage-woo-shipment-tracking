@@ -179,7 +179,8 @@
       let data = {
         'action': 'trackmage_toggle_webhook',
         'toggle': action,
-        'url': 'https://test.url',
+        'workspace': $('select[name="trackmage_workspace"]').val(),
+        'url': trackmageAdminParams.endpointUrl,
       };
 
       if (action === 'disable') {

@@ -43,6 +43,9 @@ class Plugin {
 	 */
 	protected static $client = null;
 
+	/** @var Endpoint */
+	protected $endpoint = null;
+
 	/** @var Admin */
 	protected $admin = null;
 
@@ -101,6 +104,7 @@ class Plugin {
 		\add_action( 'admin_enqueue_scripts', [ $this, 'styles' ] );
 
 		// Class instances.
+		$this->endpoint = new Endpoint;
 		$this->admin = new Admin;
 	}
 
@@ -114,13 +118,14 @@ class Plugin {
 		if ( 'admin_enqueue_scripts' === current_action() ) {
 			wp_enqueue_script( 'trackmage-admin-scripts', TRACKMAGE_URL . 'assets/dist/js/admin/scripts.min.js', [ 'jquery' ], null, true );
 			wp_localize_script( 'trackmage-admin-scripts', 'trackmageAdminParams', [
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'images'  => [
+				'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
+				'endpointUrl' => Utils::get_endpoint(),
+				'images'      => [
 					'iconTrackMage' => TRACKMAGE_URL . 'assets/dist/images/trackmage-icon.svg',
 				],
-				'messages' => [
+				'messages'    => [
 					'errorTestKeys'    => __( 'Invalid credentials.', 'trackmage' ),
-					'successValidKeys' => __( 'Valid credentials.', 'trackmage' ),
+					'successValidKeys' => __( 'Valid credentials. Please click on <em>“Save”</em> for the changes to take effect.', 'trackmage' ),
 				]
 			] );
 		}
