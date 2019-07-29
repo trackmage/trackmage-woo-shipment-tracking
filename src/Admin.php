@@ -10,9 +10,6 @@
 
 namespace TrackMage\WordPress;
 
-use TrackMage\Client\TrackMageClient;
-use TrackMage\Client\Swagger\ApiException;
-
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
 	die;
@@ -92,24 +89,18 @@ class Admin {
 	 * @since 0.1.0
 	 */
 	public function test_credentials() {
-		$client_id =  $_POST['clientId'];
-		$client_secret = $_POST['clientSecret'];
+		$credentials = Utils::check_credentials( $_POST['clientId'], $_POST['clientSecret'] );
 
-		// Test credentials.
-		try {
-			$client = new TrackMageClient($client_id, $client_secret);
-			$client->setHost('https://api.stage.trackmage.com');
-			$workspaces = $client->getWorkspaceApi()->getWorkspaceCollection();
-		} catch( ApiException $e ) {
+		if ( $credentials ) {
 			// Send response, and die.
-			wp_send_json_error( [
-				'status' => 'error',
+			wp_send_json_success( [
+				'status' => 'success',
 			] );
 		}
-		
+
 		// Send response, and die.
-		wp_send_json_success( [
-			'status' => 'success',
+		wp_send_json_error( [
+			'status' => 'error',
 		] );
 	}
 
@@ -129,7 +120,6 @@ class Admin {
 			// Generate random username and password.
 			$username = wp_get_current_user()->user_login . '_' . substr( md5( time() . rand( 0, 1970 ) ), 0, 5 );
 			$password = md5( $username . rand( 1, 337 ) );
-			update_option( 'trackmage_test', $workspace );
 			update_option( 'trackmage_webhook_username', $username );
 			update_option( 'trackmage_webhook_password', $password );
 
@@ -169,6 +159,7 @@ class Admin {
 
 			update_option( 'trackmage_webhook', 'on' );
 			update_option( 'trackmage_webhook_id', $result->getId() );
+			update_option( 'trackmage_workspace', $workspace );
 
 			// Send response, and die.
 			wp_send_json_success( [

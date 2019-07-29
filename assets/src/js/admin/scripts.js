@@ -80,6 +80,18 @@
    */
   $(document).ready(() => {
     /**
+     * Disable input fields, buttons and links inside disabled sections.
+     */
+    $('.wrap.trackmage .section.disabled').each(function(e) {
+      let section = $(this);
+
+      section.find('select, input, button').prop('disabled', true);
+      section.find('.input-toggle').addClass('disabled');
+      section.find('a, button, input').on('click', (e) => {
+        e.preventDefault();
+      });
+    });
+    /**
      * Hide notifications on click.
      */
     $('.trackmage-notification').on('click', function () {
@@ -94,7 +106,7 @@
       let input = $(this).children('input[type="checkbox"]');
 
       if (!input.is(':checked')) {
-        toggle.addClass('disabled');
+        toggle.addClass('off');
       }
 
       $(this).css('display', 'inline-block');
@@ -108,15 +120,19 @@
       let input = $(this).children('input[type="checkbox"]');
 
       if (toggle.hasClass('disabled')) {
-        toggle.removeClass('disabled');
+        return;
+      }
+      
+      if (toggle.hasClass('off')) {
+        toggle.removeClass('off');
         input.attr('checked', true);
       } else {
-        toggle.addClass('disabled');
+        toggle.addClass('off');
         input.attr('checked', false);
       }
 
       if ($(this).is('#toggleWebhook')) {
-        let action = toggle.hasClass('disabled') ? 'disable' : 'enable';
+        let action = toggle.hasClass('off') ? 'disable' : 'enable';
         toggleWebhook($(this), toggle, input, action);
       }
     });
@@ -233,9 +249,9 @@
         },
         always: function (e) {
           if (e.data.toggle && e.data.toggle === 'enable') {
-            toggle.removeClass('disabled');
+            toggle.removeClass('off');
           } else if (e.data.toggle && e.data.toggle === 'disable') {
-            toggle.addClass('disabled');
+            toggle.addClass('off');
           }
         }
       });

@@ -18,6 +18,7 @@ $webhook       = get_option( 'trackmage_webhook', '' );
 $webhook_id    = get_option( 'trackmage_webhook_id', '' );
 
 $workspaces = Utils::get_workspaces();
+$credentials = Utils::check_credentials();
 
 settings_errors();
 ?>
@@ -54,7 +55,7 @@ settings_errors();
 				</div>
 				<!-- End Section: Credentials -->
 				<!-- Section: Webhook -->
-				<div class="section">
+				<div class="section<?php Utils::add_css_class( ! $credentials, 'disabled', true, true ); ?>">
 					<h2 class="headline"><?php _e( 'Workspace', 'trackmage' ); ?></h2>
 					<p class="message"><?php echo sprintf( __( 'Please select a workspace in TrackMage. You can add/remove webhooks in that workspace.', 'trackmage' ) ); ?></p>
 					<table class="form-table">
