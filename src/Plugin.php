@@ -90,5 +90,64 @@ class Plugin {
 	 * @since 0.1.0
 	 */
 	public function run() {
+		// Hooks.
+		\add_action( 'plugins_loaded', [ $this, 'load_textdomain' ] );
+		\add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
+		\add_action( 'wp_enqueue_scripts', [ $this, 'styles' ] );
+		\add_action( 'admin_enqueue_scripts', [ $this, 'scripts' ] );
+		\add_action( 'admin_enqueue_scripts', [ $this, 'styles' ] );
+	}
+
+	/**
+	 * Loads plugin scripts.
+	 *
+	 * @since 1.0.0
+	 */
+	public function scripts() {
+		// Back-end scripts.
+		if ( 'admin_enqueue_scripts' === current_action() ) {
+			wp_enqueue_script( 'trackmage-admin-scripts', TRACKMAGE_URL . 'assets/dist/js/admin/scripts.min.js', [ 'jquery' ], null, true );
+			wp_localize_script( 'trackmage-admin-scripts', 'trackmageAdminParams', [
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'images'  => [
+					'iconTrackMage' => TRACKMAGE_URL . 'assets/dist/images/trackmage-icon.svg',
+				],
+				'messages' => [
+					'errorTestKeys'    => __( 'Invalid credentials.', 'trackmage' ),
+					'successValidKeys' => __( 'Valid credentials.', 'trackmage' ),
+				]
+			] );
+		}
+		// Front-end scripts.
+		else {
+			wp_enqueue_script( 'trackmage-scripts', TRACKMAGE_URL . 'assets/dist/js/scripts.min.js', [ 'jquery' ], null, false );
+			wp_localize_script( 'trackmage-scripts', 'trackmageParams', [
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+			] );
+		}
+	}
+
+	/**
+	 * Loads plugin styles.
+	 *
+	 * @since 1.0.0
+	 */
+	public function styles() {
+		// Back-end styles.
+		if ( 'admin_enqueue_scripts' === current_action() ) {
+			wp_enqueue_style( 'trackmage-admin-styles', TRACKMAGE_URL . 'assets/dist/css/admin/main.min.css', [], false, 'all' );
+		}
+		// Front-end styles.
+		else {
+			wp_enqueue_style( 'trackmage-styles', TRACKMAGE_URL . 'assets/dist/css/main.min.css', [], false, 'all' );
+		}
+	}
+
+	/**
+	 * Load the plugin text domain.
+	 *
+	 * @since 0.1.0
+	 */
+	public function load_textdomain() {
 	}
 }
