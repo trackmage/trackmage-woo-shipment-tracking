@@ -1,0 +1,40 @@
+{
+	"name": "trackmage",
+	"type": "wordpress-plugin",
+	"description": "Official WordPress plugin for TrackMage",
+	"keywords": [
+		"trackmage"
+	],
+	"homepage": "https://github.com/trackmage/trackmage-wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"require": {
+		"brightnucleus/config": "^0.4",
+		"trackmage/trackmage-sdk-php": "dev-master"
+	},
+	"require-dev": {
+		"automattic/vipwpcs": "^2.0",
+		"dealerdirect/phpcodesniffer-composer-installer": "^0.5.0",
+		"infection/infection": "^0.11",
+		"phpcompatibility/phpcompatibility-wp": "*",
+		"sllh/composer-versions-check": "^2.0",
+		"squizlabs/php_codesniffer": "^3.4.2",
+		"wp-coding-standards/wpcs": "^2.1.1"
+	},
+	"config": {
+		"sort-packages": true
+	},
+	"autoload": {
+		"psr-4": {
+			"TrackMage\\WordPress\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"TrackMage\\WordPress\\Tests\\": "tests/"
+		}
+	},
+	"support": {
+		"issues": "https://github.com/trackmage/trackmage-wordpress-plugin/issues",
+		"source": "https://github.com/trackmage/trackmage-wordpress-plugin"
+	}
+}

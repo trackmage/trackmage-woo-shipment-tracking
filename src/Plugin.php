@@ -1,0 +1,94 @@
+<?php
+/**
+ * Main class
+ *
+ * The main class of the plugin.
+ *
+ * @package TrackMage\WordPress
+ * @author  TrackMage
+ */
+
+namespace TrackMage\WordPress;
+
+use BrightNucleus\Config\ConfigInterface;
+use BrightNucleus\Config\ConfigTrait;
+use BrightNucleus\Config\Exception\FailedToProcessConfigException;
+use BrightNucleus\Settings\Settings;
+use TrackMage\Client\TrackMageClient;
+use TrackMage\Client\Swagger\ApiException;
+
+/**
+ * Main plugin class.
+ *
+ * @since   0.1.0
+ */
+class Plugin {
+
+	use ConfigTrait;
+
+	/**
+	 * Static instance of the plugin.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @var self
+	 */
+	protected static $instance;
+
+	/**
+	 * The singleton instance of TrackMageClient.
+	 *
+	 * @since 0.1.0
+	 * @var TrackMageClient
+	 */
+	private static $client = null;
+
+	/**
+	 * Returns the singleton instance of TrackMageClient.
+	 *
+	 * Ensures only one instance of TrackMageClient is/can be loaded.
+	 *
+	 * @since 0.1.0
+	 * @return TrackMageClient
+	 */
+	public static function get_client($config = []) {
+		if ( null === self::$client ) {
+			self::$client = new TrackMageClient();
+
+			try {
+				$client_id = isset( $config['client_id'] ) ? $config['client_id'] : get_option( 'trackmage_client_id', '' );
+				$client_secret = isset( $config['client_secret'] ) ? $config['client_secret'] : get_option( 'trackmage_client_secret', '' );
+
+				self::$client = new TrackMageClient( $client_id, $client_secret );
+				self::$client->setHost( 'https://api.stage.trackmage.com' );
+			} catch( ApiException $e ) {
+				return null;
+			}
+		}
+
+		return self::$client;
+	}
+
+	/**
+	 * Instantiate a Plugin object.
+	 *
+	 * Don't call the constructor directly, use the `Plugin::get_instance()`
+	 * static method instead.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @throws FailedToProcessConfigException If the Config could not be parsed correctly.
+	 * @param ConfigInterface $config Config to parametrize the object.
+	 */
+	public function __construct( ConfigInterface $config ) {
+		$this->processConfig( $config );
+	}
+
+	/**
+	 * Launch the initialization process.
+	 *
+	 * @since 0.1.0
+	 */
+	public function run() {
+	}
+}
