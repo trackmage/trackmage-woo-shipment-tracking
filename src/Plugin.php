@@ -41,7 +41,10 @@ class Plugin {
 	 * @since 0.1.0
 	 * @var TrackMageClient
 	 */
-	private static $client = null;
+	protected static $client = null;
+
+	/** @var Admin */
+	protected $admin = null;
 
 	/**
 	 * Returns the singleton instance of TrackMageClient.
@@ -96,6 +99,9 @@ class Plugin {
 		\add_action( 'wp_enqueue_scripts', [ $this, 'styles' ] );
 		\add_action( 'admin_enqueue_scripts', [ $this, 'scripts' ] );
 		\add_action( 'admin_enqueue_scripts', [ $this, 'styles' ] );
+
+		// Class instances.
+		$this->admin = new Admin;
 	}
 
 	/**
