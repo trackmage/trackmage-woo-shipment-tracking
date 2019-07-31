@@ -97,11 +97,11 @@ class Plugin {
 	 */
 	public function run() {
 		// Hooks.
-		\add_action( 'plugins_loaded', [ $this, 'load_textdomain' ] );
-		\add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
-		\add_action( 'wp_enqueue_scripts', [ $this, 'styles' ] );
-		\add_action( 'admin_enqueue_scripts', [ $this, 'scripts' ] );
-		\add_action( 'admin_enqueue_scripts', [ $this, 'styles' ] );
+		add_action( 'plugins_loaded', [ $this, 'load_textdomain' ] );
+		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
+		add_action( 'wp_enqueue_scripts', [ $this, 'styles' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'scripts' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'styles' ] );
 
 		// Class instances.
 		$this->endpoint = new Endpoint;
@@ -119,7 +119,6 @@ class Plugin {
 			wp_enqueue_script( 'trackmage-admin-scripts', TRACKMAGE_URL . 'assets/dist/js/admin/scripts.min.js', [ 'jquery' ], null, true );
 			wp_localize_script( 'trackmage-admin-scripts', 'trackmageAdminParams', [
 				'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
-				'endpointUrl' => Utils::get_endpoint(),
 				'images'      => [
 					'iconTrackMage' => TRACKMAGE_URL . 'assets/dist/images/trackmage-icon.svg',
 				],

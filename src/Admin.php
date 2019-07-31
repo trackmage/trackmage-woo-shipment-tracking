@@ -10,6 +10,9 @@
 
 namespace TrackMage\WordPress;
 
+use TrackMage\Client\Swagger\Model\WorkflowSetWorkflowSetIntegration;
+use TrackMage\Client\Swagger\ApiException;
+
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
 	die;
@@ -31,7 +34,7 @@ class Admin {
 		add_action( 'admin_menu', [ $this, 'add_page' ] );
 		add_action( 'admin_init', [ $this, 'settings' ] );
 		add_action( 'wp_ajax_trackmage_test_credentials', [ $this, 'test_credentials' ] );
-		add_action( 'wp_ajax_trackmage_toggle_webhook', [ $this, 'toggle_webhook' ] );
+		add_filter( 'pre_update_option_trackmage_workspace', [ $this, 'select_workspace' ], 10, 3 );
 	}
 
 	/**
@@ -70,8 +73,6 @@ class Admin {
 		register_setting( 'trackmage_general', 'trackmage_client_id' );
 		register_setting( 'trackmage_general', 'trackmage_client_secret' );
 		register_setting( 'trackmage_general', 'trackmage_workspace' );
-		register_setting( 'trackmage_general', 'trackmage_webhook' );
-		register_setting( 'trackmage_general', 'trackmage_webhook_id' );
 	}
 
 	/**
@@ -105,90 +106,71 @@ class Admin {
 	}
 
 	/**
-	 * Add/remove webhook.
+	 * Add/remove webhooks based on the selected workspace.
 	 *
 	 * @since 0.1.0
 	 */
-	public function toggle_webhook() {
-		$toggle = $_POST['toggle'];
-		$workspace = $_POST['workspace'];
-		$client = Plugin::get_client();
-
-		if ( 'enable' === $toggle ) {
-			$url = $_POST['url'];
-
-			// Generate random username and password.
-			$username = wp_get_current_user()->user_login . '_' . substr( md5( time() . rand( 0, 1970 ) ), 0, 5 );
-			$password = md5( $username . rand( 1, 337 ) );
-			update_option( 'trackmage_webhook_username', $username );
-			update_option( 'trackmage_webhook_password', $password );
-
-			$integration = [
-				'type' => 'webhook',
-				'credentials' => [
-					'url' => $url,
-					'authType' => 'basic',
-					'username' => $username,
-					'password' => $password,
-				],
-			];
-
-			$workflow = [
-				'direction' => 'out',
-				'period' => 'immediately',
-				'title' => get_bloginfo( 'name' ),
-				'workspace' => '/workspaces/' . $workspace,
-				'integration' => $integration,
-				'enabled' => true,
-			];
-
-			$workflow = new \TrackMage\Client\Swagger\Model\WorkflowSetWorkflowSetIntegration( $workflow );
-	
-			try {
-				$result = $client->getWorkflowApi()->postWorkflowCollection($workflow);
-			} catch (Exception $e) {
-				update_option( 'trackmage_webhook', '' );
-
-				// Send response, and die.
-				wp_send_json_error( [
-					'status' => 'error',
-					'toggle' => 'disable',
-					'errors' => [ $e->getMessage() ],
-				] );
-			}
-
-			update_option( 'trackmage_webhook', 'on' );
-			update_option( 'trackmage_webhook_id', $result->getId() );
-			update_option( 'trackmage_workspace', $workspace );
-
-			// Send response, and die.
-			wp_send_json_success( [
-				'status' => 'success',
-				'toggle' => 'enable',
-				'webhookId' => $result->getId(),
-			] );
-		} else {
-			$workflow_id = $_POST['id'];
-			try {
-				$client->getWorkflowApi()->deleteWorkflowItem( $workflow_id );
-			} catch (Exception $e) {
-				update_option( 'trackmage_webhook', 'on' );
-
-				// Send response, and die.
-				wp_send_json_success( [
-					'status' => 'error',
-					'toggle' => 'enable',
-					'errors' => [ $e->getMessage() ],
-				] );
-			}
-
-			update_option( 'trackmage_webhook', '' );
-
-			// Send response, and die.
-			wp_send_json_success( [
-				'status' => 'success',
-				'toggle' => 'disable',
-			] );
+	public function select_workspace( $value, $old_value, $option ) {
+		// Exit if value has not changed.
+		if ( $value === $old_value ) {
+			return $old_value;
 		}
+
+		$client = Plugin::get_client();
+		$url = Utils::get_endpoint();
+
+		// Find and remove any activated webhook, if any.
+		$webhook = get_option( 'trackmage_webhook', '' );
+		if ( ! empty( $webhook ) ) {
+			try {
+				$client->getWorkflowApi()->deleteWorkflowItem( $webhook );
+				update_option( 'trackmage_webhook', '' );
+			} catch ( ApiException $e ) {
+				// Trigger error message and exit.
+				return $old_value;
+			}
+		}
+
+		// Stop here if no workspace is selected.
+		if ( empty( $value ) ) {
+			return 0;
+		}
+
+		// Generate random username and password.
+		$username = wp_get_current_user()->user_login . '_' . substr( md5( time() . rand( 0, 1970 ) ), 0, 5 );
+		$password = md5( $username . rand( 1, 337 ) );
+		update_option( 'trackmage_webhook_username', $username );
+		update_option( 'trackmage_webhook_password', $password );
+
+		$integration = [
+			'type' => 'webhook',
+			'credentials' => [
+				'url' => $url,
+				'authType' => 'basic',
+				'username' => $username,
+				'password' => $password,
+			],
+		];
+
+		$workflow = [
+			'direction' => 'out',
+			'period' => 'immediately',
+			'title' => get_bloginfo( 'name' ),
+			'workspace' => '/workspaces/' . $value,
+			'integration' => $integration,
+			'enabled' => true,
+		];
+
+		$workflow = new WorkflowSetWorkflowSetIntegration( $workflow );
+
+		try {
+			$result = $client->getWorkflowApi()->postWorkflowCollection( $workflow );
+		} catch ( ApiException $e ) {
+			// Trigger error message and exit.
+			return $old_value;
+		}
+
+		update_option( 'trackmage_webhook', $result->getId() );
+		return $value;
 	}
 }

@@ -130,11 +130,6 @@
         toggle.addClass('off');
         input.attr('checked', false);
       }
-
-      if ($(this).is('#toggleWebhook')) {
-        let action = toggle.hasClass('off') ? 'disable' : 'enable';
-        toggleWebhook($(this), toggle, input, action);
-      }
     });
 
     // Append overlay.
@@ -188,73 +183,5 @@
         }
       });
     });
-
-
-    function toggleWebhook(el, toggle, input, action) {
-      // Request data.
-      let data = {
-        'action': 'trackmage_toggle_webhook',
-        'toggle': action,
-        'workspace': $('select[name="trackmage_workspace"]').val(),
-        'url': trackmageAdminParams.endpointUrl,
-      };
-
-      if (action === 'disable') {
-        data.id = el.children('input[name="trackmage_webhook_id"]').val();
-      }
-
-      // Response message.
-      let message = '';
-
-      $.ajax({
-        url: trackmageAdminParams.ajaxUrl,
-        method: 'post',
-        data: data,
-        beforeSend: function () {
-          // Show overlay.
-          trackmageShowOverlay();
-        },
-        success: function (response) {
-          // Hide overlay.
-          trackmageHideOverlay();
-
-          console.log(response);
-
-          if (response.success) {
-            if (response.data.toggle === 'enable') {
-              message = 'Webhook created successfully!';
-              el.children('input[name="trackmage_webhook_id"]').val(response.data.webhookId);
-            } else {
-              message = 'Webhook removed successfully!';
-            }
-          } else if (response.errors) {
-            message = response.errors.join(' ');
-          } else {
-            if (response.data.toggle === 'enable') {
-              message = 'Error creating webhook.';
-            } else {
-              message = 'Error removing webhook.';
-            }
-          }
-
-          // Response notification.
-          trackmageNotification('toggle-webhook', response.data.status, message);
-        },
-        error: function (e) {
-          // Hide overlay.
-          trackmageHideOverlay();
-
-          // Response notification.
-          trackmageNotification('toggle-webhook', 'error', e.responseText);
-        },
-        always: function (e) {
-          if (e.data.toggle && e.data.toggle === 'enable') {
-            toggle.removeClass('off');
-          } else if (e.data.toggle && e.data.toggle === 'disable') {
-            toggle.addClass('off');
-          }
-        }
-      });
-    }
   });
 })(jQuery, window, document);

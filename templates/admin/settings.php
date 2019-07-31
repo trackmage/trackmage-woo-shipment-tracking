@@ -14,8 +14,6 @@ use TrackMage\WordPress\Utils;
 $client_id     = get_option( 'trackmage_client_id', '' );
 $client_secret = get_option( 'trackmage_client_secret', '' );
 $workspace     = get_option( 'trackmage_workspace', 0 );
-$webhook       = get_option( 'trackmage_webhook', '' );
-$webhook_id    = get_option( 'trackmage_webhook_id', '' );
 
 $workspaces = Utils::get_workspaces();
 $credentials = Utils::check_credentials();
@@ -57,7 +55,7 @@ settings_errors();
 				<!-- Section: Webhook -->
 				<div class="section<?php Utils::add_css_class( ! $credentials, 'disabled', true, true ); ?>">
 					<h2 class="headline"><?php _e( 'Workspace', 'trackmage' ); ?></h2>
-					<p class="message"><?php echo sprintf( __( 'Please select a workspace in TrackMage. You can add/remove webhooks in that workspace.', 'trackmage' ) ); ?></p>
+					<p class="message"><?php echo sprintf( __( 'Please select a workspace in TrackMage.', 'trackmage' ) ); ?></p>
 					<table class="form-table">
 						<tbody>
 							<tr>
@@ -70,17 +68,6 @@ settings_errors();
 										<?php endforeach; ?>
 									</select>
 									<p class="description"><?php echo sprintf( __( 'Select a workspace or <a href="%1$s">create a new one</a> in TrackMage.', 'trackmage'), 'https://app.stage.trackmage.com/dashboard/workspaces' ); ?></p>
-								</td>
-							</tr>
-							<tr>
-								<th scope="row"><?php _e( 'Add/Remove Webhook', 'trackmage' ); ?></th>
-								<td>
-									<fieldset class="trackmage-input-toggle" id="toggleWebhook">
-										<input name="trackmage_webhook" type="checkbox" id="trackmage_webhook" <?php checked( $webhook, 'on' ); ?>>
-										<input name="trackmage_webhook_id" type="hidden" value="<?php echo $webhook_id; ?>">
-										<span class="input-toggle"></span>
-									</fieldset>
-									<div class="trackmage-notification" data-notification="toggle-webhook"></div>
 								</td>
 							</tr>
 						</tbody>

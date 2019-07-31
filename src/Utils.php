@@ -26,6 +26,7 @@ class Utils {
 	 *
 	 * @param string $client_id     Client ID (default: '').
 	 * @param string $client_secret Client secret (default: '').
+	 *
 	 * @return bool True if valid, otherwise false.
 	 */
 	public static function check_credentials( $client_id = '', $client_secret = '' ) {
@@ -94,8 +95,7 @@ class Utils {
 	 * @return string Endpoint URL.
 	 */
 	public static function get_endpoint() {
-		return 'https://trackmage.infinue.com/webhook.php';
-		// return get_site_url( null, '/?trackmage=callback' );
+		return get_site_url( null, '/?trackmage=callback' );
 	}
 
 	/**
