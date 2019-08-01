@@ -161,14 +161,12 @@
           // Hide overlay.
           trackmageHideOverlay();
 
-          console.log(response);
-
-          if (response.success) {
+          if (response.data.status === 'success') {
             message = trackmageAdminParams.messages.successValidKeys;
-          } else if (response.errors) {
-            message = response.errors.join(' ');
+          } else if (response.data.errors) {
+            message = response.data.errors.join(' ');
           } else {
-            message = trackmageAdminParams.messages.errorTestKeys;
+            message = trackmageAdminParams.messages.unknownError;
           }
 
           // Response notification.
@@ -178,8 +176,10 @@
           // Hide overlay.
           trackmageHideOverlay();
 
+          message = trackmageAdminParams.messages.unknownError;
+
           // Response notification.
-          trackmageNotification('test-credentials', response.status, trackmageAdminParams.messages.errorTestKeys.message);
+          trackmageNotification('test-credentials', response.data.status, message);
         }
       });
     });

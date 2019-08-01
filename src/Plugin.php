@@ -123,8 +123,8 @@ class Plugin {
 					'iconTrackMage' => TRACKMAGE_URL . 'assets/dist/images/trackmage-icon.svg',
 				],
 				'messages'    => [
-					'errorTestKeys'    => __( 'Invalid credentials.', 'trackmage' ),
 					'successValidKeys' => __( 'Valid credentials. Please click on <em>“Save”</em> for the changes to take effect.', 'trackmage' ),
+					'unknownError'     => __( 'Unknown error occured.', 'trackmage' ),
 				]
 			] );
 		}

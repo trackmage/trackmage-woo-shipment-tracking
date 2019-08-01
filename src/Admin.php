@@ -100,17 +100,29 @@ class Admin {
 	public function test_credentials() {
 		$credentials = Utils::check_credentials( $_POST['clientId'], $_POST['clientSecret'] );
 
-		if ( $credentials ) {
-			// Send response, and die.
+		if ( 0 === $credentials ) {
+			wp_send_json_error( [
+				'status' => 'error',
+				'errors' => [
+					__( 'Invalid credentials.', 'trackmage' ),
+				]
+			] );
+		}
+
+		if ( 1 === $credentials ) {
 			wp_send_json_success( [
 				'status' => 'success',
 			] );
 		}
 
-		// Send response, and die.
-		wp_send_json_error( [
-			'status' => 'error',
-		] );
+		if ( 2 === $credentials ) {
+			wp_send_json_error( [
+				'status' => 'error',
+				'errors' => [
+					__( 'We could not peform the check. Please try again.', 'trackmage' ),
+				]
+			] );
+		}
 	}
 
 	/**

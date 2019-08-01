@@ -27,7 +27,7 @@ class Utils {
 	 * @param string $client_id     Client ID (default: '').
 	 * @param string $client_secret Client secret (default: '').
 	 *
-	 * @return bool True if valid, otherwise false.
+	 * @return int 0 if invalid, 1 if valid or 2 otherwise.
 	 */
 	public static function check_credentials( $client_id = '', $client_secret = '' ) {
 		$client_id = ! empty( $client_id ) ? $client_id : get_option( 'trackmage_client_id', '' );
@@ -38,10 +38,14 @@ class Utils {
 			$client->setHost('https://api.stage.trackmage.com');
 			$workspaces = $client->getWorkspaceApi()->getWorkspaceCollection();
 		} catch( ApiException $e ) {
-			return false;
+			if ( 'Authorization error' === $e->getMessage() ) {
+				return 0;
+			}
+
+			return 2;
 		}
 		
-		return true;
+		return 1;
 	}
 
 	/**
