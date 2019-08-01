@@ -26,7 +26,7 @@ settings_errors();
 		<a href="<?php echo admin_url( 'admin.php?page=trackmage&amp;tab=statuses' ); ?>" class="nav-tab<?php Utils::add_css_class( 'statuses' === $tab, 'nav-tab-active', true, true ); ?>"><?php _e( 'Statuses', 'trackmage' ); ?></a>
 	</nav>
 	<div class="postbox">
-		<div class="inside tab tab-<?php echo $tab; ?>">
+		<div class="inside tab tab-<?php echo $tab; ?>" id="trackmage-settings-<?php echo $tab; ?>">
 			<?php include( TRACKMAGE_DIR . "templates/admin/settings-{$tab}.php" ); ?>
 		</div>
 	</div>

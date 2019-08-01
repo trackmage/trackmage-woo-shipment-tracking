@@ -20,13 +20,12 @@ $workspace     = get_option( 'trackmage_workspace', 0 );
 
 $workspaces = Utils::get_workspaces();
 $credentials = Utils::check_credentials();
-
-settings_fields( 'trackmage_general' );
 ?>
 
 <div class="intro">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu.</div>
 
 <form method="post" action="options.php">
+	<?php settings_fields( 'trackmage_general' ); ?>
 	<!-- Section: Credentials -->
 	<div class="section">
 		<h2 class="headline"><?php _e( 'Credentials', 'trackmage' ); ?></h2>
