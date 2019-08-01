@@ -55,11 +55,19 @@ class Admin {
 
 		add_submenu_page(
 			'trackmage',
-			__( 'Settings', 'trackmage' ),
-			__( 'Settings', 'trackmage' ),
+			__( 'General', 'trackmage' ),
+			__( 'General', 'trackmage' ),
 			'manage_options',
 			'trackmage',
 			[ $this, 'render' ]
+		);
+
+		add_submenu_page(
+			'trackmage',
+			__( 'Statuses', 'trackmage' ),
+			__( 'Statuses', 'trackmage' ),
+			'manage_options',
+			'admin.php?page=trackmage&tab=statuses'
 		);
 	}
 
