@@ -17,9 +17,9 @@
   }
 
   /**
-   * Append a `<div>` overlay to the `<body>` tag.
+   * Create and append overlay to the body.
    */
-  window.trackmageLoadOverlay = function trackmageLoadOverlay() {
+  window.trackmageOverlay = function trackmageOverlay() {
     if ($('#trackmage-overlay').length === 0) {
       let overlay = $('<div></div>').attr('id', 'trackmage-overlay');
       let loader = $('<div></div>').attr('class', 'loader');
@@ -30,6 +30,17 @@
       $(loaderImg).appendTo(loader);
       $(loader).appendTo(overlay);
       $('body').append(overlay);
+    }
+  }
+
+  /**
+   * Create and append alerts container to the body.
+   */
+  window.trackmageAlerts = function trackmageAlerts() {
+    if ($('#trackmage-alerts').length === 0) {
+      let alerts = $('<div></div>').attr('id', 'trackmage-alerts');
+
+      $('body').append(alerts);
     }
   }
 
@@ -75,6 +86,26 @@
     notification.slideDown(500);
   }
 
+  window.trackmageAlert = function trackmageAlert(type = 'default', title, paragraph) {
+    if ($('#trackmage-alerts').length === 0) {
+      trackmageAlerts();
+    }
+
+    let alert = $(`
+      <div class="trackmage-alert trackmage-alert--${type}">
+        <div class="trackmage-alert__content">
+          <strong class="trackmage-alert__title">${title}</strong>
+          <p class="trackmage-alert__paragraph">${paragraph}</p>
+        </div>
+        <div class="trackmage-alert__close">
+          <span class="dashicons dashicons-dismiss"></span>
+        </div>
+      </div>
+    `);
+
+    $('#trackmage-alerts').append(alert);
+  }
+
   /**
    * On document ready.
    */
@@ -91,11 +122,16 @@
         e.preventDefault();
       });
     });
+
     /**
      * Hide notifications on click.
      */
     $('.trackmage-notification').on('click', function () {
       $(this).slideUp(500);
+    });
+
+    $('.trackmage-alert .trackmage-alert__close span').on('click', function() {
+      $(this).closest('.trackmage-alert').slideUp(100);
     });
 
     /**
@@ -133,7 +169,10 @@
     });
 
     // Append overlay.
-    trackmageLoadOverlay();
+    trackmageOverlay();
+
+    // Append alerts container.
+    trackmageAlerts();
 
     // Test credentials.
     $('#trackmage-settings-general #testCredentials').on('click', (e) => {

@@ -146,8 +146,7 @@ class Admin {
 				$client->getWorkflowApi()->deleteWorkflowItem( $webhook );
 				update_option( 'trackmage_webhook', '' );
 			} catch ( ApiException $e ) {
-				// Trigger error message and exit.
-				return $old_value;
+				// Do nothing. Webhook might be removed from TrackMage.
 			}
 		}
 

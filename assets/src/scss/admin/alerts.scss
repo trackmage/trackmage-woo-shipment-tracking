@@ -1,0 +1,82 @@
+#trackmage-alerts {
+  position: fixed;
+  top: 42px;
+  right: 10px;
+
+  .trackmage-alert {
+    width: 300px;
+    padding: 15px;
+    border-left: 8px solid #bababa;
+    background: #ededed;
+    color: #a1a1a1;
+    border-radius: 4px;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -ms-flex-align: center;
+    align-items: center;
+    text-align: left;
+    font-size: 16px;
+    margin-bottom: 10px;
+
+    .trackmage-alert__content {
+      width: 100%;
+      line-height: 1.5;
+
+      .trackmage-alert__title {
+        font-weight: bold;
+      }
+
+      .trackmage-alert__paragraph {
+        margin: 5px 0 0;
+      }
+    }
+    .trackmage-alert__close {
+      height: 100%;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-pack: center;
+      justify-content: center;
+      -ms-flex-align: center;
+      align-items: center;
+      margin-left: 10px;
+      opacity: 0.7;
+      transition: 0.5s;
+      cursor: pointer;
+      &:hover {
+        opacity: 1;
+      }
+    }
+
+    &.trackmage-alert--success {
+      border-color: #2ed573;
+      background: #c3f3d7;
+      color: #23ad5c;
+    }
+
+    &.trackmage-alert--info {
+      border-color: #71c9ff;
+      background: #d7f0ff;
+      color: #3eb6ff;
+    }
+
+    &.trackmage-alert--danger {
+      border-color: #ff4757;
+      background: #ffe0e3;
+      color: #ff4757;
+    }
+
+    &.trackmage-alert--warning {
+      border-color: #ffa502;
+      background: #ffdb9b;
+      color: #ce8500;
+    }
+
+    &.trackmage-alert--dark {
+      border-color: #333;
+      background: #4d4d4d;
+      color: #ccc;
+    }
+  }
+}
