@@ -1,25 +1,21 @@
 <?php
 /**
- * Admin area
+ * The Admin class.
  *
  * Initialize and render the settings page.
  *
- * @package TrackMage\WordPress
+ * @package TrackMage\WordPress\Admin
  * @author  TrackMage
  */
 
-namespace TrackMage\WordPress;
+namespace TrackMage\WordPress\Admin;
 
-use TrackMage\Client\Swagger\Model\WorkflowSetWorkflowSetIntegration;
-use TrackMage\Client\Swagger\ApiException;
-
-// If this file is called directly, abort.
-if ( ! defined( 'WPINC' ) ) {
-	die;
-}
+use TrackMage\WordPress\Utils as Utils;
+use TrackMage\Client\Swagger\Model\WorkflowSetWorkflowSetIntegration as WorkflowSetWorkflowSetIntegration;
+use TrackMage\Client\Swagger\ApiException as ApiException;
 
 /**
- * Admin class.
+ * The Admin class.
  *
  * @since 0.1.0
  */

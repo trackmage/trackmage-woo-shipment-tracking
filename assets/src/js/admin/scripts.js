@@ -232,7 +232,7 @@
           trackmageAlert(params.messages.testCredentials, message, response.data.status, true);
         },
         error: function () {
-          trackmageHideSpinner(testCredentials);
+          trackmageToggleSpinner(testCredentials, 'deactivate');
           trackmageToggleFormElement(testCredentials, 'enable');
 
           message = params.messages.unknownError;

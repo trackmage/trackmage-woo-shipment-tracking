@@ -10,12 +10,14 @@
 
 namespace TrackMage\WordPress;
 
-use BrightNucleus\Config\ConfigInterface;
-use BrightNucleus\Config\ConfigTrait;
-use BrightNucleus\Config\Exception\FailedToProcessConfigException;
-use BrightNucleus\Settings\Settings;
-use TrackMage\Client\TrackMageClient;
-use TrackMage\Client\Swagger\ApiException;
+use TrackMage\WordPress\Admin\Admin as Admin;
+use TrackMage\WordPress\Admin\Orders as Orders;
+use BrightNucleus\Config\ConfigInterface as ConfigInterface;
+use BrightNucleus\Config\ConfigTrait as ConfigTrait;
+use BrightNucleus\Config\Exception\FailedToProcessConfigException as FailedToProcessConfigException;
+use BrightNucleus\Settings\Settings as Settings;
+use TrackMage\Client\TrackMageClient as TrackMageClient;
+use TrackMage\Client\Swagger\ApiException as ApiException;
 
 /**
  * Main plugin class.
@@ -48,6 +50,9 @@ class Plugin {
 
 	/** @var Admin */
 	protected $admin = null;
+
+	/** @var Orders */
+	protected $orders = null;
 
 	/**
 	 * Returns the singleton instance of TrackMageClient.
@@ -106,6 +111,7 @@ class Plugin {
 		// Class instances.
 		$this->endpoint = new Endpoint;
 		$this->admin = new Admin;
+		$this->orders = new Orders;
 	}
 
 	/**
