@@ -44,7 +44,7 @@ $credentials = Utils::check_credentials();
 		</table>
 		<div class="test-credentials">
 			<input id="testCredentials" type="button" class="button" value="<?php _e( 'Test Credentials', 'trackmage' ); ?>"/>
-			<div class="trackmage-notification" data-notification="test-credentials"></div>
+			<span class="spinner"></span>
 		</div>
 	</div>
 	<!-- End Section: Credentials -->

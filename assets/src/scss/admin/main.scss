@@ -313,9 +313,8 @@
 
   /** General tab. */
   .tab-general {
-    input.endpoint-prefix {
-      width: auto;
-      background: #ededed;
+    .spinner {
+      float: none;
     }
   }
 

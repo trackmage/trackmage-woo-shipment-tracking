@@ -1,19 +1,30 @@
 (($, window, document, undefined) => {
+  let params = trackmageAdminParams;
+
   /**
-   * Display a spinner.
+   * Activate/deactivate spinner.
    *
-   * @param {string} spinner - Spinner data ID.
+   * @param {object} el - Spinner activator.
+   * @param {string} action - Activate/deactivate.
    */
-  window.trackmageShowSpinner = function trackmageShowSpinner(spinner) {
-    $('.trackmage-spinner[data-spinner="' + spinner + '"]').css('display', 'inline-block');
+  window.trackmageToggleSpinner = function trackmageToggleSpinner(el, action) {
+    if (action === 'activate') {
+      $(el).siblings('.spinner').addClass('is-active');
+    } else if (action === 'deactivate') {
+      $(el).siblings('.spinner').removeClass('is-active');
+    }
   }
 
   /**
-   * Hide a spinner.
-   * @param {string} spinner - Spinner data ID.
+   * Enable/Disable form element.
+   *
+   * @param {object} el - The element object.
+   * @param {string} action - Enable/disable.
    */
-  window.trackmageHideSpinner = function trackmageHideSpinner(spinner) {
-    $('.trackmage-spinner[data-spinner="' + spinner + '"').css('display', 'none');
+  window.trackmageToggleFormElement = function trackmageToggleFormElement(el, action) {
+    if (action === 'enable' || action === 'disable') {
+      $(el).prop('disabled', action === 'enable' ? false : true);
+    }
   }
 
   /**
@@ -23,8 +34,8 @@
     if ($('#trackmage-overlay').length === 0) {
       let overlay = $('<div></div>').attr('id', 'trackmage-overlay');
       let loader = $('<div></div>').attr('class', 'loader');
-      let trackmageImg = $('<img class="icon-trackmage" />').attr('src', trackmageAdminParams.images.iconTrackMage);
-      let loaderImg = $('<img class="loader" />').attr('src', trackmageAdminParams.images.loader);
+      let trackmageImg = $('<img class="icon-trackmage" />').attr('src', params.images.iconTrackMage);
+      let loaderImg = $('<img class="loader" />').attr('src', params.images.loader);
 
       $(trackmageImg).appendTo(loader);
       $(loaderImg).appendTo(loader);
@@ -86,7 +97,7 @@
     notification.slideDown(500);
   }
 
-  window.trackmageAlert = function trackmageAlert(type = 'default', title, paragraph) {
+  window.trackmageAlert = function trackmageAlert(title, paragraph, type = 'default', autoClose = true) {
     if ($('#trackmage-alerts').length === 0) {
       trackmageAlerts();
     }
@@ -103,7 +114,17 @@
       </div>
     `);
 
+    if (autoClose) {
+      setTimeout(function() {
+        $(alert).slideUp(100);
+      }, 10000);
+    }
+
     $('#trackmage-alerts').append(alert);
+
+    $(alert).find('.trackmage-alert__close span').on('click', function() {
+      $(alert).slideUp(100);
+    });
   }
 
   /**
@@ -130,9 +151,7 @@
       $(this).slideUp(500);
     });
 
-    $('.trackmage-alert .trackmage-alert__close span').on('click', function() {
-      $(this).closest('.trackmage-alert').slideUp(100);
-    });
+    
 
     /**
      * Adjust all toggle inputs.
@@ -175,7 +194,8 @@
     trackmageAlerts();
 
     // Test credentials.
-    $('#trackmage-settings-general #testCredentials').on('click', (e) => {
+    $('#trackmage-settings-general #testCredentials').on('click', function(e) {
+      let testCredentials = $(this);
       e.preventDefault();
 
       // Request data.
@@ -189,36 +209,36 @@
       let message = '';
 
       $.ajax({
-        url: trackmageAdminParams.ajaxUrl,
+        url: params.ajaxUrl,
         method: 'post',
         data: data,
         beforeSend: function () {
-          // Show overlay.
-          trackmageShowOverlay();
+          trackmageToggleSpinner(testCredentials, 'activate');
+          trackmageToggleFormElement(testCredentials, 'disable');
         },
         success: function (response) {
-          // Hide overlay.
-          trackmageHideOverlay();
+          trackmageToggleSpinner(testCredentials, 'deactivate');
+          trackmageToggleFormElement(testCredentials, 'enable');
 
           if (response.data.status === 'success') {
-            message = trackmageAdminParams.messages.successValidKeys;
+            message = params.messages.successValidKeys;
           } else if (response.data.errors) {
             message = response.data.errors.join(' ');
           } else {
-            message = trackmageAdminParams.messages.unknownError;
+            message = params.messages.unknownError;
           }
 
           // Response notification.
-          trackmageNotification('test-credentials', response.data.status, message);
+          trackmageAlert(params.messages.testCredentials, message, response.data.status, true);
         },
         error: function () {
-          // Hide overlay.
-          trackmageHideOverlay();
+          trackmageHideSpinner(testCredentials);
+          trackmageToggleFormElement(testCredentials, 'enable');
 
-          message = trackmageAdminParams.messages.unknownError;
+          message = params.messages.unknownError;
 
           // Response notification.
-          trackmageNotification('test-credentials', response.data.status, message);
+          trackmageAlert(params.messages.testCredentials, message, response.data.status, true);
         }
       });
     });
