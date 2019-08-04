@@ -8,8 +8,8 @@
 
 namespace TrackMage\WordPress;
 
-use TrackMage\Client\TrackMageClient;
-use TrackMage\Client\Swagger\ApiException;
+use TrackMage\Client\TrackMageClient as TrackMageClient;
+use TrackMage\Client\Swagger\ApiException as ApiException;
 
 /**
  * Static functions that can be called without instantiation.
@@ -72,6 +72,32 @@ class Utils {
 		}
 
 		return $workspaces;
+	}
+
+	/**
+	 * Returns shipment providers.
+	 *
+	 * @since 0.1.0
+	 * @return array Shipment providers.
+	 */
+	public static function get_shipment_providers() {
+		$carriers = [];
+
+		try {
+			$client = Plugin::get_client();
+			$result = $client->getCarrierApi()->getCarrierCollection();
+
+			foreach ( $result as $carrier ) {
+				array_push( $carriers, [
+					'code' => $carrier->getCode(),
+					'name' => $carrier->getName(),
+				] );
+			}
+		} catch( ApiException $e ) {
+			// Do nothing. We will return an empty array.
+		}
+
+		return $carriers;
 	}
 
 	/**

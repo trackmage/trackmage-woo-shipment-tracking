@@ -132,6 +132,11 @@
    */
   $(document).ready(() => {
     /**
+     * Select2.
+     */
+    $('select[name="trackmage_provider"]').selectWoo();
+
+    /**
      * Disable input fields, buttons and links inside disabled sections.
      */
     $('.wrap.trackmage .section.disabled').each(function(e) {
