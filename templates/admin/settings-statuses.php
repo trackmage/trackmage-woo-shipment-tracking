@@ -29,7 +29,11 @@ $statuses = Utils::get_order_statuses();
 	</thead>
 	<tbody id="the-list">
 		<?php foreach( $statuses as $status ) : ?>
-		<tr id="status-<?php echo $status['slug']; ?>" data-status-name="<?php echo $status['name']; ?>" data-status-slug="<?php echo $status['slug']; ?>" data-status-aliases="<?php echo $status['aliases']; ?>">
+		<tr id="status-<?php echo $status['slug']; ?>"
+			data-status-name="<?php echo $status['name']; ?>"
+			data-status-slug="<?php echo $status['slug']; ?>"
+			data-status-aliases="<?php echo $status['aliases']; ?>"
+			data-status-is-core="<?php echo $status['is_core']; ?>">
 			<td>
 				<?php echo $status['name']; ?>
 				<div class="row-actions">
@@ -38,7 +42,13 @@ $statuses = Utils::get_order_statuses();
 				</div>
 			</td>
 			<td><?php echo $status['slug']; ?></td>
-			<td colspan="2"></td>
+			<td colspan="2">
+				<?php if( preg_replace('/\s+/', '', $status['aliases'] ) ) : ?>
+					<?php foreach( explode( ',', $status['aliases'] ) as $alias ) : ?>
+						<span class="alias"><?php echo $alias; ?></span>
+					<?php endforeach; ?>
+				<?php endif; ?>
+			</td>
 		</tr>
 		<?php endforeach; ?>
 	</tbody>

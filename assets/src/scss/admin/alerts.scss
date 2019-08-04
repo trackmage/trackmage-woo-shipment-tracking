@@ -32,6 +32,7 @@
         margin: 5px 0 0;
       }
     }
+
     .trackmage-alert__close {
       height: 100%;
       display: -ms-flexbox;
@@ -44,6 +45,7 @@
       opacity: 0.7;
       transition: 0.5s;
       cursor: pointer;
+
       &:hover {
         opacity: 1;
       }

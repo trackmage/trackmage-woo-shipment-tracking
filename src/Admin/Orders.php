@@ -25,6 +25,7 @@ class Orders {
 	public function __construct() {
 		add_action( 'add_meta_boxes', [ $this, 'add_meta_box'] );
 		add_action( 'save_post', [ $this, 'save_meta_box'] );
+		add_filter( 'wc_order_statuses', [ $this, 'order_statuses' ], 999999, 1 );
 	}
 
 	/**
@@ -70,6 +71,8 @@ class Orders {
 	/**
 	 * Render meta box.
 	 *
+	 * @todo Move the HTML code to a template file.
+	 *
 	 * @since 0.1.0
 	 * @param [object] $post Post object.
 	 */
@@ -97,5 +100,24 @@ class Orders {
 		</p>
 		<?php echo $status; ?>
 		<?php
+	}
+
+	/**
+	 * Add/rename order statuses.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param array $order_statuses
+	 * @return array
+	 */
+	public function order_statuses( $order_statuses ) {
+		$custom_statuses = get_option( 'trackmage_custom_order_statuses', [] );
+		$statuses_filter = get_option( 'trackmage_order_statuses_filter', [] );
+
+		// Register custom order statuses added by our plugin.
+		$order_statuses = array_merge( $order_statuses, $custom_statuses );
+
+		// Filter the available statuses.
+		return $order_statuses;
 	}
 }

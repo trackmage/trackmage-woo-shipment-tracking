@@ -200,7 +200,7 @@
       let row = $(this).closest('tr');
       let name = $(row).data('status-name');
       let slug = $(row).data('status-slug');
-      let aliases = $(row).data('status-aliases').split(',');
+      let aliases = $(row).data('status-aliases');
 
       // Hide the selected row,
       // toggle hidden rows
@@ -254,19 +254,22 @@
       $(editRow).find('input[name="status_slug"]').val(slug);
 
       // Aliases.
+      aliases === '' ? [] : aliases.split(',');
+      let allAliases = ['Delivered', 'Shipped'];
+      allAliases = $.merge(allAliases, aliases);
+      allAliases = allAliases.filter(function(elem, index, self) {
+        return index === self.indexOf(elem);
+      });
       $(editRow).find('select[name="status_aliases"]').selectWoo({
         width: '100%',
         tags: true,
-        data: [
-          {id: 'delivered', text: 'Delivered'},
-          {id: 'shipped', text: 'Shipped'}
-        ]
-      }).val([
-        // Selected values.
-      ]).trigger('change');
+        data: allAliases,
+      })
+      .val(aliases)
+      .trigger('change');
 
       // On cancel.
-      $(editRow).find('button.cancel').on('click', function() {
+      $(editRow).find('button.cancel').on('click', function () {
         $(editRow).remove();
         $(row).removeClass('hidden');
       });

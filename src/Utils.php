@@ -102,14 +102,18 @@ class Utils {
 
 	public static function get_order_statuses() {
 		$statuses = [];
-		$wc_statuses = wc_get_order_statuses();
+		$get_statuses = wc_get_order_statuses();
 
-		foreach ( $wc_statuses as $slug => $name ) {
+		$custom_statuses = get_option( 'trackmage_custom_order_statuses', [] );
+		$aliases = get_option( 'trackmage_order_status_aliases', [] );
+
+		foreach ( $get_statuses as $slug => $name ) {
 			array_push( $statuses,
 				[
 					'name' => $name,
 					'slug' => $slug,
-					'aliases' => 'Delivered,Shipped',
+					'is_custom' => array_key_exists( $slug, $custom_statuses ),
+					'aliases' => array_key_exists( $slug, $aliases ) && is_array( $aliases[ $slug ] ) ? implode( ',', $aliases[ $slug ] ) : '',
 				]
 			);
 		}
