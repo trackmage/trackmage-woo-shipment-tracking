@@ -48,6 +48,9 @@ class Plugin {
 	/** @var Endpoint */
 	protected $endpoint = null;
 
+	/** @var Templates */
+	protected $tracking_page = null;
+
 	/** @var Admin */
 	protected $admin = null;
 
@@ -110,6 +113,7 @@ class Plugin {
 
 		// Class instances.
 		$this->endpoint = new Endpoint;
+		$this->tracking_page = new Templates;
 		$this->admin = new Admin;
 		$this->orders = new Orders;
 	}
