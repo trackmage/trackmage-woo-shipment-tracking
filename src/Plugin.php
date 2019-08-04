@@ -134,7 +134,7 @@ class Plugin {
 				],
 				'messages'    => [
 					'testCredentials'  => __( 'Test Credentials', 'trackmage' ),
-					'successValidKeys' => __( 'Valid credentials. Please click on <em>“Save”</em> for the changes to take effect.', 'trackmage' ),
+					'successValidKeys' => __( 'Valid credentials. Click on <em>“Save Changes”</em> for the changes to take effect.', 'trackmage' ),
 					'unknownError'     => __( 'Unknown error occured.', 'trackmage' ),
 				]
 			] );
