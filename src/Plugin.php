@@ -126,7 +126,11 @@ class Plugin {
 	public function scripts() {
 		// Back-end scripts.
 		if ( 'admin_enqueue_scripts' === current_action() ) {
-			wp_enqueue_script( 'trackmage-admin-scripts', TRACKMAGE_URL . 'assets/dist/js/admin/scripts.min.js', [ 'jquery' ], null, true );
+			// Scripts from WooCommerce core.
+			wp_enqueue_script( 'selectWoo' );
+			wp_enqueue_script( 'wc-enhanced-select' );
+
+			wp_enqueue_script( 'trackmage-admin-scripts', TRACKMAGE_URL . 'assets/dist/js/admin/scripts.min.js', [ 'jquery', 'wc-enhanced-select' ], null, true );
 			wp_localize_script( 'trackmage-admin-scripts', 'trackmageAdminParams', [
 				'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
 				'images'      => [
@@ -136,6 +140,12 @@ class Plugin {
 					'testCredentials'  => __( 'Test Credentials', 'trackmage' ),
 					'successValidKeys' => __( 'Valid credentials. Click on <em>“Save Changes”</em> for the changes to take effect.', 'trackmage' ),
 					'unknownError'     => __( 'Unknown error occured.', 'trackmage' ),
+					'edit'             => __( 'Edit', 'trackmage' ),
+					'name'             => __( 'Name', 'trackmage' ),
+					'slug'             => __( 'Slug', 'trackmage'),
+					'aliases'          => __( 'Aliases', 'trackmage'),
+					'cancel'           => __( 'Cancel', 'trackmage' ),
+					'update'           => __( 'Update', 'trackmage')
 				]
 			] );
 		}
@@ -156,6 +166,10 @@ class Plugin {
 	public function styles() {
 		// Back-end styles.
 		if ( 'admin_enqueue_scripts' === current_action() ) {
+			// Styles from WooCommerce core.
+			wp_enqueue_style( 'select2', WC()->plugin_url() . '/assets/css/select2.css', array(), WC_VERSION );
+			wp_enqueue_style( 'woocommerce_admin_styles' );
+
 			wp_enqueue_style( 'trackmage-admin-styles', TRACKMAGE_URL . 'assets/dist/css/admin/main.min.css', [], false, 'all' );
 		}
 		// Front-end styles.

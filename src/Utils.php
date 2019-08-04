@@ -100,6 +100,23 @@ class Utils {
 		return $carriers;
 	}
 
+	public static function get_order_statuses() {
+		$statuses = [];
+		$wc_statuses = wc_get_order_statuses();
+
+		foreach ( $wc_statuses as $slug => $name ) {
+			array_push( $statuses,
+				[
+					'name' => $name,
+					'slug' => $slug,
+					'aliases' => 'Delivered,Shipped',
+				]
+			);
+		}
+
+		return $statuses;
+	}
+
 	/**
 	 * Returns all the sent HTTP hearders.
 	 *

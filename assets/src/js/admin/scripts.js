@@ -115,14 +115,14 @@
     `);
 
     if (autoClose) {
-      setTimeout(function() {
+      setTimeout(function () {
         $(alert).slideUp(100);
       }, 10000);
     }
 
     $('#trackmage-alerts').append(alert);
 
-    $(alert).find('.trackmage-alert__close span').on('click', function() {
+    $(alert).find('.trackmage-alert__close span').on('click', function () {
       $(alert).slideUp(100);
     });
   }
@@ -134,12 +134,14 @@
     /**
      * Select2.
      */
-    $('select[name="trackmage_provider"]').selectWoo();
+    if (typeof selectWoo === 'function') {
+      $('select[name="trackmage_provider"]').selectWoo();
+    }
 
     /**
      * Disable input fields, buttons and links inside disabled sections.
      */
-    $('.wrap.trackmage .section.disabled').each(function(e) {
+    $('.wrap.trackmage .section.disabled').each(function (e) {
       let section = $(this);
 
       section.find('select, input, button').prop('disabled', true);
@@ -155,8 +157,6 @@
     $('.trackmage-notification').on('click', function () {
       $(this).slideUp(500);
     });
-
-    
 
     /**
      * Adjust all toggle inputs.
@@ -182,7 +182,7 @@
       if (toggle.hasClass('disabled')) {
         return;
       }
-      
+
       if (toggle.hasClass('off')) {
         toggle.removeClass('off');
         input.attr('checked', true);
@@ -192,6 +192,86 @@
       }
     });
 
+    /**
+     * Edit status.
+     */
+    $('#statusManager .row-actions .edit-status').on('click', function (e) {
+      let tbody = $(this).closest('tbody');
+      let row = $(this).closest('tr');
+      let name = $(row).data('status-name');
+      let slug = $(row).data('status-slug');
+      let aliases = $(row).data('status-aliases').split(',');
+
+      // Hide the selected row,
+      // toggle hidden rows
+      // and remove any other open edit row if any.
+      $(tbody).children('tr.hidden').removeClass('hidden');
+      $(row).addClass('hidden');
+      $(tbody).children('.adjust-odd-even').remove();
+      $(tbody).children('.inline-edit-row').remove();
+
+      // Append edit row.
+      let editRow = $(`
+        <tr class="hidden adjust-odd-even"></tr>
+        <tr id="edit-${slug}" class="inline-edit-row">
+          <td colspan="4" class="colspanchange">
+            <fieldset class="inline-edit-col-left">
+              <legend class="inline-edit-legend">${params.messages.edit}</legend>
+              <div class="inline-edit-col">
+                <label>
+                  <span class="title">${params.messages.name}</span>
+                  <span class="input-text-wrap"><input type="text" name="status_name" value="" /></span>
+                </label>
+                <label>
+                  <span class="title">${params.messages.slug}</span>
+                  <span class="input-text-wrap"><input type="text" name="status_slug" value="" /></span>
+                </label>
+                <label>
+                  <span class="title">${params.messages.aliases}</span>
+                  <span class="input-text-wrap">
+                  <select name="status_aliases" multiple></select>
+                  </span>
+                </label>
+              </div>
+            </fieldset>
+            <div class="submit inline-edit-save">
+              <button type="button" class="button cancel alignleft">${params.messages.cancel}</button>
+              <button type="button" class="button button-primary save alignright">${params.messages.update}</button>
+              <span class="spinner"></span>
+              <br class="clear">
+            </div>
+          </div>
+          </td>
+        </tr>
+      `);
+
+      $(editRow).insertAfter(row);
+
+      // Name.
+      $(editRow).find('input[name="status_name"]').val(name);
+
+      // Slug.
+      $(editRow).find('input[name="status_slug"]').val(slug);
+
+      // Aliases.
+      $(editRow).find('select[name="status_aliases"]').selectWoo({
+        width: '100%',
+        tags: true,
+        data: [
+          {id: 'delivered', text: 'Delivered'},
+          {id: 'shipped', text: 'Shipped'}
+        ]
+      }).val([
+        // Selected values.
+      ]).trigger('change');
+
+      // On cancel.
+      $(editRow).find('button.cancel').on('click', function() {
+        $(editRow).remove();
+        $(row).removeClass('hidden');
+      });
+    });
+
     // Append overlay.
     trackmageOverlay();
 
@@ -199,7 +279,7 @@
     trackmageAlerts();
 
     // Test credentials.
-    $('#trackmage-settings-general #testCredentials').on('click', function(e) {
+    $('#trackmage-settings-general #testCredentials').on('click', function (e) {
       let testCredentials = $(this);
       e.preventDefault();
 

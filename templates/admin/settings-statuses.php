@@ -11,33 +11,43 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+use TrackMage\WordPress\Utils as Utils;
+
 // Get the registered statuses.
-$statuses = wc_get_order_statuses();
+$statuses = Utils::get_order_statuses();
 ?>
 
 <div class="intro"><?php _e( 'You can edit and add new order statuses.', 'trackmage' ); ?></div>
 
-<table class="widefat status-manager" id="statusManager">
+<table class="wp-list-table widefat fixed striped status-manager" id="statusManager">
 	<thead>
 		<tr>
-		<th><?php _e( 'Name', 'trackmage' ); ?></th>
-		<th><?php _e( 'Slug', 'trackmage' ); ?></th>
-		<th><?php _e( 'Alias in TrackMage', 'trackmage' ); ?></th>
-		<th><?php _e( 'Actions', 'trackmage' ); ?></th>
+			<th><?php _e( 'Name', 'trackmage' ); ?></th>
+			<th><?php _e( 'Slug', 'trackmage' ); ?></th>
+			<th colspan="2"><?php _e( 'Aliases in TrackMage', 'trackmage' ); ?></th>
 		</tr>
 	</thead>
-	<tbody>
-		<?php foreach( $statuses as $slug => $name ) : ?>
-		<tr>
-			<td><?php echo $name; ?></td>
-			<td><?php echo $slug; ?></td>
-			<td></td>
-			<td><a href="">Edit</a></td>
+	<tbody id="the-list">
+		<?php foreach( $statuses as $status ) : ?>
+		<tr id="status-<?php echo $status['slug']; ?>" data-status-name="<?php echo $status['name']; ?>" data-status-slug="<?php echo $status['slug']; ?>" data-status-aliases="<?php echo $status['aliases']; ?>">
+			<td>
+				<?php echo $status['name']; ?>
+				<div class="row-actions">
+					<span class="inline"><button type="button" class="button-link edit-status"><?php _e( 'Edit', 'trackmage' ); ?></button> | </span>
+					<span class="inline delete"><button type="button" class="button-link delete-status"><?php _e( 'Delete', 'trackmage' ); ?></button></span>
+				</div>
+			</td>
+			<td><?php echo $status['slug']; ?></td>
+			<td colspan="2"></td>
 		</tr>
 		<?php endforeach; ?>
 	</tbody>
+	<tfoot>
+		<tr class="add-status">
+			<td><input type="text" name="status_name" placeholder="<?php _e( 'Name', 'trackmage' ); ?>" /></td>
+			<td><input type="text" name="status_slug" placeholder="<?php _e( 'Slug', 'trackmage' ); ?>" /></td>
+			<td><input type="text" name="status_aliases" placeholder="<?php _e( 'Aliases', 'trackmage' ); ?>" /></td>
+			<td><button type="submit" id="addStatus" class="button button-primary add-status"><?php _e( 'Add New Status', 'trackmage' ); ?></button></td>
+		</tr>
+	</tfoot>
 </table>
-
-<form>
-	<input type="submit" class="button button-primary" value="<?php _e( 'Add New Status', 'trackmage' ); ?>" />
-</form>
