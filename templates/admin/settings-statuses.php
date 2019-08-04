@@ -33,21 +33,21 @@ $statuses = Utils::get_order_statuses();
 			data-status-name="<?php echo $status['name']; ?>"
 			data-status-slug="<?php echo $status['slug']; ?>"
 			data-status-aliases="<?php echo $status['aliases']; ?>"
-			data-status-is-core="<?php echo $status['is_core']; ?>">
+			data-status-is-custom="<?php echo $status['is_custom']; ?>">
 			<td>
-				<?php echo $status['name']; ?>
+				<span data-update-status-name><?php echo $status['name']; ?></span>
 				<div class="row-actions">
 					<span class="inline"><button type="button" class="button-link edit-status"><?php _e( 'Edit', 'trackmage' ); ?></button> | </span>
 					<span class="inline delete"><button type="button" class="button-link delete-status"><?php _e( 'Delete', 'trackmage' ); ?></button></span>
 				</div>
 			</td>
-			<td><?php echo $status['slug']; ?></td>
+			<td><span data-update-status-slug><?php echo $status['slug']; ?></span></td>
 			<td colspan="2">
-				<?php if( preg_replace('/\s+/', '', $status['aliases'] ) ) : ?>
-					<?php foreach( explode( ',', $status['aliases'] ) as $alias ) : ?>
-						<span class="alias"><?php echo $alias; ?></span>
-					<?php endforeach; ?>
-				<?php endif; ?>
+				<div data-update-status-aliases>
+					<?php if( preg_replace('/\s+/', '', $status['aliases'] ) ) : ?>
+						<?php foreach( explode( ',', $status['aliases'] ) as $alias ) : ?><span class="alias"><?php echo $alias; ?></span><?php endforeach; ?>
+					<?php endif; ?>
+				</div>
 			</td>
 		</tr>
 		<?php endforeach; ?>

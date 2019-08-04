@@ -198,7 +198,9 @@
     $('#statusManager .row-actions .edit-status').on('click', function (e) {
       let tbody = $(this).closest('tbody');
       let row = $(this).closest('tr');
+      let isCustom = $(row).data('status-is-custom');
       let name = $(row).data('status-name');
+      let currentSlug = $(row).data('status-slug');
       let slug = $(row).data('status-slug');
       let aliases = $(row).data('status-aliases');
 
@@ -252,27 +254,110 @@
 
       // Slug.
       $(editRow).find('input[name="status_slug"]').val(slug);
+      if (isCustom != 1) {
+        $(editRow).find('input[name="status_slug"]').prop('disabled', true);
+      }
 
       // Aliases.
-      aliases === '' ? [] : aliases.split(',');
+      aliases = aliases === '' ? [] : aliases.split(',');
       let allAliases = ['Delivered', 'Shipped'];
       allAliases = $.merge(allAliases, aliases);
-      allAliases = allAliases.filter(function(elem, index, self) {
+      allAliases = allAliases.filter(function (elem, index, self) {
         return index === self.indexOf(elem);
       });
       $(editRow).find('select[name="status_aliases"]').selectWoo({
-        width: '100%',
-        tags: true,
-        data: allAliases,
-      })
-      .val(aliases)
-      .trigger('change');
+          width: '100%',
+          tags: true,
+          data: allAliases,
+        })
+        .val(aliases)
+        .trigger('change');
 
       // On cancel.
       $(editRow).find('button.cancel').on('click', function () {
         $(editRow).remove();
         $(row).removeClass('hidden');
       });
+
+      // On save.
+      $(editRow).find('button.save').on('click', function () {
+        let save = $(this);
+        let name = $(editRow).find('[name="status_name"]');
+        let slug = $(editRow).find('[name="status_slug"]');
+        let aliases = $(editRow).find('[name="status_aliases"]');
+
+        // Request data.
+        let data = {
+          'action': 'trackmage_status_manager_save',
+          'name': $(name).val(),
+          'currentSlug': currentSlug,
+          'slug': $(slug).val(),
+          'aliases': $(aliases).val(),
+          'isCustom': isCustom,
+        };
+
+        // Response message.
+        let message = '';
+
+        $.ajax({
+          url: params.ajaxUrl,
+          method: 'post',
+          data: data,
+          beforeSend: function () {
+            trackmageToggleSpinner(save, 'activate');
+            trackmageToggleFormElement(save, 'disable');
+          },
+          success: function (response) {
+            trackmageToggleSpinner(save, 'deactivate');
+            trackmageToggleFormElement(save, 'enable');
+
+            if (response.data.status === 'success') {
+              updateRow(response.data.result.name, response.data.result.slug, response.data.result.aliases);
+              message = params.messages.successUpdateStatus;
+              $(editRow).remove();
+              $(row).removeClass('hidden').effect('highlight', {color: '#c3f3d7'}, 500);
+            } else if (response.data.errors) {
+              message = response.data.errors.join(' ');
+              $(editRow).removeClass('hidden').effect('highlight', {color: '#ffe0e3'}, 500);
+            } else {
+              message = params.messages.unknownError;
+            }
+
+            // Response notification.
+            trackmageAlert(params.messages.updateStatus, message, response.data.status, true);
+          },
+          error: function () {
+            trackmageToggleSpinner(save, 'deactivate');
+            trackmageToggleFormElement(save, 'enable');
+
+            message = params.messages.unknownError;
+
+            // Response notification.
+            trackmageAlert(params.messages.updateStatus, message, response.data.status, true);
+          }
+        });
+      });
+
+      function updateRow(name, slug, aliases) {
+        $(row).find('[data-update-status-name]').html(name);
+        $(row).data('status-name', name);
+
+        $(row).find('[data-update-status-slug]').html(slug);
+        $(row).data('status-slug', slug);
+
+
+        if (aliases) {
+          $(row).data('status-aliases', aliases);
+          aliases = aliases.split(',');
+          aliases = aliases.map(function(alias) {
+            return `<span class="alias">${alias}</span>`;
+          });
+          $(row).find('[data-update-status-aliases]').html(aliases);
+        } else {
+          $(row).data('status-aliases', '');
+          $(row).find('[data-update-status-aliases]').html('');
+        }
+      }
     });
 
     // Append overlay.

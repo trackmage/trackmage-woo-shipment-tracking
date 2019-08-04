@@ -130,22 +130,25 @@ class Plugin {
 			wp_enqueue_script( 'selectWoo' );
 			wp_enqueue_script( 'wc-enhanced-select' );
 
-			wp_enqueue_script( 'trackmage-admin-scripts', TRACKMAGE_URL . 'assets/dist/js/admin/scripts.min.js', [ 'jquery', 'wc-enhanced-select' ], null, true );
+			wp_enqueue_script( 'jquery-effects-highlight' );
+			wp_enqueue_script( 'trackmage-admin-scripts', TRACKMAGE_URL . 'assets/dist/js/admin/scripts.min.js', [ 'jquery', 'jquery-effects-highlight', 'wc-enhanced-select' ], null, true );
 			wp_localize_script( 'trackmage-admin-scripts', 'trackmageAdminParams', [
 				'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
 				'images'      => [
 					'iconTrackMage' => TRACKMAGE_URL . 'assets/dist/images/trackmage-icon.svg',
 				],
 				'messages'    => [
-					'testCredentials'  => __( 'Test Credentials', 'trackmage' ),
-					'successValidKeys' => __( 'Valid credentials. Click on <em>“Save Changes”</em> for the changes to take effect.', 'trackmage' ),
-					'unknownError'     => __( 'Unknown error occured.', 'trackmage' ),
-					'edit'             => __( 'Edit', 'trackmage' ),
-					'name'             => __( 'Name', 'trackmage' ),
-					'slug'             => __( 'Slug', 'trackmage'),
-					'aliases'          => __( 'Aliases', 'trackmage'),
-					'cancel'           => __( 'Cancel', 'trackmage' ),
-					'update'           => __( 'Update', 'trackmage')
+					'testCredentials'     => __( 'Test Credentials', 'trackmage' ),
+					'successValidKeys'    => __( 'Valid credentials. Click on <em>“Save Changes”</em> for the changes to take effect.', 'trackmage' ),
+					'unknownError'        => __( 'Unknown error occured.', 'trackmage' ),
+					'edit'                => __( 'Edit', 'trackmage' ),
+					'name'                => __( 'Name', 'trackmage' ),
+					'slug'                => __( 'Slug', 'trackmage'),
+					'aliases'             => __( 'Aliases', 'trackmage'),
+					'cancel'              => __( 'Cancel', 'trackmage' ),
+					'update'              => __( 'Update', 'trackmage'),
+					'updateStatus'        => __( 'Update Status', 'trackmage' ),
+					'successUpdateStatus' => __( 'Status has been updated successfully.', 'trackmage' ),
 				]
 			] );
 		}

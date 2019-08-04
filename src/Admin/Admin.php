@@ -30,6 +30,7 @@ class Admin {
 		add_action( 'admin_menu', [ $this, 'add_page' ] );
 		add_action( 'admin_init', [ $this, 'settings' ] );
 		add_action( 'wp_ajax_trackmage_test_credentials', [ $this, 'test_credentials' ] );
+		add_action( 'wp_ajax_trackmage_status_manager_save', [ $this, 'status_manager_save' ] );
 		add_filter( 'pre_update_option_trackmage_workspace', [ $this, 'select_workspace' ], 10, 3 );
 	}
 
@@ -119,6 +120,65 @@ class Admin {
 				]
 			] );
 		}
+	}
+
+	public function status_manager_save() {
+		$name = $_POST['name'];
+		$current_slug = $_POST['currentSlug'];
+		$slug = $_POST['slug'];
+		$aliases = $_POST['aliases'];
+		$is_custom = '1' === $_POST['isCustom'] ? true : false;
+
+		$custom_statuses = get_option( 'trackmage_custom_order_statuses', [] );
+		$modified_statuses = get_option( 'trackmage_modified_order_statuses', [] );
+		$status_aliases = get_option( 'trackmage_order_status_aliases', [] );
+
+		// Errors array.
+		$errors = [];
+
+		if ( empty ( $name ) ) {
+			array_push( $errors, __( 'Status name cannot be empty.', 'trackmage' ) );
+		}
+
+		if ( empty ( $slug ) ) {
+			array_push( $errors, __( 'Status slug cannot be empty.', 'trackmage' ) );
+		}
+
+		if ( $is_custom && $current_slug !== $slug ) {
+			unset( $custom_statuses[ $current_slug ] );
+		}
+		
+		if ( ! $is_custom && $current_slug !== $slug ) {
+			array_push( $errors, __( 'The slug of core statuses and statuses created by other plugins and themes cannot be changed.', 'trackmage' ) );
+		}
+
+		if ( $is_custom ) {
+			$custom_statuses[ $slug ] = __( $name, 'trackmage' );
+		} else {
+			$modified_statuses[ $slug ] = __( $name, 'trackmage' );
+		}
+
+		$status_aliases[ $slug ] = $aliases;
+
+		if ( ! empty( $errors ) ) {
+			wp_send_json_error( [
+				'status' => 'error',
+				'errors' => $errors,
+			] );
+		}
+
+		update_option( 'trackmage_custom_order_statuses', $custom_statuses );
+		update_option( 'trackmage_modified_order_statuses', $modified_statuses );
+		update_option( 'trackmage_order_status_aliases', $status_aliases );
+
+		wp_send_json_success( [
+			'status' => 'success',
+			'result' => [
+				'name' => $name,
+				'slug' => $slug,
+				'aliases' => implode( ',', $aliases ),
+			]
+		] );
 	}
 
 	/**

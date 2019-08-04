@@ -112,12 +112,18 @@ class Orders {
 	 */
 	public function order_statuses( $order_statuses ) {
 		$custom_statuses = get_option( 'trackmage_custom_order_statuses', [] );
-		$statuses_filter = get_option( 'trackmage_order_statuses_filter', [] );
+		$modified_statuses = get_option( 'trackmage_modified_order_statuses', [] );
 
 		// Register custom order statuses added by our plugin.
 		$order_statuses = array_merge( $order_statuses, $custom_statuses );
 
-		// Filter the available statuses.
+		// Update the registered statuses.
+		foreach ( $order_statuses as $key => $name ) {
+			if ( array_key_exists( $key, $modified_statuses ) ) {
+				$order_statuses[ $key ] = __( $modified_statuses[ $key ], 'trackmage' );
+			}
+		}
+
 		return $order_statuses;
 	}
 }
