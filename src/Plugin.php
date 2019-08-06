@@ -144,6 +144,7 @@ class Plugin {
 					'unknownError'        => __( 'Unknown error occured.', 'trackmage' ),
 					'noSelect'            => __( '— Select —', 'trackmage' ),
 					'edit'                => __( 'Edit', 'trackmage' ),
+					'delete'              => __( 'Delete', 'trackmage' ),
 					'name'                => __( 'Name', 'trackmage' ),
 					'slug'                => __( 'Slug', 'trackmage'),
 					'alias'               => __( 'Alias', 'trackmage'),
@@ -151,6 +152,8 @@ class Plugin {
 					'update'              => __( 'Update', 'trackmage'),
 					'updateStatus'        => __( 'Update Status', 'trackmage' ),
 					'successUpdateStatus' => __( 'Status has been updated successfully.', 'trackmage' ),
+					'addStatus'           => __( 'Add Status', 'trackmage' ),
+					'successAddStatus'    => __( 'Status has been added successfully.', 'trackmage' ),
 				]
 			] );
 		}

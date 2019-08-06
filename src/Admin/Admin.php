@@ -32,6 +32,7 @@ class Admin {
 		add_action( 'admin_init', [ $this, 'settings' ] );
 		add_action( 'wp_ajax_trackmage_test_credentials', [ $this, 'test_credentials' ] );
 		add_action( 'wp_ajax_trackmage_status_manager_save', [ $this, 'status_manager_save' ] );
+		add_action( 'wp_ajax_trackmage_status_manager_add', [ $this, 'status_manager_add' ] );
 		add_filter( 'pre_update_option_trackmage_workspace', [ $this, 'select_workspace' ], 10, 3 );
 	}
 
@@ -134,6 +135,10 @@ class Admin {
 		$modified_statuses = get_option( 'trackmage_modified_order_statuses', [] );
 		$status_aliases = get_option( 'trackmage_order_status_aliases', [] );
 		$aliases = Utils::get_aliases();
+		$get_statuses = Utils::get_order_statuses();
+		$get_statuses_slugs = array_map( function( $s ) {
+			return $s['slug'];
+		}, $get_statuses );
 
 		// Errors array.
 		$errors = [];
@@ -144,6 +149,10 @@ class Admin {
 
 		if ( empty ( $slug ) ) {
 			array_push( $errors, __( 'Status slug cannot be empty.', 'trackmage' ) );
+		}
+
+		if ( $current_slug !== $slug && in_array( $slug, $get_statuses_slugs ) ) {
+			array_push( $errors, sprintf( __( 'The slug <em>“%1$s”</em> is already used by another status.', 'trackmage' ), $slug ) );
 		}
 
 		if ( $is_custom && $current_slug !== $slug ) {
@@ -160,7 +169,11 @@ class Admin {
 			$modified_statuses[ $slug ] = __( $name, 'trackmage' );
 		}
 
-		if ( ! empty( $alias ) && in_array( $alias, $status_aliases ) ) {
+		if ( ! empty( $alias )
+			&& in_array( $alias, $status_aliases )
+			&& isset( $status_aliases[ $current_slug ] )
+			&& $alias !== $status_aliases[ $current_slug ] )
+		{
 			array_push( $errors, sprintf( __( 'The alias <em>“%1$s”</em> is already assigned to another status.', 'trackmage' ), $aliases[$alias] ) );
 		} else {
 			$status_aliases[ $slug ] = $alias;
@@ -175,6 +188,62 @@ class Admin {
 
 		update_option( 'trackmage_custom_order_statuses', $custom_statuses );
 		update_option( 'trackmage_modified_order_statuses', $modified_statuses );
+		update_option( 'trackmage_order_status_aliases', $status_aliases );
+
+		wp_send_json_success( [
+			'status' => 'success',
+			'result' => [
+				'name'  => $name,
+				'slug'  => $slug,
+				'alias' => $alias,
+			]
+		] );
+	}
+
+	public function status_manager_add() {
+		$name  = $_POST['name'];
+		$slug  = $_POST['slug'];
+		$alias = $_POST['alias'];
+
+		$custom_statuses = get_option( 'trackmage_custom_order_statuses', [] );
+		$status_aliases = get_option( 'trackmage_order_status_aliases', [] );
+		$aliases = Utils::get_aliases();
+		$get_statuses = Utils::get_order_statuses();
+		$get_statuses_slugs = array_map( function( $s ) {
+			return $s['slug'];
+		}, $get_statuses );
+		
+		// Errors array.
+		$errors = [];
+
+		if ( empty ( $name ) ) {
+			array_push( $errors, __( 'Status name cannot be empty.', 'trackmage' ) );
+		}
+
+		if ( empty ( $slug ) ) {
+			array_push( $errors, __( 'Status slug cannot be empty.', 'trackmage' ) );
+		}
+
+		if ( in_array( $slug, $get_statuses_slugs ) ) {
+			array_push( $errors, sprintf( __( 'The slug <em>“%1$s”</em> is already used by another status.', 'trackmage' ), $slug ) );
+		}
+
+		if ( ! empty( $alias ) && in_array( $alias, $status_aliases ) ) {
+			array_push( $errors, sprintf( __( 'The alias <em>“%1$s”</em> is already assigned to another status.', 'trackmage' ), $aliases[$alias] ) );
+		} else {
+			$status_aliases[ $slug ] = $alias;
+		}
+
+		if ( ! empty( $errors ) ) {
+			wp_send_json_error( [
+				'status' => 'error',
+				'errors' => $errors,
+			] );
+		}
+
+		$custom_statuses[ $slug ] = __( $name, 'trackmage' );
+
+		update_option( 'trackmage_custom_order_statuses', $custom_statuses );
 		update_option( 'trackmage_order_status_aliases', $status_aliases );
 
 		wp_send_json_success( [

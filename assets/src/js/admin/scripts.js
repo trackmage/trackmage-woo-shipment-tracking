@@ -135,7 +135,7 @@
      * Select2.
      */
     if (typeof selectWoo === 'function') {
-      $('select[name="trackmage_provider"]').selectWoo();
+      $('[name="trackmage_provider"]').selectWoo();
     }
 
     /**
@@ -251,13 +251,13 @@
       $(editRow).insertAfter(row);
 
       // Current values.
-      $(editRow).find('input[name="status_name"]').val(name);
-      $(editRow).find('input[name="status_slug"]').val(slug);
-      $(editRow).find('select[name="status_alias"]').val(alias);
+      $(editRow).find('[name="status_name"]').val(name);
+      $(editRow).find('[name="status_slug"]').val(slug);
+      $(editRow).find('[name="status_alias"]').val(alias);
 
       // Disable slug field if not a custom status.
       if (isCustom != 1) {
-        $(editRow).find('input[name="status_slug"]').prop('disabled', true);
+        $(editRow).find('[name="status_slug"]').prop('disabled', true);
       }
 
       // On cancel.
@@ -334,6 +334,82 @@
 
         $(row).find('[data-update-status-alias]').html(params.aliases[alias] ? params.aliases[alias] : '');
         $(row).data('status-alias', alias);
+      }
+    });
+
+    /**
+     * Add status.
+     */
+    $('#statusManager .add-status #addStatus').on('click', function (e) {
+      let add = $(this);
+
+      let name = $('#statusManager .add-status [name="status_name"]');
+      let slug = $('#statusManager .add-status [name="status_slug"]');
+      let alias = $('#statusManager .add-status [name="status_alias"]');
+
+      // Request data.
+      let data = {
+        'action': 'trackmage_status_manager_add',
+        'name': $(name).val(),
+        'slug': $(slug).val(),
+        'alias': $(alias).val(),
+      };
+
+      // Response message.
+      let message = '';
+
+      $.ajax({
+        url: params.ajaxUrl,
+        method: 'post',
+        data: data,
+        beforeSend: function () {
+          trackmageToggleSpinner(add, 'activate');
+          trackmageToggleFormElement(add, 'disable');
+        },
+        success: function (response) {
+          trackmageToggleSpinner(add, 'deactivate');
+          trackmageToggleFormElement(add, 'enable');
+
+          if (response.data.status === 'success') {
+            addRow(response.data.result.name, response.data.result.slug, response.data.result.alias);
+            message = params.messages.successAddStatus;
+          } else if (response.data.errors) {
+            message = response.data.errors.join(' ');
+          } else {
+            message = params.messages.unknownError;
+          }
+
+          // Response notification.
+          trackmageAlert(params.messages.addStatus, message, response.data.status, true);
+        },
+        error: function () {
+          trackmageToggleSpinner(add, 'deactivate');
+          trackmageToggleFormElement(add, 'enable');
+
+          message = params.messages.unknownError;
+
+          // Response notification.
+          trackmageAlert(params.messages.addStatus, message, response.data.status, true);
+        }
+      });
+
+      function addRow(name, slug, alias) {
+        let statusManagerBody = $('#statusManager tbody');
+        let row = `
+          <tr id="status-${slug} data-status-name="${name}" data-status-slug=${slug} data-status-alias="${alias}" data-status-is-cusotm="1">
+            <td>
+              <span data-update-status-name>${name}</span>
+              <div class="row-actions">
+                <span class="inline"><button type="button" class="button-link edit-status">${params.messages.edit}</button> | </span>
+                <span class="inline delete"><button type="button" class="button-link delete-status">${params.messages.delete}</button></span>
+              </div>
+            </td>
+            <td><span data-update-status-slug>${slug}</span></td>
+            <td colspan="2"><span data-update-status-alias>${alias}</span></td>
+          </tr>
+        `;
+
+        $(row).appendTo(statusManagerBody).effect('highlight', {color: '#c3f3d7'}, 500);;
       }
     });
 
