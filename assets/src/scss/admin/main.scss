@@ -332,9 +332,11 @@
         display: inline-block;
       }
 
-      .add-status input[type="text"] {
+      .add-status input[type="text"],
+      .add-status select {
         width: 100%;
         font-size: 15px;
+        min-height: 28px;
         padding: 3px 5px;
         margin: 1px;
       }

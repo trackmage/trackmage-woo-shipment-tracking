@@ -137,14 +137,16 @@ class Plugin {
 				'images'      => [
 					'iconTrackMage' => TRACKMAGE_URL . 'assets/dist/images/trackmage-icon.svg',
 				],
+				'aliases'     => Utils::get_aliases(),
 				'messages'    => [
 					'testCredentials'     => __( 'Test Credentials', 'trackmage' ),
 					'successValidKeys'    => __( 'Valid credentials. Click on <em>“Save Changes”</em> for the changes to take effect.', 'trackmage' ),
 					'unknownError'        => __( 'Unknown error occured.', 'trackmage' ),
+					'noSelect'            => __( '— Select —', 'trackmage' ),
 					'edit'                => __( 'Edit', 'trackmage' ),
 					'name'                => __( 'Name', 'trackmage' ),
 					'slug'                => __( 'Slug', 'trackmage'),
-					'aliases'             => __( 'Aliases', 'trackmage'),
+					'alias'               => __( 'Alias', 'trackmage'),
 					'cancel'              => __( 'Cancel', 'trackmage' ),
 					'update'              => __( 'Update', 'trackmage'),
 					'updateStatus'        => __( 'Update Status', 'trackmage' ),

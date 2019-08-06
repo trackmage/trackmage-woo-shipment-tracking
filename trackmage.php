@@ -55,7 +55,7 @@ if ( version_compare( PHP_VERSION, '5.6', '<' ) ) {
 	function trackmage_deactivation_notice() {
 		$notice = sprintf(
 			// Translators: 1: Required PHP version, 2: Current PHP version.
-			'<strong>TrackMage for WordPress</strong> requires PHP %1$s to run. This site uses %2$s, so the plugin has been <strong>deactivated</strong>.',
+			__( '<strong>TrackMage for WordPress</strong> requires PHP %1$s to run. This site uses %2$s, so the plugin has been <strong>deactivated</strong>.', 'trackmage' ),
 			'5.6',
 			PHP_VERSION
 		);

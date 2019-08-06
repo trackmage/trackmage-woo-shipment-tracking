@@ -202,7 +202,7 @@
       let name = $(row).data('status-name');
       let currentSlug = $(row).data('status-slug');
       let slug = $(row).data('status-slug');
-      let aliases = $(row).data('status-aliases');
+      let alias = $(row).data('status-alias');
 
       // Hide the selected row,
       // toggle hidden rows
@@ -229,10 +229,11 @@
                   <span class="input-text-wrap"><input type="text" name="status_slug" value="" /></span>
                 </label>
                 <label>
-                  <span class="title">${params.messages.aliases}</span>
-                  <span class="input-text-wrap">
-                  <select name="status_aliases" multiple></select>
-                  </span>
+                  <span class="title">${params.messages.alias}</span>
+                  <select name="status_alias">
+                    <option value="">${params.messages.noSelect}</option>
+                    ${Object.keys(params.aliases).map(key => `<option value="${key}">${params.aliases[key]}</option>`).join('')}
+                  </select>
                 </label>
               </div>
             </fieldset>
@@ -249,29 +250,15 @@
 
       $(editRow).insertAfter(row);
 
-      // Name.
+      // Current values.
       $(editRow).find('input[name="status_name"]').val(name);
-
-      // Slug.
       $(editRow).find('input[name="status_slug"]').val(slug);
+      $(editRow).find('select[name="status_alias"]').val(alias);
+
+      // Disable slug field if not a custom status.
       if (isCustom != 1) {
         $(editRow).find('input[name="status_slug"]').prop('disabled', true);
       }
-
-      // Aliases.
-      aliases = aliases === '' ? [] : aliases.split(',');
-      let allAliases = ['Delivered', 'Shipped'];
-      allAliases = $.merge(allAliases, aliases);
-      allAliases = allAliases.filter(function (elem, index, self) {
-        return index === self.indexOf(elem);
-      });
-      $(editRow).find('select[name="status_aliases"]').selectWoo({
-          width: '100%',
-          tags: true,
-          data: allAliases,
-        })
-        .val(aliases)
-        .trigger('change');
 
       // On cancel.
       $(editRow).find('button.cancel').on('click', function () {
@@ -284,7 +271,7 @@
         let save = $(this);
         let name = $(editRow).find('[name="status_name"]');
         let slug = $(editRow).find('[name="status_slug"]');
-        let aliases = $(editRow).find('[name="status_aliases"]');
+        let alias = $(editRow).find('[name="status_alias"]');
 
         // Request data.
         let data = {
@@ -292,7 +279,7 @@
           'name': $(name).val(),
           'currentSlug': currentSlug,
           'slug': $(slug).val(),
-          'aliases': $(aliases).val(),
+          'alias': $(alias).val(),
           'isCustom': isCustom,
         };
 
@@ -312,7 +299,7 @@
             trackmageToggleFormElement(save, 'enable');
 
             if (response.data.status === 'success') {
-              updateRow(response.data.result.name, response.data.result.slug, response.data.result.aliases);
+              updateRow(response.data.result.name, response.data.result.slug, response.data.result.alias);
               message = params.messages.successUpdateStatus;
               $(editRow).remove();
               $(row).removeClass('hidden').effect('highlight', {color: '#c3f3d7'}, 500);
@@ -338,25 +325,15 @@
         });
       });
 
-      function updateRow(name, slug, aliases) {
+      function updateRow(name, slug, alias) {
         $(row).find('[data-update-status-name]').html(name);
         $(row).data('status-name', name);
 
         $(row).find('[data-update-status-slug]').html(slug);
         $(row).data('status-slug', slug);
 
-
-        if (aliases) {
-          $(row).data('status-aliases', aliases);
-          aliases = aliases.split(',');
-          aliases = aliases.map(function(alias) {
-            return `<span class="alias">${alias}</span>`;
-          });
-          $(row).find('[data-update-status-aliases]').html(aliases);
-        } else {
-          $(row).data('status-aliases', '');
-          $(row).find('[data-update-status-aliases]').html('');
-        }
+        $(row).find('[data-update-status-alias]').html(params.aliases[alias] ? params.aliases[alias] : '');
+        $(row).data('status-alias', alias);
       }
     });
 

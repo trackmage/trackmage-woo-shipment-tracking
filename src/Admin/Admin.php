@@ -10,6 +10,7 @@
 
 namespace TrackMage\WordPress\Admin;
 
+use TrackMage\WordPress\Plugin as Plugin;
 use TrackMage\WordPress\Utils as Utils;
 use TrackMage\Client\Swagger\Model\WorkflowSetWorkflowSetIntegration as WorkflowSetWorkflowSetIntegration;
 use TrackMage\Client\Swagger\ApiException as ApiException;
@@ -126,12 +127,13 @@ class Admin {
 		$name = $_POST['name'];
 		$current_slug = $_POST['currentSlug'];
 		$slug = $_POST['slug'];
-		$aliases = $_POST['aliases'];
+		$alias = $_POST['alias'];
 		$is_custom = '1' === $_POST['isCustom'] ? true : false;
 
 		$custom_statuses = get_option( 'trackmage_custom_order_statuses', [] );
 		$modified_statuses = get_option( 'trackmage_modified_order_statuses', [] );
 		$status_aliases = get_option( 'trackmage_order_status_aliases', [] );
+		$aliases = Utils::get_aliases();
 
 		// Errors array.
 		$errors = [];
@@ -158,7 +160,11 @@ class Admin {
 			$modified_statuses[ $slug ] = __( $name, 'trackmage' );
 		}
 
-		$status_aliases[ $slug ] = $aliases;
+		if ( ! empty( $alias ) && in_array( $alias, $status_aliases ) ) {
+			array_push( $errors, sprintf( __( 'The alias <em>“%1$s”</em> is already assigned to another status.', 'trackmage' ), $aliases[$alias] ) );
+		} else {
+			$status_aliases[ $slug ] = $alias;
+		}
 
 		if ( ! empty( $errors ) ) {
 			wp_send_json_error( [
@@ -174,9 +180,9 @@ class Admin {
 		wp_send_json_success( [
 			'status' => 'success',
 			'result' => [
-				'name' => $name,
-				'slug' => $slug,
-				'aliases' => implode( ',', $aliases ),
+				'name'  => $name,
+				'slug'  => $slug,
+				'alias' => $alias,
 			]
 		] );
 	}

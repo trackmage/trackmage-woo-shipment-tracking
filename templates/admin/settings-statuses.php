@@ -15,6 +15,9 @@ use TrackMage\WordPress\Utils as Utils;
 
 // Get the registered statuses.
 $statuses = Utils::get_order_statuses();
+
+// Get the aliases.
+$aliases = Utils::get_aliases();
 ?>
 
 <div class="intro"><?php _e( 'You can edit and add new order statuses.', 'trackmage' ); ?></div>
@@ -24,7 +27,7 @@ $statuses = Utils::get_order_statuses();
 		<tr>
 			<th><?php _e( 'Name', 'trackmage' ); ?></th>
 			<th><?php _e( 'Slug', 'trackmage' ); ?></th>
-			<th colspan="2"><?php _e( 'Aliases in TrackMage', 'trackmage' ); ?></th>
+			<th colspan="2"><?php _e( 'Alias in TrackMage', 'trackmage' ); ?></th>
 		</tr>
 	</thead>
 	<tbody id="the-list">
@@ -32,7 +35,7 @@ $statuses = Utils::get_order_statuses();
 		<tr id="status-<?php echo $status['slug']; ?>"
 			data-status-name="<?php echo $status['name']; ?>"
 			data-status-slug="<?php echo $status['slug']; ?>"
-			data-status-aliases="<?php echo $status['aliases']; ?>"
+			data-status-alias="<?php echo $status['alias']; ?>"
 			data-status-is-custom="<?php echo $status['is_custom']; ?>">
 			<td>
 				<span data-update-status-name><?php echo $status['name']; ?></span>
@@ -42,13 +45,7 @@ $statuses = Utils::get_order_statuses();
 				</div>
 			</td>
 			<td><span data-update-status-slug><?php echo $status['slug']; ?></span></td>
-			<td colspan="2">
-				<div data-update-status-aliases>
-					<?php if( preg_replace('/\s+/', '', $status['aliases'] ) ) : ?>
-						<?php foreach( explode( ',', $status['aliases'] ) as $alias ) : ?><span class="alias"><?php echo $alias; ?></span><?php endforeach; ?>
-					<?php endif; ?>
-				</div>
-			</td>
+			<td colspan="2"><span data-update-status-alias><?php echo isset( $aliases[ $status['alias'] ] ) ? $aliases[ $status['alias'] ] : ''; ?></span></td>
 		</tr>
 		<?php endforeach; ?>
 	</tbody>
@@ -56,7 +53,14 @@ $statuses = Utils::get_order_statuses();
 		<tr class="add-status">
 			<td><input type="text" name="status_name" placeholder="<?php _e( 'Name', 'trackmage' ); ?>" /></td>
 			<td><input type="text" name="status_slug" placeholder="<?php _e( 'Slug', 'trackmage' ); ?>" /></td>
-			<td><input type="text" name="status_aliases" placeholder="<?php _e( 'Aliases', 'trackmage' ); ?>" /></td>
+			<td>
+				<select name="status_alias">
+					<option value=""><?php _e( '— Select —', 'trackmage' ); ?></option>
+					<?php foreach ( $aliases as $id => $name ) : ?>
+						<option value="<?php echo $id; ?>"><?php echo $name; ?></option>
+					<?php endforeach; ?>
+				</select>
+			</td>
 			<td><button type="submit" id="addStatus" class="button button-primary add-status"><?php _e( 'Add New Status', 'trackmage' ); ?></button></td>
 		</tr>
 	</tfoot>

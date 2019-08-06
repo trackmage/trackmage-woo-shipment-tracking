@@ -100,6 +100,19 @@ class Utils {
 		return $carriers;
 	}
 
+	/**
+	 * Returns the available aliases.
+	 *
+	 * @since 0.1.0
+	 * @return array List of aliases.
+	 */
+	public static function get_aliases() {
+		return [
+			'delivered' => __( 'Delivered', 'trackmage' ),
+			'shipped'   => __( 'Shipped', 'trackamge' ),
+		];
+	}
+
 	public static function get_order_statuses() {
 		$statuses = [];
 		$get_statuses = wc_get_order_statuses();
@@ -113,7 +126,7 @@ class Utils {
 					'name' => $name,
 					'slug' => $slug,
 					'is_custom' => array_key_exists( $slug, $custom_statuses ),
-					'aliases' => array_key_exists( $slug, $aliases ) && is_array( $aliases[ $slug ] ) ? implode( ',', $aliases[ $slug ] ) : '',
+					'alias' => array_key_exists( $slug, $aliases ) ? $aliases[ $slug ] : '',
 				]
 			);
 		}
