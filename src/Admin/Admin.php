@@ -33,6 +33,7 @@ class Admin {
 		add_action( 'wp_ajax_trackmage_test_credentials', [ $this, 'test_credentials' ] );
 		add_action( 'wp_ajax_trackmage_status_manager_save', [ $this, 'status_manager_save' ] );
 		add_action( 'wp_ajax_trackmage_status_manager_add', [ $this, 'status_manager_add' ] );
+		add_action( 'wp_ajax_trackmage_status_manager_delete', [ $this, 'status_manager_delete' ] );
 		add_filter( 'pre_update_option_trackmage_workspace', [ $this, 'select_workspace' ], 10, 3 );
 	}
 
@@ -252,6 +253,44 @@ class Admin {
 				'name'  => $name,
 				'slug'  => $slug,
 				'alias' => $alias,
+			]
+		] );
+	}
+
+	public function status_manager_delete() {
+		$slug  = $_POST['slug'];
+
+		$custom_statuses = get_option( 'trackmage_custom_order_statuses', [] );
+		$status_aliases = get_option( 'trackmage_order_status_aliases', [] );
+		
+		// Errors array.
+		$errors = [];
+
+		if ( empty ( $slug ) ) {
+			array_push( $errors, __( 'Could not delete the selected status.', 'trackmage' ) );
+		}
+
+		if ( ! array_key_exists( $slug, $custom_statuses ) ) {
+			array_push( $errors, __( 'Core statuses and statuses created by other plugins and themes cannot be deleted.', 'trackmage' ) );
+		}
+
+		if ( ! empty( $errors ) ) {
+			wp_send_json_error( [
+				'status' => 'error',
+				'errors' => $errors,
+			] );
+		}
+
+		unset( $custom_statuses[ $slug ] );
+		unset( $status_aliases[ $slug ] );
+
+		update_option( 'trackmage_custom_order_statuses', $custom_statuses );
+		update_option( 'trackmage_order_status_aliases', $status_aliases );
+
+		wp_send_json_success( [
+			'status' => 'success',
+			'result' => [
+				'name'  => $name,
 			]
 		] );
 	}

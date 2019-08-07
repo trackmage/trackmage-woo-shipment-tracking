@@ -154,6 +154,8 @@ class Plugin {
 					'successUpdateStatus' => __( 'Status has been updated successfully.', 'trackmage' ),
 					'addStatus'           => __( 'Add Status', 'trackmage' ),
 					'successAddStatus'    => __( 'Status has been added successfully.', 'trackmage' ),
+					'deleteStatus'        => __( 'Delete Status', 'trackmage' ),
+					'successDeleteStatus' => __( 'Status has been deleted successfully.', 'trackmage' ),
 				]
 			] );
 		}

@@ -409,7 +409,58 @@
           </tr>
         `;
 
-        $(row).appendTo(statusManagerBody).effect('highlight', {color: '#c3f3d7'}, 500);;
+        $(row).appendTo(statusManagerBody).effect('highlight', {color: '#c3f3d7'}, 500);
+      }
+    });
+
+    /**
+     * Delete status.
+     */
+    $('#statusManager .row-actions .delete-status').on('click', function (e) {
+      let row = $(this).closest('tr');
+      let slug = $(row).data('status-slug');
+
+      // Request data.
+      let data = {
+        'action': 'trackmage_status_manager_delete',
+        'slug': slug,
+      };
+
+      // Response message.
+      let message = '';
+
+      $.ajax({
+        url: params.ajaxUrl,
+        method: 'post',
+        data: data,
+        beforeSend: function () {
+        },
+        success: function (response) {
+          if (response.data.status === 'success') {
+            deleteRow(response.data.result.slug);
+            message = params.messages.successDeleteStatus;
+          } else if (response.data.errors) {
+            message = response.data.errors.join(' ');
+          } else {
+            message = params.messages.unknownError;
+          }
+
+          // Response notification.
+          trackmageAlert(params.messages.deleteStatus, message, response.data.status, true);
+        },
+        error: function () {
+          message = params.messages.unknownError;
+
+          // Response notification.
+          trackmageAlert(params.messages.deleteStatus, message, response.data.status, true);
+        }
+      });
+
+      function deleteRow(slug) {
+        $(row).effect('highlight', {color: '#ffe0e3'}, 500);
+        setTimeout(() => {
+          $(row).remove();
+        }, 500);
       }
     });
 
