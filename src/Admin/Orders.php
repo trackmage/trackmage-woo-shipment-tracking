@@ -51,11 +51,11 @@ class Orders {
 	 * @param [int] $post_id Post ID.
 	 */
 	public static function save_meta_box( $post_id ) {
-		if ( array_key_exists( 'trackmage_provider', $_POST ) ) {
+		if ( array_key_exists( 'trackmage_carrier', $_POST ) ) {
 			update_post_meta(
 				$post_id,
-				'trackmage_provider',
-				$_POST['trackmage_provider']
+				'trackmage_carrier',
+				$_POST['trackmage_carrier']
 			);
 		}
 
@@ -77,22 +77,22 @@ class Orders {
 	 * @param [object] $post Post object.
 	 */
 	public function meta_box_html( $post ) {
-		$provider = get_post_meta( $post->ID, 'trackmage_provider', true );
+		$carrier = get_post_meta( $post->ID, 'trackmage_carrier', true );
 		$tracking_number = get_post_meta( $post->ID, 'trackmage_tracking_number', true );
 		$status = get_post_meta( $post->ID, 'trackmage_status', true );
-		$providers = Utils::get_shipment_providers();
+		$carriers = Utils::get_shipment_carriers();
 		?>
 		<p class="post-attributes-label-wrapper">
-			<label class="post-attributes-label" for="trackmage_provider"><?php _e( 'Provider', 'trackmage' ); ?></label>
+			<label class="post-attributes-label" for="trackmage_carrier"><?php _e( 'Carrier', 'trackmage' ); ?></label>
 		</p>
-		<select name="trackmage_provider" id="trackmage_provider">
+		<select name="trackmage_carrier" id="trackmage_carrier">
 			<option value=""><?php _e( '— Select —', 'trackmage' ); ?></option>
-			<?php foreach ( $providers as $p ) : ?>
-			<option value="<?php echo $p['code']; ?>" <?php selected( $p['code'], $provider ); ?>><?php echo $p['name']; ?></option>
+			<?php foreach ( $carriers as $p ) : ?>
+			<option value="<?php echo $p['code']; ?>" <?php selected( $p['code'], $carrier ); ?>><?php echo $p['name']; ?></option>
 			<?php endforeach; ?>
 		</select>
 		<p class="post-attributes-label-wrapper">
-			<label class="post-attributes-label" for="trackmage_provider"><?php _e( 'Tracking Number', 'trackmage' ); ?></label>
+			<label class="post-attributes-label" for="trackmage_carrier"><?php _e( 'Tracking Number', 'trackmage' ); ?></label>
 		</p>
 		<input type="text" name="trackmage_tracking_number" id="trackmage_tracking_number" value="<?php echo esc_attr( $tracking_number ); ?>" />
 		<p class="post-attributes-label-wrapper">

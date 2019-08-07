@@ -75,12 +75,12 @@ class Utils {
 	}
 
 	/**
-	 * Returns shipment providers.
+	 * Returns carriers.
 	 *
 	 * @since 0.1.0
-	 * @return array Shipment providers.
+	 * @return array List of carriers.
 	 */
-	public static function get_shipment_providers() {
+	public static function get_shipment_carriers() {
 		$carriers = [];
 
 		try {
