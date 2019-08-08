@@ -5,8 +5,27 @@ vendor
 
 trackmage.zip
 languages/trackmage.pot
-package-lock.json
 composer.lock
 npm-debug.log
 .vscode
 .DS_Store
+.idea
+
+# Local test folders.
+/wordpress
+tests/_output/*
+!tests/_output/.gitkeep
+tests/_data/*
+!tests/_data/.gitkeep
+
+# Local test configuration files.
+codeception.yml
+.env.testing.local
+
+# Patchwork cache folder.
+cache/*
+tests/_support/_generated
+
+# Some local vim files
+tags
+*.swp

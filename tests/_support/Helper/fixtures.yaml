@@ -1,0 +1,46 @@
+parameters:
+    fake_trackings_nb: 1
+    fake_workflow_nb: 1
+
+App\Entity\User:
+    userOwner:
+        email: '{flavor}@wp-plugin.tld'
+        plainPassword: '123454'
+
+App\Entity\OAuth\Client:
+    oauthClientOwner:
+        name: 'wordpress-plugin-{flavor}'
+        user: '@userOwner'
+        randomId: 'wordpress-plugin-{flavor}'
+        secret: 'wordpress-plugin'
+
+App\Entity\TeamMember:
+    tmPrimaryOwner:
+        team: '@teamOfOwnerUser'
+        member: '@userOwner'
+        teamAdmin: true
+        teamOwner: true
+
+App\Entity\Team:
+    teamOfOwnerUser:
+        name: 'primary_team_{flavor}'
+
+App\Entity\Workspace:
+    wsPrimaryOfPrimaryTeam:
+        team: '@teamOfOwnerUser'
+        title: 'fake_primary_{flavor}_ws1'
+        defaultTrackingPage: '@tpPrimaryOfPrimaryTeam'
+    wsSecondaryOfPrimaryTeam:
+        team: '@teamOfOwnerUser'
+        title: 'fake_secondary_{flavor}_ws'
+        defaultTrackingPage: '@tpSecondaryOfPrimaryTeam'
+
+App\Entity\TrackingPage:
+    tpPrimaryOfPrimaryTeam:
+        workspace: '@wsPrimaryOfPrimaryTeam'
+        title: 'fake_primary_{flavor}_tp1'
+        subdomain: 'fake-primary-{flavor}-tp1'
+    tpSecondaryOfPrimaryTeam:
+        workspace: '@wsSecondaryOfPrimaryTeam'
+        title: 'fake_secondary_{flavor}_tp'
+        subdomain: 'fake-secondary-{flavor}-tp'

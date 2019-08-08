@@ -1,0 +1,10 @@
+assets/***
+config/***
+languages/***
+src/***
+templates/***
+init.php
+trackmage.php
+composer.json
+package.json
+package-lock.json
