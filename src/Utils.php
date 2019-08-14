@@ -8,8 +8,8 @@
 
 namespace TrackMage\WordPress;
 
-use TrackMage\Client\TrackMageClient as TrackMageClient;
-use TrackMage\Client\Swagger\ApiException as ApiException;
+use TrackMage\Client\TrackMageClient;
+use TrackMage\Client\Swagger\ApiException;
 
 /**
  * Static functions that can be called without instantiation.
@@ -81,20 +81,25 @@ class Utils {
 	 * @return array List of carriers.
 	 */
 	public static function get_shipment_carriers() {
-		$carriers = [];
+		$carriers = get_transient( 'trackmage_carriers' );
 
-		try {
-			$client = Plugin::get_client();
-			$result = $client->getCarrierApi()->getCarrierCollection();
+		if ( false === $carriers ) {
+			try {
+				$client = Plugin::get_client();
+				$result = $client->getCarrierApi()->getCarrierCollection();
 
-			foreach ( $result as $carrier ) {
-				array_push( $carriers, [
-					'code' => $carrier->getCode(),
-					'name' => $carrier->getName(),
-				] );
+				$carriers = [];
+				foreach ( $result as $carrier ) {
+					array_push( $carriers, [
+						'code' => $carrier->getCode(),
+						'name' => $carrier->getName(),
+					] );
+				}
+
+				set_transient( 'trackmage_carriers', $carriers, 0 );
+			} catch( ApiException $e ) {
+				$carriers = [];
 			}
-		} catch( ApiException $e ) {
-			// Do nothing. We will return an empty array.
 		}
 
 		return $carriers;
@@ -121,17 +126,27 @@ class Utils {
 		$aliases = get_option( 'trackmage_order_status_aliases', [] );
 
 		foreach ( $get_statuses as $slug => $name ) {
-			array_push( $statuses,
-				[
-					'name' => $name,
-					'slug' => $slug,
-					'is_custom' => array_key_exists( $slug, $custom_statuses ),
-					'alias' => array_key_exists( $slug, $aliases ) ? $aliases[ $slug ] : '',
-				]
-			);
+			$statuses[ $slug ] = [
+				'name' => $name,
+				'is_custom' => array_key_exists( $slug, $custom_statuses ),
+				'alias' => array_key_exists( $slug, $aliases ) ? $aliases[ $slug ] : '',
+			];
 		}
 
 		return $statuses;
+	}
+
+	/**
+	 * Get order status details by slug.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param $slug Status slug.
+	 * @return array|null Status details or null if not found.
+	 */
+	public static function get_order_status_by_slug( $slug ) {
+		$statuses = self::get_order_statuses();
+		return isset( $statuses[ $slug ] ) ? $statuses[ $slug ] : null;
 	}
 
 	/**
