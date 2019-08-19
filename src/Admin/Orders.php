@@ -308,7 +308,7 @@ class Orders {
 			'sync_statuses' => $sync_statuses
 		] ) );
 
-		if ( in_array( 'wc-' . $status, $sync_statuses ) ) {
+		if (in_array('wc-' . $status, $sync_statuses, true)) {
 			$this->_sync( $order_id );
 		}
 	}
@@ -353,7 +353,7 @@ class Orders {
 					'json' => [
 						'workspace' => '/workspaces/' . $workspace,
 						'externalSyncId' => (string) $order_id,
-						'orderType' => 'customer',
+                        //TODO: pass order status
 					]
 				]
 			);
@@ -367,6 +367,7 @@ class Orders {
 				 * Create order items on TrackMage.
 				 */
 				foreach( $order->get_items() as $id => $item ) {
+				    /** @var \WC_Product_Simple $product */
 					$product = $item->get_product();
 
 					$response = $client->getGuzzleClient()->post(
@@ -375,9 +376,8 @@ class Orders {
 								'order' => '/orders/' . $trackmage_order_id,
 								'productName' => $item['name'],
 								'qty' => $item['quantity'],
-								'price' => (string) $product->get_id(),
-								'rowTotal' => (string) $item['total'],
-								'externalSyncId' => (string) $order_id,
+								'price' => (string) $product->get_price(),  //TODO: the price is empty for some reason
+                                'externalSyncId' => (string) $item->get_id(),
 							]
 						]
 					);
@@ -387,7 +387,6 @@ class Orders {
 						$trackmage_order_item_id = $result['id'];
 						wc_add_order_item_meta( $id, '_trackmage_order_item_id', $trackmage_order_item_id, true );
 					}
-				
 				}
 			}
 		} catch ( ApiException $e ) {

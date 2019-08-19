@@ -19,7 +19,8 @@
 		"sllh/composer-versions-check": "^2.0",
 		"squizlabs/php_codesniffer": "^3.4.2",
 		"wp-coding-standards/wpcs": "^2.1.1",
-		"lucatume/wp-browser": "^2.2"
+		"lucatume/wp-browser": "^2.2",
+		"dms/phpunit-arraysubset-asserts": "^0.1.0"
 	},
 	"config": {
 		"sort-packages": true

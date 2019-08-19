@@ -17,6 +17,9 @@ modules:
             tablePrefix: "%TEST_TABLE_PREFIX%"
             domain: "%TEST_SITE_WP_DOMAIN%"
             adminEmail: "%TEST_SITE_ADMIN_EMAIL%"
-            title: "Test"        
-            plugins: ['trackmage-wordpress-plugin/trackmage.php']
-            activatePlugins: ['trackmage-wordpress-plugin/trackmage.php']
+            title: "Test"
+            isolatedInstall: false
+#            plugins: [] #All plugins are already installed by Makefile
+            activatePlugins:
+                - woocommerce/woocommerce.php
+                - trackmage-wordpress-plugin/trackmage.php

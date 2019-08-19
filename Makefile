@@ -115,6 +115,8 @@ ci_install:
 		/project/tests/_data/dump.sql
 
 ci_before_script:
+	# Sync the plugin source code
+	rsync -a --include-from=.rsync --exclude="*" . ${TRAVIS_WP_FOLDER}/wp-content/plugins/${TEST_PLUGIN_NAME}
 	# Build Codeception modules.
 	vendor/bin/codecept build
 
