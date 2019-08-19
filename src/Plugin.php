@@ -94,89 +94,21 @@ class Plugin {
 	public function run() {
 		// Hooks.
 		add_action( 'plugins_loaded', [ $this, 'load_textdomain' ] );
-		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
-		add_action( 'wp_enqueue_scripts', [ $this, 'styles' ] );
-		add_action( 'admin_enqueue_scripts', [ $this, 'scripts' ] );
-		add_action( 'admin_enqueue_scripts', [ $this, 'styles' ] );
 
 		// Initialize classes.
 		new Endpoint;
 		new Templates;
 		new Admin;
 		new Orders;
-		Ajax::init();
-	}
 
-	/**
-	 * Loads plugin scripts.
-	 *
-	 * @since 1.0.0
-	 */
-	public function scripts() {
-		// Back-end scripts.
-		if ( 'admin_enqueue_scripts' === current_action() ) {
-			// Scripts from WooCommerce core.
-			wp_enqueue_script( 'selectWoo' );
-			wp_enqueue_script( 'wc-enhanced-select' );
+		$init_classes = [
+			'Ajax',
+			'Assets',
+			'Admin\Assets',
+		];
 
-			wp_enqueue_script( 'jquery-effects-highlight' );
-			wp_enqueue_script( 'trackmage-admin-scripts', TRACKMAGE_URL . 'assets/dist/js/admin/scripts.min.js', [ 'jquery', 'jquery-effects-highlight', 'wc-enhanced-select' ], null, true );
-			wp_localize_script( 'trackmage-admin-scripts', 'trackmageAdminParams', [
-				'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
-				'add_tracking_number_nonce' => wp_create_nonce( 'add-tracking-number' ),
-				'images'      => [
-					'iconTrackMage' => TRACKMAGE_URL . 'assets/dist/images/trackmage-icon.svg',
-				],
-				'aliases'     => Utils::get_aliases(),
-				'messages'    => [
-					'testCredentials'          => __( 'Test Credentials', 'trackmage' ),
-					'successValidKeys'         => __( 'Valid credentials. Click on <em>“Save Changes”</em> for the changes to take effect.', 'trackmage' ),
-					'unknownError'             => __( 'Unknown error occured.', 'trackmage' ),
-					'noSelect'                 => __( '— Select —', 'trackmage' ),
-					'edit'                     => __( 'Edit', 'trackmage' ),
-					'delete'                   => __( 'Delete', 'trackmage' ),
-					'name'                     => __( 'Name', 'trackmage' ),
-					'slug'                     => __( 'Slug', 'trackmage'),
-					'alias'                    => __( 'Alias', 'trackmage'),
-					'cancel'                   => __( 'Cancel', 'trackmage' ),
-					'update'                   => __( 'Update', 'trackmage'),
-					'updateStatus'             => __( 'Update Status', 'trackmage' ),
-					'successUpdateStatus'      => __( 'Status has been updated successfully.', 'trackmage' ),
-					'addStatus'                => __( 'Add Status', 'trackmage' ),
-					'successAddStatus'         => __( 'Status has been added successfully.', 'trackmage' ),
-					'deleteStatus'             => __( 'Delete Status', 'trackmage' ),
-					'successDeleteStatus'      => __( 'Status has been deleted successfully.', 'trackmage' ),
-					'addTrackingNumber'        => __( 'Add Tracking Number', 'trackmage' ),
-					'successAddTrackingNumber' => __( 'Tracking number added successfully.', 'trackmage' ),
-				]
-			] );
-		}
-		// Front-end scripts.
-		else {
-			wp_enqueue_script( 'trackmage-scripts', TRACKMAGE_URL . 'assets/dist/js/scripts.min.js', [ 'jquery' ], null, false );
-			wp_localize_script( 'trackmage-scripts', 'trackmageParams', [
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-			] );
-		}
-	}
-
-	/**
-	 * Loads plugin styles.
-	 *
-	 * @since 1.0.0
-	 */
-	public function styles() {
-		// Back-end styles.
-		if ( 'admin_enqueue_scripts' === current_action() ) {
-			// Styles from WooCommerce core.
-			wp_enqueue_style( 'select2', WC()->plugin_url() . '/assets/css/select2.css', array(), WC_VERSION );
-			wp_enqueue_style( 'woocommerce_admin_styles' );
-
-			wp_enqueue_style( 'trackmage-admin-styles', TRACKMAGE_URL . 'assets/dist/css/admin/main.min.css', [], false, 'all' );
-		}
-		// Front-end styles.
-		else {
-			wp_enqueue_style( 'trackmage-styles', TRACKMAGE_URL . 'assets/dist/css/main.min.css', [], false, 'all' );
+		foreach ( $init_classes as $class ) {
+			call_user_func( [ __NAMESPACE__ . "\\{$class}", 'init' ] );
 		}
 	}
 

@@ -17,6 +17,11 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+if ( ! defined( 'TRACKMAGE_VERSION' ) ) {
+	// phpcs:ignore NeutronStandard.Constants.DisallowDefine.Define
+	define( 'TRACKMAGE_VERSION', '1.0.0' );
+}
+
 if ( ! defined( 'TRACKMAGE_DIR' ) ) {
 	// phpcs:ignore NeutronStandard.Constants.DisallowDefine.Define
 	define( 'TRACKMAGE_DIR', plugin_dir_path( __FILE__ ) );

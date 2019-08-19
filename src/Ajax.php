@@ -12,7 +12,7 @@ namespace TrackMage\WordPress;
 defined( 'WPINC' ) || exit;
 
 /**
- * Ajax class.
+ * TrackMage\WordPress\Ajax class.
  *
  * All methods in this class should be static.
  *

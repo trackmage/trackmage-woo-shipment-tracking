@@ -1,5 +1,5 @@
 (($, window, document, undefined) => {
-  let params = trackmageAdminParams;
+  let params = trackmage_admin_params;
 
   /**
    * Activate/deactivate spinner.
