@@ -45,21 +45,6 @@ class Plugin {
 	 */
 	protected static $client = null;
 
-	/** @var Endpoint */
-	protected $endpoint = null;
-
-	/** @var Templates */
-	protected $tracking_page = null;
-
-	/** @var Ajax */
-	protected $ajax = null;
-
-	/** @var Admin */
-	protected $admin = null;
-
-	/** @var Orders */
-	protected $orders = null;
-
 	/**
 	 * Returns the singleton instance of TrackMageClient.
 	 *
@@ -114,12 +99,12 @@ class Plugin {
 		add_action( 'admin_enqueue_scripts', [ $this, 'scripts' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'styles' ] );
 
-		// Class instances.
-		$this->endpoint = new Endpoint;
-		$this->tracking_page = new Templates;
-		$this->ajax = Ajax::init();
-		$this->admin = new Admin;
-		$this->orders = new Orders;
+		// Initialize classes.
+		new Endpoint;
+		new Templates;
+		new Admin;
+		new Orders;
+		Ajax::init();
 	}
 
 	/**

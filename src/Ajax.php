@@ -9,7 +9,6 @@
 
 namespace TrackMage\WordPress;
 
-// Called directly? abort.
 defined( 'WPINC' ) || exit;
 
 /**
