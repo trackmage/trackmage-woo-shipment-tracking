@@ -7,6 +7,7 @@ namespace Helper;
 use Codeception\Exception\ModuleException;
 use Codeception\Module;
 use Codeception\Module\WPBrowser;
+use Codeception\Module\WPDb;
 use GuzzleHttp\Client;
 use TrackMage\Client\TrackMageClient;
 
@@ -109,5 +110,14 @@ class Functional extends Module
         /** @var WPBrowser $module */
         $module = $this->getModule('WPBrowser');
         return $module->_getCurrentUri();
+    }
+
+    public function haveCredentialsInWordpress()
+    {
+        list($key, $secret) = $this->getOAuthKeySecretPair();
+        /** @var WPDb $wpdb */
+        $wpdb = $this->getModule('WPDb');
+        $wpdb->haveOptionInDatabase('trackmage_client_id', $key);
+        $wpdb->haveOptionInDatabase('trackmage_client_secret', $secret);
     }
 }
