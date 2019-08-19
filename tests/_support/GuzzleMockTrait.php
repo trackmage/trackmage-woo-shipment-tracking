@@ -1,6 +1,5 @@
 <?php
 
-use DMS\PHPUnitExtensions\ArraySubset\ArraySubsetAsserts;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
@@ -70,7 +69,7 @@ trait GuzzleMockTrait
     private function assertSubmittedJsonIncludes(array $expected, Request $request)
     {
         $actual = json_decode($request->getBody()->getContents(), true);
-        ArraySubsetAsserts::assertArraySubset($expected, $actual);
+        self::assertArraySubset($expected, $actual);
     }
 
     private function createBadResponse($status = 400, $body = null)
