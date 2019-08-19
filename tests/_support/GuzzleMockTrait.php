@@ -47,7 +47,7 @@ trait GuzzleMockTrait
         }
     }
 
-    private function splitRequest(Request $request): array
+    private function splitRequest(Request $request)
     {
         $parts = $request->getUri();
         parse_str($parts->getQuery(), $queries);

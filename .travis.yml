@@ -14,8 +14,6 @@ matrix:
       env: WORDPRESS_VERSION="4.9.10" WOOCOMMERCE_VERSION="3.6.5" PHP_VERSION="7.2"
     - php: '7.3'
       env: WORDPRESS_VERSION="5.2.1" WOOCOMMERCE_VERSION="3.6.5" PHP_VERSION="7.3"
-    - php: '7.3'
-      env: WORDPRESS_VERSION="4.9.10" WOOCOMMERCE_VERSION="3.6.5" PHP_VERSION="7.3"
 
 services:
   - docker
