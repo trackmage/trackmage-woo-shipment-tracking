@@ -7,8 +7,6 @@ class CriticalPathCest
         $I->haveLoadedServerFixtures();
         $I->loginAsAdmin();
         $I->amOnAdminPage('/admin.php?page=trackmage');
-
-        print 'CurrentUrl: '.$I->getCurrentUrl();
         $I->see('Credentials');
 
         $this->testEmptyCredentials($I);
