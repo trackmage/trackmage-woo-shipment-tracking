@@ -31,7 +31,6 @@ class Orders {
 		add_filter( 'wc_order_statuses', [ $this, 'order_statuses' ], 999999, 1 );
 		add_action( 'wp_ajax_trackmage_order_add_tracking_number', [ $this, 'add_tracking_number' ] );
 		add_action( 'wp_ajax_trackmage_order_get_order_items', [ $this, 'get_order_items' ] );
-		add_action( 'wp_ajax_trackmage_get_statuses', [ $this, 'get_statuses' ] );
 		add_action( 'woocommerce_order_status_changed', [ $this, 'status_changed' ], 10, 3 );
 		add_action( 'woocommerce_new_order', [ $this, 'new_order' ], 10, 1 );
 		add_action( 'woocommerce_checkout_update_order_meta', [ $this, 'new_order' ], 10, 1 );
@@ -394,22 +393,5 @@ class Orders {
 		} catch ( ApiException $e ) {
 			// Do nothing for now.
 		}
-	}
-
-	/**
-	 * Ajax: get statuses.
-	 */
-	public function get_statuses() {
-		$statuses = Utils::get_order_statuses();
-		$results = [];
-
-		foreach ( $statuses as $slug => $status ) {
-			array_push( $results, [
-				'id' => $slug,
-				'text' => $status['name'],
-			] );
-		}
-
-		wp_send_json( $results );
 	}
 }

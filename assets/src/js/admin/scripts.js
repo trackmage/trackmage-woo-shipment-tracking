@@ -537,7 +537,7 @@
         data: function (params) {
           return {
             term: params.term,
-            action: 'trackmage_get_statuses',
+            action: 'trackmage_wooselect_order_statuses',
           };
         },
         processResults: function( data, params ) {
