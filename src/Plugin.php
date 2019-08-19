@@ -10,14 +10,14 @@
 
 namespace TrackMage\WordPress;
 
-use TrackMage\WordPress\Admin\Admin as Admin;
-use TrackMage\WordPress\Admin\Orders as Orders;
-use BrightNucleus\Config\ConfigInterface as ConfigInterface;
-use BrightNucleus\Config\ConfigTrait as ConfigTrait;
-use BrightNucleus\Config\Exception\FailedToProcessConfigException as FailedToProcessConfigException;
-use BrightNucleus\Settings\Settings as Settings;
-use TrackMage\Client\TrackMageClient as TrackMageClient;
-use TrackMage\Client\Swagger\ApiException as ApiException;
+use TrackMage\WordPress\Admin\Admin;
+use TrackMage\WordPress\Admin\Orders;
+use BrightNucleus\Config\ConfigInterface;
+use BrightNucleus\Config\ConfigTrait;
+use BrightNucleus\Config\Exception\FailedToProcessConfigException;
+use BrightNucleus\Settings\Settings;
+use TrackMage\Client\TrackMageClient;
+use TrackMage\Client\Swagger\ApiException;
 
 /**
  * Main plugin class.
@@ -134,28 +134,31 @@ class Plugin {
 			wp_enqueue_script( 'trackmage-admin-scripts', TRACKMAGE_URL . 'assets/dist/js/admin/scripts.min.js', [ 'jquery', 'jquery-effects-highlight', 'wc-enhanced-select' ], null, true );
 			wp_localize_script( 'trackmage-admin-scripts', 'trackmageAdminParams', [
 				'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
+				'add_tracking_number_nonce' => wp_create_nonce( 'add-tracking-number' ),
 				'images'      => [
 					'iconTrackMage' => TRACKMAGE_URL . 'assets/dist/images/trackmage-icon.svg',
 				],
 				'aliases'     => Utils::get_aliases(),
 				'messages'    => [
-					'testCredentials'     => __( 'Test Credentials', 'trackmage' ),
-					'successValidKeys'    => __( 'Valid credentials. Click on <em>“Save Changes”</em> for the changes to take effect.', 'trackmage' ),
-					'unknownError'        => __( 'Unknown error occured.', 'trackmage' ),
-					'noSelect'            => __( '— Select —', 'trackmage' ),
-					'edit'                => __( 'Edit', 'trackmage' ),
-					'delete'              => __( 'Delete', 'trackmage' ),
-					'name'                => __( 'Name', 'trackmage' ),
-					'slug'                => __( 'Slug', 'trackmage'),
-					'alias'               => __( 'Alias', 'trackmage'),
-					'cancel'              => __( 'Cancel', 'trackmage' ),
-					'update'              => __( 'Update', 'trackmage'),
-					'updateStatus'        => __( 'Update Status', 'trackmage' ),
-					'successUpdateStatus' => __( 'Status has been updated successfully.', 'trackmage' ),
-					'addStatus'           => __( 'Add Status', 'trackmage' ),
-					'successAddStatus'    => __( 'Status has been added successfully.', 'trackmage' ),
-					'deleteStatus'        => __( 'Delete Status', 'trackmage' ),
-					'successDeleteStatus' => __( 'Status has been deleted successfully.', 'trackmage' ),
+					'testCredentials'          => __( 'Test Credentials', 'trackmage' ),
+					'successValidKeys'         => __( 'Valid credentials. Click on <em>“Save Changes”</em> for the changes to take effect.', 'trackmage' ),
+					'unknownError'             => __( 'Unknown error occured.', 'trackmage' ),
+					'noSelect'                 => __( '— Select —', 'trackmage' ),
+					'edit'                     => __( 'Edit', 'trackmage' ),
+					'delete'                   => __( 'Delete', 'trackmage' ),
+					'name'                     => __( 'Name', 'trackmage' ),
+					'slug'                     => __( 'Slug', 'trackmage'),
+					'alias'                    => __( 'Alias', 'trackmage'),
+					'cancel'                   => __( 'Cancel', 'trackmage' ),
+					'update'                   => __( 'Update', 'trackmage'),
+					'updateStatus'             => __( 'Update Status', 'trackmage' ),
+					'successUpdateStatus'      => __( 'Status has been updated successfully.', 'trackmage' ),
+					'addStatus'                => __( 'Add Status', 'trackmage' ),
+					'successAddStatus'         => __( 'Status has been added successfully.', 'trackmage' ),
+					'deleteStatus'             => __( 'Delete Status', 'trackmage' ),
+					'successDeleteStatus'      => __( 'Status has been deleted successfully.', 'trackmage' ),
+					'addTrackingNumber'        => __( 'Add Tracking Number', 'trackmage' ),
+					'successAddTrackingNumber' => __( 'Tracking number added successfully.', 'trackmage' ),
 				]
 			] );
 		}

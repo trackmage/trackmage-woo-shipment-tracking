@@ -22,6 +22,11 @@ if ( ! defined( 'TRACKMAGE_DIR' ) ) {
 	define( 'TRACKMAGE_DIR', plugin_dir_path( __FILE__ ) );
 }
 
+if ( ! defined( 'TRACKMAGE_VIEWS_DIR' ) ) {
+	// phpcs:ignore NeutronStandard.Constants.DisallowDefine.Define
+	define( 'TRACKMAGE_VIEWS_DIR', plugin_dir_path( __FILE__ ) . 'views/' );
+}
+
 if ( ! defined( 'TRACKMAGE_URL' ) ) {
 	// phpcs:ignore NeutronStandard.Constants.DisallowDefine.Define
 	define( 'TRACKMAGE_URL', plugin_dir_url( __FILE__ ) );

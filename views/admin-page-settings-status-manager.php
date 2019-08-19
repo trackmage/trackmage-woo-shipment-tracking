@@ -11,7 +11,9 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-use TrackMage\WordPress\Utils as Utils;
+use TrackMage\WordPress\Utils;
+
+$sync_statuses = get_option( 'trackmage_sync_statuses', [] );
 
 // Get the registered statuses.
 $statuses = Utils::get_order_statuses();
@@ -31,10 +33,10 @@ $aliases = Utils::get_aliases();
 		</tr>
 	</thead>
 	<tbody id="the-list">
-		<?php foreach( $statuses as $status ) : ?>
-		<tr id="status-<?php echo $status['slug']; ?>"
+		<?php foreach( $statuses as $slug => $status ) : ?>
+		<tr id="status-<?php echo $slug; ?>"
 			data-status-name="<?php echo $status['name']; ?>"
-			data-status-slug="<?php echo $status['slug']; ?>"
+			data-status-slug="<?php echo $slug; ?>"
 			data-status-alias="<?php echo $status['alias']; ?>"
 			data-status-is-custom="<?php echo $status['is_custom']; ?>">
 			<td>
@@ -44,7 +46,7 @@ $aliases = Utils::get_aliases();
 					<span class="inline delete"><button type="button" class="button-link delete-status"><?php _e( 'Delete', 'trackmage' ); ?></button></span>
 				</div>
 			</td>
-			<td><span data-update-status-slug><?php echo $status['slug']; ?></span></td>
+			<td><span data-update-status-slug><?php echo $slug; ?></span></td>
 			<td colspan="2"><span data-update-status-alias><?php echo isset( $aliases[ $status['alias'] ] ) ? $aliases[ $status['alias'] ] : ''; ?></span></td>
 		</tr>
 		<?php endforeach; ?>
@@ -65,3 +67,26 @@ $aliases = Utils::get_aliases();
 		</tr>
 	</tfoot>
 </table>
+
+<form method="post" action="options.php">
+	<?php settings_fields( 'trackmage_statuses' ); ?>
+	<table class="form-table">
+		<tbody>
+			<tr>
+				<th scope="row"><label for="trackmage_sync_statuses"><?php _e( 'Sync with TrackMage', 'trackmage' ); ?></label></th>
+				<td>
+					<select name="trackmage_sync_statuses[]" id="trackmage_sync_statuses" multiple>
+						<?php foreach ( $sync_statuses as $slug ): ?>
+							<?php if ( isset( $statuses[ $slug ] ) ) : ?>
+								<option value="<?php echo $slug; ?>" selected><?php echo $statuses[ $slug ]['name']; ?></option>
+							<?php endif; ?>
+						<?php endforeach; ?>
+					</select>
+					<p class="description"><?php _e( 'Create an order on TrackMage when the status changes to. If none is selected, all new orders will be synced with TrackMage upon creation.', 'trackmage' ); ?></p>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<p class="actions"><?php submit_button( 'Save Changes', 'primary', 'submit', false ); ?></p>
+</form>

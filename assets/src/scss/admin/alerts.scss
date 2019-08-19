@@ -64,7 +64,8 @@
     }
 
     &.trackmage-alert--danger,
-    &.trackmage-alert--error {
+    &.trackmage-alert--error,
+    &.trackmage-alert--failure {
       border-color: #ff4757;
       background: #ffe0e3;
       color: #ff4757;

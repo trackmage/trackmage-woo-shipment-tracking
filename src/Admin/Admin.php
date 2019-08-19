@@ -10,10 +10,10 @@
 
 namespace TrackMage\WordPress\Admin;
 
-use TrackMage\WordPress\Plugin as Plugin;
-use TrackMage\WordPress\Utils as Utils;
-use TrackMage\Client\Swagger\Model\WorkflowSetWorkflowSetIntegration as WorkflowSetWorkflowSetIntegration;
-use TrackMage\Client\Swagger\ApiException as ApiException;
+use TrackMage\WordPress\Plugin;
+use TrackMage\WordPress\Utils;
+use TrackMage\Client\Swagger\Model\WorkflowSetWorkflowSetIntegration;
+use TrackMage\Client\Swagger\ApiException;
 
 /**
  * The Admin class.
@@ -64,10 +64,10 @@ class Admin {
 
 		add_submenu_page(
 			'trackmage',
-			__( 'Statuses', 'trackmage' ),
-			__( 'Statuses', 'trackmage' ),
+			__( 'Status Manager', 'trackmage' ),
+			__( 'Status Manager', 'trackmage' ),
 			'manage_options',
-			'admin.php?page=trackmage&tab=statuses'
+			'admin.php?page=trackmage&tab=status-manager'
 		);
 	}
 
@@ -81,6 +81,9 @@ class Admin {
 		register_setting( 'trackmage_general', 'trackmage_client_id' );
 		register_setting( 'trackmage_general', 'trackmage_client_secret' );
 		register_setting( 'trackmage_general', 'trackmage_workspace' );
+
+		// Statuses settings.
+		register_setting( 'trackmage_statuses', 'trackmage_sync_statuses' );
 	}
 
 	/**
@@ -89,7 +92,7 @@ class Admin {
 	 * @since 0.1.0
 	 */
 	public function render() {
-		require_once TRACKMAGE_DIR . '/templates/admin/settings.php';
+		require_once TRACKMAGE_VIEWS_DIR . 'admin-page-settings.php';
 	}
 
 	/**
@@ -137,9 +140,6 @@ class Admin {
 		$status_aliases = get_option( 'trackmage_order_status_aliases', [] );
 		$aliases = Utils::get_aliases();
 		$get_statuses = Utils::get_order_statuses();
-		$get_statuses_slugs = array_map( function( $s ) {
-			return $s['slug'];
-		}, $get_statuses );
 
 		// Errors array.
 		$errors = [];
@@ -152,7 +152,7 @@ class Admin {
 			array_push( $errors, __( 'Status slug cannot be empty.', 'trackmage' ) );
 		}
 
-		if ( $current_slug !== $slug && in_array( $slug, $get_statuses_slugs ) ) {
+		if ( $current_slug !== $slug && isset( $get_statuses[ $slug ] ) ) {
 			array_push( $errors, sprintf( __( 'The slug <em>“%1$s”</em> is already used by another status.', 'trackmage' ), $slug ) );
 		}
 
@@ -203,16 +203,13 @@ class Admin {
 
 	public function status_manager_add() {
 		$name  = $_POST['name'];
-		$slug  = $_POST['slug'];
+		$slug  = 'wc-' . $_POST['slug'];
 		$alias = $_POST['alias'];
 
 		$custom_statuses = get_option( 'trackmage_custom_order_statuses', [] );
 		$status_aliases = get_option( 'trackmage_order_status_aliases', [] );
 		$aliases = Utils::get_aliases();
 		$get_statuses = Utils::get_order_statuses();
-		$get_statuses_slugs = array_map( function( $s ) {
-			return $s['slug'];
-		}, $get_statuses );
 		
 		// Errors array.
 		$errors = [];
@@ -225,7 +222,7 @@ class Admin {
 			array_push( $errors, __( 'Status slug cannot be empty.', 'trackmage' ) );
 		}
 
-		if ( in_array( $slug, $get_statuses_slugs ) ) {
+		if ( isset( $get_statuses[ $slug ] ) ) {
 			array_push( $errors, sprintf( __( 'The slug <em>“%1$s”</em> is already used by another status.', 'trackmage' ), $slug ) );
 		}
 
