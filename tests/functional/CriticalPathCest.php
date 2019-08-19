@@ -2,18 +2,38 @@
 
 class CriticalPathCest
 {
-    public function test(\FunctionalTester $I)
+    public function beforeAllTests(\FunctionalTester $I)
     {
         $I->haveLoadedServerFixtures();
+    }
+
+    public function testSelectWorkspace(\FunctionalTester $I)
+    {
+        $I->haveCredentialsInWordpress();
+
         $I->loginAsAdmin();
         $I->amOnAdminPage('/admin.php?page=trackmage');
 
-        print 'CurrentUrl: '.$I->getCurrentUrl();
+        $I->haveOptionInDatabase('trackmage_workspace', '0');
+
+        $I->see('Workspace');
+        $I->selectOption('Workspace', "fake_primary_{$I->getFlavorSlug()}_ws1");
+
+        $workspaceId = $I->grabValueFrom('select[name=trackmage_workspace]');
+        $I->click('Save Changes');
+        $I->canSee('Settings saved.');
+
+        $I->seeOptionInDatabase(['option_name' => 'trackmage_workspace', 'option_value' => $workspaceId]);
+    }
+
+    public function testCredentials(\FunctionalTester $I)
+    {
+        $I->loginAsAdmin();
+        $I->amOnAdminPage('/admin.php?page=trackmage');
         $I->see('Credentials');
 
         $this->testEmptyCredentials($I);
         $this->testAndSaveWorkingCredentials($I);
-        $this->selectWorkspace($I);
     }
 
     private function testEmptyCredentials(\FunctionalTester $I)
@@ -45,17 +65,4 @@ class CriticalPathCest
         $I->seeOptionInDatabase(['option_name' => 'trackmage_client_secret', 'option_value' => $secret]);
     }
 
-    private function selectWorkspace(\FunctionalTester $I)
-    {
-        $I->seeOptionInDatabase(['option_name' => 'trackmage_workspace', 'option_value' => '0']);
-
-        $I->see('Workspace');
-        $I->selectOption('Workspace', "fake_primary_{$I->getFlavorSlug()}_ws1");
-
-        $workspaceId = $I->grabValueFrom('select[name=trackmage_workspace]');
-        $I->click('Save Changes');
-        $I->canSee('Settings saved.');
-
-        $I->seeOptionInDatabase(['option_name' => 'trackmage_workspace', 'option_value' => $workspaceId]);
-    }
 }

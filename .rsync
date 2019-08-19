@@ -2,7 +2,7 @@ assets/***
 config/***
 languages/***
 src/***
-templates/***
+views/***
 init.php
 trackmage.php
 composer.json
