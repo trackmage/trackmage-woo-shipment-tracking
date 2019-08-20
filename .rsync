@@ -6,5 +6,6 @@ views/***
 init.php
 trackmage.php
 composer.json
+gulpfile.js
 package.json
 package-lock.json

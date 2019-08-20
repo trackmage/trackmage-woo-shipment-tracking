@@ -103,9 +103,7 @@ ci_install:
 
 	# setup the plugin
 	rsync -a --include-from=.rsync --exclude="*" . ${TRAVIS_WP_FOLDER}/wp-content/plugins/${TEST_PLUGIN_NAME}
-	(cd ${TRAVIS_WP_FOLDER}/wp-content/plugins/${TEST_PLUGIN_NAME} && COMPOSER_MEMORY_LIMIT=-1 composer update --no-dev)
-#	TODO: Fix "local modules not found" error during gulp build
-#	npm ci && npm run build && rm -rf node_modules/
+	(cd ${TRAVIS_WP_FOLDER}/wp-content/plugins/${TEST_PLUGIN_NAME} && COMPOSER_MEMORY_LIMIT=-1 composer update --no-dev && npm ci && npm run build && rm -rf node_modules/)
 	docker run -it --rm --volumes-from wpbrowser_wp --network container:wpbrowser_wp wordpress:cli-php${PHP_VERSION} wp plugin activate ${TEST_PLUGIN_NAME}
 
 	# Make sure everyone can write to the tests/_data folder.
