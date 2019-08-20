@@ -20,7 +20,7 @@ class Assets {
 
 	private static $instance = null;
 
-	private function get_instance() {
+	private static function get_instance() {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
 		}
