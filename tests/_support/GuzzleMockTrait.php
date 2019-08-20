@@ -32,18 +32,27 @@ trait GuzzleMockTrait
     }
 
     /**
-     * @param Request[] $requests
-     * @param string[] $expectedList
+     * @param array|array[] $requests
+     * @param string[] $expectedList Array<Array<$expectedMethod, $expectedPath, $expectedQuery>>
      */
     private function assertMethodsWereCalled(array $requests, $expectedList)
     {
+        if (!isset($requests[0])) {
+            $requests = [$requests];
+        }
         $actualList = array_map(function (Request $request) {
-            return [$request->getMethod(), $request->getUri()->getPath()];
+            parse_str($request->getUri()->getQuery(), $query);
+            return [$request->getMethod(), $request->getUri()->getPath(), $query];
         }, array_column($requests, 'request'));
         self::assertEquals(count($expectedList), count($actualList));
-        foreach ($expectedList as $key => list($expectedMethod, $expectedPath)) {
+        foreach ($expectedList as $key => $expectedItem) {
+            list($expectedMethod, $expectedPath) = $expectedItem;
+            $expectedQuery = isset($expectedItem[2]) ? $expectedItem[2] : null;
             self::assertEquals($expectedMethod, $actualList[$key][0]);
             self::assertRegExp('@' . $expectedPath . '@', $actualList[$key][1]);
+            if (null !== $expectedQuery) {
+                self::assertArraySubset($expectedQuery, $actualList[$key][2]);
+            }
         }
     }
 

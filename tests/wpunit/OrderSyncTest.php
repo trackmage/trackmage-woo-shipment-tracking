@@ -24,12 +24,15 @@ class OrderSyncTest extends WPTestCase {
         self::$product = $product;
     }
 
-    public function testSingleOrder_isPostedToTrackMage()
+    public function testSingleOrderIsPostedToTrackMage()
     {
         //GIVEN
         update_option('trackmage_sync_statuses', ['wc-completed']);
+        add_option('trackmage_workspace', '1001');
+
         $requests = [];
         $guzzleClient = $this->createClient([
+            $this->createJsonResponse(200, ['hydra:member' => []]), //can't find order by externalSyncId
             $this->createJsonResponse(201, ['id' => 'o-id']),
         ], $requests);
         $this->initPlugin($guzzleClient);
@@ -42,23 +45,24 @@ class OrderSyncTest extends WPTestCase {
         //THEN
         //check this order is sent to TM
         $this->assertMethodsWereCalled($requests, [
+            ['GET', '/workspaces/1001/orders', ['externalSyncId' => (string) $wcId]],
             ['POST', '/orders'],
         ]);
         $this->assertSubmittedJsonIncludes([
             'externalSyncId' => (string) $wcId,
-        ], $requests[0]['request']);
+            'orderNumber' => $wcOrder->get_order_number(),
+            'status' => 'completed',
+        ], $requests[1]['request']);
         //make sure that TM ID is saved to WC order meta
         self::assertSame('o-id', get_post_meta($wcId, '_trackmage_order_id', true));
     }
 
-    public function testPendingOrder_isNotPostedToTrackMage()
+    public function testPendingOrderIsNotPostedToTrackMage()
     {
         //GIVEN
         update_option('trackmage_sync_statuses', ['wc-completed']);
         $requests = [];
-        $guzzleClient = $this->createClient([
-            $this->createJsonResponse(201, ['id' => 'o-id']),
-        ], $requests);
+        $guzzleClient = $this->createClient([], $requests);
         $this->initPlugin($guzzleClient);
 
         //WHEN
@@ -68,11 +72,14 @@ class OrderSyncTest extends WPTestCase {
         self::assertCount(0, $requests);
     }
 
-    public function testOrderWithItems_isPostedToTrackMage()
+    public function testOrderWithItemsIsPostedToTrackMage()
     {
         update_option('trackmage_sync_statuses', ['wc-completed']);
+        add_option('trackmage_workspace', '1001');
+
         $requests = [];
         $guzzleClient = $this->createClient([
+            $this->createJsonResponse(200, ['hydra:member' => []]), //can't find order by externalSyncId
             $this->createJsonResponse(201, ['id' => 'o-id']),
             $this->createJsonResponse(201, ['id' => 'oi-id']),
         ], $requests);
@@ -81,6 +88,7 @@ class OrderSyncTest extends WPTestCase {
         //programmatically create an order in WC
         /** @var WC_Order $wcOrder */
         $wcOrder = wc_create_order(); //ignored since has no items
+        $wcId = $wcOrder->get_id();
         $wcItemId = $wcOrder->add_product(self::$product);
         $wcOrder->set_status('completed');
         //WHEN
@@ -88,6 +96,7 @@ class OrderSyncTest extends WPTestCase {
 
         //THEN
         $this->assertMethodsWereCalled($requests, [
+            ['GET', '/workspaces/1001/orders', ['externalSyncId' => (string) $wcId]],
             ['POST', '/orders'],
             ['POST', '/order_items'],
         ]);
@@ -97,7 +106,8 @@ class OrderSyncTest extends WPTestCase {
             'productName' => 'Test Product',
             'qty' => 1,
             'externalSyncId' => (string) $wcItemId,
-        ], $requests[1]['request']);
+            'rowTotal' => '100',
+        ], $requests[2]['request']);
 
         //make sure that TM ID is saved to WC order meta
         self::assertSame('oi-id', wc_get_order_item_meta($wcItemId, '_trackmage_order_item_id', true));
@@ -149,8 +159,3 @@ class OrderSyncTest extends WPTestCase {
         }
     }
 }
-
-function helloWorld(){
-    return "Hello World!";
-}
-add_shortcode( 'first-testable-shortcode', 'helloWorld' );

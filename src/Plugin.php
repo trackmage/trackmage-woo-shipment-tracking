@@ -99,7 +99,7 @@ class Plugin {
 		new Endpoint;
 		new Templates;
 		new Admin;
-		new Orders;
+		new Orders(new Synchronizer());
 
 		$init_classes = [
 			'Ajax',

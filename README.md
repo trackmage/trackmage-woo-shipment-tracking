@@ -8,8 +8,9 @@ TrackMage Wordpress Plugin
 
 Local commands:
 ```
-export PHP_VERSION=5.6
+export PHP_VERSION=7.2
 make ci_local_prepare
+make ci_before_script
 make ci_script
 make down
 ```

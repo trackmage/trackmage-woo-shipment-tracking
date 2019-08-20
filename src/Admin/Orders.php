@@ -8,10 +8,8 @@
 
 namespace TrackMage\WordPress\Admin;
 
-use TrackMage\WordPress\Utils;
+use TrackMage\WordPress\Synchronizer;
 use TrackMage\WordPress\Plugin;
-use TrackMage\Client\Swagger\ApiException;
-use TrackMage\Client\Swagger\Model\TrackingNumberPostTrackingNumberSetTrackingNumberMeta;
 
 /**
  * The Orders class.
@@ -20,21 +18,21 @@ use TrackMage\Client\Swagger\Model\TrackingNumberPostTrackingNumberSetTrackingNu
  */
 class Orders {
 
+    private $synchronizer;
+
 	/**
 	 * The constructor.
 	 *
 	 * @since 0.1.0
 	 */
-	public function __construct() {
-		add_action( 'add_meta_boxes', [ $this, 'add_meta_box'] );
-		add_action( 'save_post', [ $this, 'save_meta_box'] );
-		add_filter( 'wc_order_statuses', [ $this, 'order_statuses' ], 999999, 1 );
-		add_action( 'wp_ajax_trackmage_order_add_tracking_number', [ $this, 'add_tracking_number' ] );
-		add_action( 'wp_ajax_trackmage_order_get_order_items', [ $this, 'get_order_items' ] );
-		add_action( 'woocommerce_order_status_changed', [ $this, 'status_changed' ], 10, 3 );
-		add_action( 'woocommerce_new_order', [ $this, 'new_order' ], 10, 1 );
-		add_action( 'woocommerce_checkout_update_order_meta', [ $this, 'new_order' ], 10, 1 );
-		add_filter( 'woocommerce_hidden_order_itemmeta', [ $this, 'hide_order_itemmeta' ], 10, 1 );
+	public function __construct(Synchronizer $synchronizer) {
+	    $this->synchronizer = $synchronizer;
+        add_action( 'add_meta_boxes', [ $this, 'add_meta_box'] );
+        add_action( 'save_post', [ $this, 'save_meta_box'] );
+        add_filter( 'wc_order_statuses', [ $this, 'order_statuses' ], 999999, 1 );
+        add_action( 'wp_ajax_trackmage_order_add_tracking_number', [ $this, 'add_tracking_number' ] );
+        add_action( 'wp_ajax_trackmage_order_get_order_items', [ $this, 'get_order_items' ] );
+        add_filter( 'woocommerce_hidden_order_itemmeta', [ $this, 'hide_order_itemmeta' ], 10, 1 );
 	}
 
 	public function hide_order_itemmeta( $fields ) {
@@ -292,105 +290,5 @@ class Orders {
 		}
 
 		wp_send_json( $results );
-	}
-
-	/**
-	 * Sync with TrackMage on status change.
-	 *
-	 * @return void
-	 */
-	public function status_changed( $order_id, $old_status, $status ) {
-		$sync_statuses = get_option( 'trackmage_sync_statuses', [] );
-
-		update_option( 'trackmage_test', json_encode( [
-			'order_id' => $order_id,
-			'status' => $status,
-			'sync_statuses' => $sync_statuses
-		] ) );
-
-		if ( in_array( 'wc-' . $status, $sync_statuses, true ) ) {
-			$this->_sync( $order_id );
-		}
-	}
-
-	/**
-	 * Sync with TrackMage on order creation.
-	 *
-	 * @return void
-	 */
-	public function new_order( $order_id ) {
-		$order = wc_get_order( $order_id );
-
-		// Exit if order meta has not been saved yet.
-		// This will happen with the new orders created from the checkout page.
-		// A second try will happen when the `woocommerce_checkout_update_order_meta` action is fired shortly.
-		if ( empty( $order->get_items() ) ) {
-			return;
-		}
-
-		$status = $order->get_status();
-		$sync_statuses = get_option( 'trackmage_sync_statuses', [] );
-
-		if ( empty( $sync_statuses ) || in_array( 'wc-' . $status, $sync_statuses ) ) {
-			$this->_sync( $order_id );
-		}
-	}
-
-	private function _sync( $order_id ) {
-		$workspace = get_option( 'trackmage_workspace' );
-		$order = wc_get_order( $order_id );
-		$client = Plugin::get_client();
-		$_trackmage_order_id = get_post_meta( $order_id, '_trackmage_order_id', 0 );
-		
-		if ( $_trackmage_order_id ) {
-			return;
-		}
-
-		// Create order on TrackMage.
-		try {
-			$response = $client->getGuzzleClient()->post(
-				'/orders', [
-					'json' => [
-						'workspace' => '/workspaces/' . $workspace,
-						'externalSyncId' => (string) $order_id,
-						//TODO: pass order status
-					]
-				]
-			);
-
-			if ( 201 === $response->getStatusCode() ) {
-				$result = json_decode( $response->getBody()->getContents(), true );
-				$trackmage_order_id = $result['id'];
-				add_post_meta( $order_id, '_trackmage_order_id', $trackmage_order_id, true );
-
-				/*
-				 * Create order items on TrackMage.
-				 */
-				foreach( $order->get_items() as $id => $item ) {
-					/** @var \WC_Product_Simple $product */
-					$product = $item->get_product();
-
-					$response = $client->getGuzzleClient()->post(
-						'/order_items', [
-							'json' => [
-								'order' => '/orders/' . $trackmage_order_id,
-								'productName' => $item['name'],
-								'qty' => $item['quantity'],
-								'price' => (string) $product->get_price(),  //TODO: the price is empty for some reason
-								'externalSyncId' => (string) $item->get_id(),
-							]
-						]
-					);
-
-					if ( 201 === $response->getStatusCode() ) {
-						$result = json_decode( $response->getBody()->getContents(), true );
-						$trackmage_order_item_id = $result['id'];
-						wc_add_order_item_meta( $id, '_trackmage_order_item_id', $trackmage_order_item_id, true );
-					}
-				}
-			}
-		} catch ( ApiException $e ) {
-			// Do nothing for now.
-		}
 	}
 }
