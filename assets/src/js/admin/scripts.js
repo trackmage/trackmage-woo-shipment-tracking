@@ -202,7 +202,7 @@
     /**
      * Edit status.
      */
-    $('#statusManager .row-actions .edit-status').on('click', function (e) {
+    $(document).on('click', '#statusManager .row-actions .edit-status', function (e) {
       let tbody = $(this).closest('tbody');
       let row = $(this).closest('tr');
       let isCustom = $(row).data('status-is-custom');
@@ -403,7 +403,7 @@
       function addRow(name, slug, alias) {
         let statusManagerBody = $('#statusManager tbody');
         let row = `
-          <tr id="status-${slug} data-status-name="${name}" data-status-slug=${slug} data-status-alias="${alias}" data-status-is-cusotm="1">
+          <tr id="status-${slug}" data-status-name="${name}" data-status-slug="${slug}" data-status-alias="${alias}" data-status-is-cusotm="1">
             <td>
               <span data-update-status-name>${name}</span>
               <div class="row-actions">
@@ -412,7 +412,7 @@
               </div>
             </td>
             <td><span data-update-status-slug>${slug}</span></td>
-            <td colspan="2"><span data-update-status-alias>${alias}</span></td>
+            <td colspan="2"><span data-update-status-alias>${params.aliases[alias]}</span></td>
           </tr>
         `;
 
@@ -423,51 +423,53 @@
     /**
      * Delete status.
      */
-    $('#statusManager .row-actions .delete-status').on('click', function (e) {
-      let row = $(this).closest('tr');
-      let slug = $(row).data('status-slug');
+    $(document).on('click', '#statusManager .row-actions .delete-status', function (e) {
+      if (confirm(params.messages.confirmDeleteStatus)) {
+        let row = $(this).closest('tr');
+        let slug = $(row).data('status-slug');
 
-      // Request data.
-      let data = {
-        'action': 'trackmage_status_manager_delete',
-        'slug': slug,
-      };
+        // Request data.
+        let data = {
+          'action': 'trackmage_status_manager_delete',
+          'slug': slug,
+        };
 
-      // Response message.
-      let message = '';
+        // Response message.
+        let message = '';
 
-      $.ajax({
-        url: params.ajaxUrl,
-        method: 'post',
-        data: data,
-        beforeSend: function () {
-        },
-        success: function (response) {
-          if (response.data.status === 'success') {
-            deleteRow(response.data.result.slug);
-            message = params.messages.successDeleteStatus;
-          } else if (response.data.errors) {
-            message = response.data.errors.join(' ');
-          } else {
+        $.ajax({
+          url: params.ajaxUrl,
+          method: 'post',
+          data: data,
+          beforeSend: function () {
+          },
+          success: function (response) {
+            if (response.data.status === 'success') {
+              deleteRow(response.data.result.slug);
+              message = params.messages.successDeleteStatus;
+            } else if (response.data.errors) {
+              message = response.data.errors.join(' ');
+            } else {
+              message = params.messages.unknownError;
+            }
+
+            // Response notification.
+            trackmageAlert(params.messages.deleteStatus, message, response.data.status, true);
+          },
+          error: function () {
             message = params.messages.unknownError;
+
+            // Response notification.
+            trackmageAlert(params.messages.deleteStatus, message, response.data.status, true);
           }
+        });
 
-          // Response notification.
-          trackmageAlert(params.messages.deleteStatus, message, response.data.status, true);
-        },
-        error: function () {
-          message = params.messages.unknownError;
-
-          // Response notification.
-          trackmageAlert(params.messages.deleteStatus, message, response.data.status, true);
+        function deleteRow(slug) {
+          $(row).effect('highlight', {color: '#ffe0e3'}, 500);
+          setTimeout(() => {
+            $(row).remove();
+          }, 500);
         }
-      });
-
-      function deleteRow(slug) {
-        $(row).effect('highlight', {color: '#ffe0e3'}, 500);
-        setTimeout(() => {
-          $(row).remove();
-        }, 500);
       }
     });
 
