@@ -45,6 +45,9 @@ class Plugin {
 	 */
 	protected static $client = null;
 
+	/** @var Synchronizer */
+	private static $synchronizer;
+
 	/**
 	 * Returns the singleton instance of TrackMageClient.
 	 *
@@ -69,6 +72,18 @@ class Plugin {
 		}
 
 		return self::$client;
+	}
+
+    /**
+     * @return Synchronizer
+     */
+    public static function get_synchronizer()
+    {
+        if (self::$synchronizer === null) {
+            self::$synchronizer = new Synchronizer();
+        }
+
+        return self::$synchronizer;
 	}
 
 	/**
@@ -99,7 +114,7 @@ class Plugin {
 		new Endpoint;
 		new Templates;
 		new Admin;
-		new Orders(new Synchronizer());
+		new Orders(self::get_synchronizer());
 
 		$init_classes = [
 			'Ajax',

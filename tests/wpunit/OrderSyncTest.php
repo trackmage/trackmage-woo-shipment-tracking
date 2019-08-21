@@ -3,6 +3,7 @@
 use Codeception\TestCase\WPTestCase;
 use GuzzleHttp\ClientInterface;
 use TrackMage\WordPress\Plugin;
+use TrackMage\WordPress\Synchronizer;
 
 class OrderSyncTest extends WPTestCase {
     use GuzzleMockTrait;
@@ -13,8 +14,16 @@ class OrderSyncTest extends WPTestCase {
     /** @var WC_Product_Simple */
     private static $product;
 
+    /** @var Synchronizer */
+    private static $synchronizer;
+
     public static function _setUpBeforeClass() {
         parent::_setUpBeforeClass();
+
+        $synchronizer = Plugin::get_synchronizer();
+        $synchronizer->setDisableEvents(true);
+        self::$synchronizer = $synchronizer;
+
         WC()->init();
 
         $product = new WC_Product_Simple();
@@ -24,7 +33,7 @@ class OrderSyncTest extends WPTestCase {
         self::$product = $product;
     }
 
-    public function testSingleOrderIsPostedToTrackMage()
+    public function testNewOrderGetsPosted()
     {
         //GIVEN
         update_option('trackmage_sync_statuses', ['wc-completed']);
@@ -32,29 +41,158 @@ class OrderSyncTest extends WPTestCase {
 
         $requests = [];
         $guzzleClient = $this->createClient([
-            $this->createJsonResponse(200, ['hydra:member' => []]), //can't find order by externalSyncId
             $this->createJsonResponse(201, ['id' => 'o-id']),
         ], $requests);
         $this->initPlugin($guzzleClient);
 
-        //WHEN
         //programmatically create an order in WC
         /** @var WC_Order $wcOrder */
-        $wcOrder = wc_create_order(['status' => 'completed']); //handled because status is completed.
+        $wcOrder = wc_create_order(['status' => 'completed']);
         $wcId = $wcOrder->get_id();
+
+        //WHEN
+        self::$synchronizer->syncOrder($wcId);
+
         //THEN
         //check this order is sent to TM
         $this->assertMethodsWereCalled($requests, [
-            ['GET', '/workspaces/1001/orders', ['externalSyncId' => (string) $wcId]],
             ['POST', '/orders'],
         ]);
         $this->assertSubmittedJsonIncludes([
             'externalSyncId' => (string) $wcId,
             'orderNumber' => $wcOrder->get_order_number(),
             'status' => 'completed',
-        ], $requests[1]['request']);
+        ], $requests[0]['request']);
         //make sure that TM ID is saved to WC order meta
         self::assertSame('o-id', get_post_meta($wcId, '_trackmage_order_id', true));
+    }
+
+    public function testAlreadySyncedOrderSendsUpdateToTrackMage()
+    {
+        //GIVEN
+        update_option('trackmage_sync_statuses', ['wc-completed']);
+        add_option('trackmage_workspace', '1001');
+
+        $requests = [];
+        $guzzleClient = $this->createClient([
+            $this->createJsonResponse(200, ['id' => 'tm-order-id']),
+        ], $requests);
+        $this->initPlugin($guzzleClient);
+
+        // pre-create order in TM
+        /** @var WC_Order $wcOrder */
+        $wcOrder = wc_create_order(['status' => 'completed']);
+        $wcId = $wcOrder->get_id();
+        add_post_meta( $wcId, '_trackmage_order_id', 'tm-order-id', true );
+
+        //WHEN
+        self::$synchronizer->syncOrder($wcId);
+
+        //THEN
+        // make sure it updates the linked order in TM
+        $this->assertMethodsWereCalled($requests, [
+            ['PUT', '/orders/tm-order-id'],
+        ]);
+        $this->assertSubmittedJsonIncludes([
+            'externalSyncId' => (string) $wcId,
+            'orderNumber' => $wcOrder->get_order_number(),
+            'status' => 'completed',
+        ], $requests[0]['request']);
+    }
+
+
+    public function testIfSameExistsItLookUpIdByOrderNumberId()
+    {
+        //GIVEN
+        add_option('trackmage_workspace', '1001');
+
+        $requests = [];
+        $guzzleClient = $this->createClient([
+            $this->createJsonResponse(400, ['hydra:description' => 'orderNumber: This value is already used.']),
+            $this->createJsonResponse(200, ['hydra:member' => [['id' => 'tm-order-id']]]),
+            $this->createJsonResponse(201, ['id' => 'tm-order-id']),
+        ], $requests);
+        $this->initPlugin($guzzleClient);
+
+        // pre-create order item in WC
+        $wcOrder = wc_create_order();
+        $wcId = $wcOrder->get_id();
+
+        //WHEN
+        self::$synchronizer->syncOrder($wcId);
+
+        //THEN
+        // make sure it updates the linked order in TM
+        $this->assertMethodsWereCalled($requests, [
+            ['POST', '/orders'],
+            ['GET', '/workspaces/1001/orders', ['orderNumber' => $wcOrder->get_order_number()]],
+            ['PUT', '/orders/tm-order-id'],
+        ]);
+
+        self::assertSame('tm-order-id', get_post_meta( $wcId, '_trackmage_order_id', true ));
+    }
+
+    public function testIfSameExistsItLookUpIdByExternalSyncId()
+    {
+        //GIVEN
+        add_option('trackmage_workspace', '1001');
+
+        $requests = [];
+        $guzzleClient = $this->createClient([
+            $this->createJsonResponse(400, ['hydra:description' => 'externalSyncId: This value is already used.']),
+            $this->createJsonResponse(200, ['hydra:member' => [['id' => 'tm-order-id']]]),
+            $this->createJsonResponse(201, ['id' => 'tm-order-id']),
+        ], $requests);
+        $this->initPlugin($guzzleClient);
+
+        // pre-create order item in WC
+        $wcOrder = wc_create_order();
+        $wcId = $wcOrder->get_id();
+
+        //WHEN
+        self::$synchronizer->syncOrder($wcId);
+
+        //THEN
+        // make sure it updates the linked order in TM
+        $this->assertMethodsWereCalled($requests, [
+            ['POST', '/orders'],
+            ['GET', '/workspaces/1001/orders', ['externalSyncId' => (string) $wcId]],
+            ['PUT', '/orders/tm-order-id'],
+        ]);
+
+        self::assertSame('tm-order-id', get_post_meta( $wcId, '_trackmage_order_id', true ));
+    }
+
+    public function testAlreadySyncedButDeletedOrderGetsPostedOnceAgain()
+    {
+        //GIVEN
+        update_option('trackmage_sync_statuses', ['wc-completed']);
+        add_option('trackmage_workspace', '1001');
+
+        $requests = [];
+        $guzzleClient = $this->createClient([
+            $this->createJsonResponse(404),
+            $this->createJsonResponse(201, ['id' => 'tm-order-id']),
+        ], $requests);
+        $this->initPlugin($guzzleClient);
+
+        // pre-create order item in WC linked to not existing TM id
+        /** @var WC_Order $wcOrder */
+        $wcOrder = wc_create_order(['status' => 'completed']);
+        $wcId = $wcOrder->get_id();
+        add_post_meta( $wcId, '_trackmage_order_id', 'tm-old-order-id', true );
+
+        //WHEN
+        self::$synchronizer->syncOrder($wcId);
+
+        //THEN
+        // make sure it updates the linked order in TM
+        $this->assertMethodsWereCalled($requests, [
+            ['PUT', '/orders/tm-old-order-id'],
+            ['POST', '/orders'],
+        ]);
+
+        self::assertSame('tm-order-id', get_post_meta( $wcId, '_trackmage_order_id', true ));
     }
 
     public function testPendingOrderIsNotPostedToTrackMage()
@@ -65,21 +203,23 @@ class OrderSyncTest extends WPTestCase {
         $guzzleClient = $this->createClient([], $requests);
         $this->initPlugin($guzzleClient);
 
+        $wcOrder = wc_create_order(); //by default status is pending
+        $wcId = $wcOrder->get_id();
+
         //WHEN
-        wc_create_order(); //by default status is pending
+        self::$synchronizer->syncOrder($wcId);
 
         //THEN
         self::assertCount(0, $requests);
     }
 
-    public function testOrderWithItemsIsPostedToTrackMage()
+    public function xtestOrderWithItemsGetsPostedToTrackMage()
     {
         update_option('trackmage_sync_statuses', ['wc-completed']);
         add_option('trackmage_workspace', '1001');
 
         $requests = [];
         $guzzleClient = $this->createClient([
-            $this->createJsonResponse(200, ['hydra:member' => []]), //can't find order by externalSyncId
             $this->createJsonResponse(201, ['id' => 'o-id']),
             $this->createJsonResponse(201, ['id' => 'oi-id']),
         ], $requests);
@@ -92,11 +232,10 @@ class OrderSyncTest extends WPTestCase {
         $wcItemId = $wcOrder->add_product(self::$product);
         $wcOrder->set_status('completed');
         //WHEN
-        $wcOrder->save(); //handled because status is completed.
+        $wcOrder->save();
 
         //THEN
         $this->assertMethodsWereCalled($requests, [
-            ['GET', '/workspaces/1001/orders', ['externalSyncId' => (string) $wcId]],
             ['POST', '/orders'],
             ['POST', '/order_items'],
         ]);
@@ -107,48 +246,10 @@ class OrderSyncTest extends WPTestCase {
             'qty' => 1,
             'externalSyncId' => (string) $wcItemId,
             'rowTotal' => '100',
-        ], $requests[2]['request']);
+        ], $requests[1]['request']);
 
         //make sure that TM ID is saved to WC order meta
         self::assertSame('oi-id', wc_get_order_item_meta($wcItemId, '_trackmage_order_item_id', true));
-    }
-
-    public function testSyncOrderDoesNotAddIfExists()
-    {
-        // pre-create order in TM
-        // pre-create order item in TM
-
-        //programmatically create an order in WC
-        //check this order was looked up but NOT sent to TM
-        //make sure that TM ID is saved to WC order meta
-
-        //programmatically create an order itm in WC
-        //check this order item was looked up but NOT sent to TM
-        //make sure that TM ID is saved to WC order item meta
-    }
-
-    public function testAlreadySyncedOrderSendsUpdateToTrackMage()
-    {
-        // pre-create order in TM
-        // pre-create order item in TM
-        // pre-create order item in WC linked to TM
-        // pre-create order item in WC linked to TM
-
-        // make a change on order in WC
-        // make sure it updates the linked order in TM
-        // make a change on order item in WC
-        // make sure it updates the linked order item in TM
-    }
-
-    public function testAlreadySyncedButDeletedOrderGetsUnlinked()
-    {
-        // pre-create order item in WC linked to not existing TM id
-        // pre-create order item in WC linked to not existing TM id
-
-        // make a change on order in WC
-        // check if the order is unlinked in WC
-        // make a change on order item in WC
-        // check if the order item is unlinked in WC
     }
 
     private function initPlugin(ClientInterface $guzzleClient = null)

@@ -26,7 +26,7 @@ trait GuzzleMockTrait
         }
         $client = new Client([
             'handler' => $handler,
-            'http_errors' => false,
+            'http_errors' => true,
         ]);
         return $client;
     }
