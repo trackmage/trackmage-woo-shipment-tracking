@@ -108,6 +108,7 @@ class Assets {
 				'successDeleteStatus'      => __( 'Status has been deleted successfully.', 'trackmage' ),
 				'addTrackingNumber'        => __( 'Add Tracking Number', 'trackmage' ),
 				'successAddTrackingNumber' => __( 'Tracking number added successfully.', 'trackmage' ),
+				'confirmDeleteStatus'      => __( 'Are you sure you want to delete this status?', 'trackmage' ),
 			]
 		] );
 	}
