@@ -9,6 +9,7 @@
 	"license": "GPL-2.0-or-later",
 	"require": {
 		"brightnucleus/config": "^0.4",
+		"symfony/property-access": "^3.4|^4.3",
 		"trackmage/trackmage-sdk-php": "dev-master"
 	},
 	"require-dev": {

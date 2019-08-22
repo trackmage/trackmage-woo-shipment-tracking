@@ -5,12 +5,16 @@ namespace TrackMage\WordPress;
 use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\ResponseInterface;
 use TrackMage\WordPress\Exception\SynchronizationException;
+use TrackMage\WordPress\Syncrhonization\ArrayAccessDecorator;
+use TrackMage\WordPress\Syncrhonization\ChangesDetector;
 use WC_Order;
 
 class Synchronizer
 {
     /** @var bool ignore events */
     private $disableEvents = false;
+    /** @var ChangesDetector */
+    private $orderChangesDetector;
 
     public function __construct()
     {
@@ -32,6 +36,24 @@ class Synchronizer
         add_action( 'woocommerce_checkout_update_order_meta', [ $this, 'new_order' ], 10, 1 );
     }
 
+    /**
+     * @return ChangesDetector
+     */
+    private function getOrderChangesDetector()
+    {
+        if (null === $this->orderChangesDetector) {
+            $detector = new ChangesDetector([
+                '[order_number]', '[status]',
+            ], function($order) {
+                return get_post_meta( $order['id'], '_trackmage_hash', true );
+            }, function($order, $hash) {
+                return add_post_meta( $order['id'], '_trackmage_hash', $hash, true );
+            });
+            $this->orderChangesDetector = $detector;
+        }
+
+        return $this->orderChangesDetector;
+    }
 
     /**
      * Sync with TrackMage on status change.
@@ -71,7 +93,7 @@ class Synchronizer
 
     public function syncOrder( $order_id ) {
         $order = wc_get_order( $order_id );
-        if (!$this->isStatusSynced($order->get_status())) {
+        if (!$this->canSync($order)) {
             return;
         }
         $workspace = get_option( 'trackmage_workspace' );
@@ -126,34 +148,34 @@ class Synchronizer
                     throw $e;
                 }
             }
+            $this->getOrderChangesDetector()->lockChanges(new ArrayAccessDecorator($order));
 
-
-            /*
-             * Create order items on TrackMage.
-             */
-            foreach( $order->get_items() as $id => $item ) {
-                /** @var \WC_Product_Simple $product */
-                $product = $item->get_product();
-
-                $response = $guzzleClient->post(
-                    '/order_items', [
-                        'json' => [
-                            'order' => '/orders/' . $trackmage_order_id,
-                            'productName' => $item['name'],
-                            'qty' => $item['quantity'],
-                            'price' => (string) $product->get_price(),
-                            'externalSyncId' => (string) $item->get_id(),
-                            'rowTotal' => $item->get_total(),
-                        ]
-                    ]
-                );
-
-                if ( 201 === $response->getStatusCode() ) {
-                    $result = json_decode( $response->getBody()->getContents(), true );
-                    $trackmage_order_item_id = $result['id'];
-                    wc_add_order_item_meta( $id, '_trackmage_order_item_id', $trackmage_order_item_id, true );
-                }
-            }
+//            /*
+//             * Create order items on TrackMage.
+//             */
+//            foreach( $order->get_items() as $id => $item ) {
+//                /** @var \WC_Product_Simple $product */
+//                $product = $item->get_product();
+//
+//                $response = $guzzleClient->post(
+//                    '/order_items', [
+//                        'json' => [
+//                            'order' => '/orders/' . $trackmage_order_id,
+//                            'productName' => $item['name'],
+//                            'qty' => $item['quantity'],
+//                            'price' => (string) $product->get_price(),
+//                            'externalSyncId' => (string) $item->get_id(),
+//                            'rowTotal' => $item->get_total(),
+//                        ]
+//                    ]
+//                );
+//
+//                if ( 201 === $response->getStatusCode() ) {
+//                    $result = json_decode( $response->getBody()->getContents(), true );
+//                    $trackmage_order_item_id = $result['id'];
+//                    wc_add_order_item_meta( $id, '_trackmage_order_item_id', $trackmage_order_item_id, true );
+//                }
+//            }
         } catch ( \Throwable $e ) {
             throw new SynchronizationException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
         }
@@ -218,13 +240,20 @@ class Synchronizer
     }
 
     /**
-     * @param $status
+     * @param WC_Order $order
      * @return bool
      */
-    private function isStatusSynced($status)
+    private function canSync($order)
     {
+        if (!$this->getOrderChangesDetector()->isChanged(new ArrayAccessDecorator($order))) {
+            return false;
+        }
+        $trackmage_order_id = get_post_meta( $order->get_id(), '_trackmage_order_id', true );
+        if (!empty($trackmage_order_id)) { //if linked
+            return true;
+        }
         $sync_statuses = get_option('trackmage_sync_statuses', []);
-        return empty($sync_statuses) || in_array('wc-' . $status, $sync_statuses, true);
+        return empty($sync_statuses) || in_array('wc-' . $order->get_status(), $sync_statuses, true);
     }
 
     /**
