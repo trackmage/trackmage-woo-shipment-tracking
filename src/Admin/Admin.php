@@ -213,8 +213,8 @@ class Admin {
 
 	public function status_manager_add() {
 		$name  = $_POST['name'];
-		$slug  = 'wc-' . $_POST['slug'];
-		$alias = empty( $_POST['alias'] );
+		$slug  = strtolower( 'wc-' . $_POST['slug'] );
+		$alias = $_POST['alias'];
 
 		$custom_statuses = get_option( 'trackmage_custom_order_statuses', [] );
 		$status_aliases = get_option( 'trackmage_order_status_aliases', [] );
@@ -226,6 +226,10 @@ class Admin {
 
 		if ( empty ( $name ) ) {
 			array_push( $errors, __( 'Status name cannot be empty.', 'trackmage' ) );
+		}
+
+		if  ( empty( $_POST['slug'] ) ) {
+			$slug = 'wc-' . preg_replace( '#\s+#', '-', strtolower( $name ) );
 		}
 
 		if ( isset( $get_statuses[ $slug ] ) ) {
