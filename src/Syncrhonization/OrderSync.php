@@ -64,7 +64,7 @@ class OrderSync implements EntitySyncInterface
                     $response = $e->getResponse();
                     if (null !== $response
                         && null !== ($query = $this->matchSearchCriteriaFromValidationError($order, $response))
-                        && null !== ($data = $this->lookupOrderByCriteria($query, $workspace))
+                        && null !== ($data = $this->lookupByCriteria($query, $workspace))
                     ) {
                         add_post_meta( $order_id, '_trackmage_order_id', $data['id'], true );
                         $this->sync($order_id);
@@ -92,11 +92,6 @@ class OrderSync implements EntitySyncInterface
                 }
             }
             $this->getChangesDetector()->lockChanges(new ArrayAccessDecorator($order));
-
-//            /*
-//             * Create order items on TrackMage.
-//             */
-
         } catch ( \Throwable $e ) {
             throw new SynchronizationException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
         }
@@ -130,7 +125,7 @@ class OrderSync implements EntitySyncInterface
      * @param string $workspace
      * @return array|null
      */
-    private function lookupOrderByCriteria(array $query, $workspace)
+    private function lookupByCriteria(array $query, $workspace)
     {
         $client = Plugin::get_client();
         $guzzleClient = $client->getGuzzleClient();

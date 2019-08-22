@@ -2,9 +2,13 @@
 
 namespace TrackMage\WordPress\Syncrhonization;
 
+use GuzzleHttp\Exception\ClientException;
+use Psr\Http\Message\ResponseInterface;
 use TrackMage\WordPress\Exception\InvalidArgumentException;
 use TrackMage\WordPress\Exception\SynchronizationException;
 use TrackMage\WordPress\Plugin;
+use WC_Order;
+use WC_Order_Item;
 
 class OrderItemSync implements EntitySyncInterface
 {
@@ -21,9 +25,9 @@ class OrderItemSync implements EntitySyncInterface
         if (null === $this->changesDetector) {
             $detector = new ChangesDetector([
                 '[order_number]', '[status]',
-            ], function(\WC_Order_Item $item) {
+            ], function(WC_Order_Item $item) {
                 return wc_get_order_item_meta( $item->get_id(), '_trackmage_hash', true );
-            }, function(\WC_Order_Item $item, $hash) {
+            }, function(WC_Order_Item $item, $hash) {
                 wc_add_order_item_meta( $item->get_id(), '_trackmage_hash', $hash, true );
                 return $item;
             });
@@ -35,10 +39,10 @@ class OrderItemSync implements EntitySyncInterface
 
     /**
      * @param int $orderItemId
-     * @param \WC_Order $order
-     * @return \WC_Order_Item|\WC_Order_Item_Product
+     * @param WC_Order $order
+     * @return WC_Order_Item|\WC_Order_Item_Product
      */
-    private function getOrderItem($orderItemId, \WC_Order $order)
+    private function getOrderItem($orderItemId, WC_Order $order)
     {
         foreach( $order->get_items() as $id => $item ) {
             if ($id === $orderItemId) {
@@ -73,35 +77,94 @@ class OrderItemSync implements EntitySyncInterface
 
         try {
             if (empty($trackmage_order_item_id)) {
-                $response = $guzzleClient->post('/order_items', [
-                    'json' => [
-                        'order' => '/orders/' . $trackmage_order_id,
-                        'productName' => $item['name'],
-                        'qty' => $item['quantity'],
-                        'price' => $product->get_price(),
-                        'rowTotal' => $item->get_total(),
-                        'externalSyncId' => $item->get_id(),
-                    ]
-                ]);
-                $result = json_decode( $response->getBody()->getContents(), true );
-                $trackmage_order_item_id = $result['id'];
-                wc_add_order_item_meta($orderItemId, '_trackmage_order_item_id', $trackmage_order_item_id, true );
+                try {
+                    $response = $guzzleClient->post('/order_items', [
+                        'json' => [
+                            'order' => '/orders/' . $trackmage_order_id,
+                            'productName' => $item['name'],
+                            'qty' => $item['quantity'],
+                            'price' => $product->get_price(),
+                            'rowTotal' => $item->get_total(),
+                            'externalSyncId' => $orderItemId,
+                        ]
+                    ]);
+                    $result = json_decode( $response->getBody()->getContents(), true );
+                    $trackmage_order_item_id = $result['id'];
+                    wc_add_order_item_meta($orderItemId, '_trackmage_order_item_id', $trackmage_order_item_id, true );
+                } catch (ClientException $e) {
+                    $response = $e->getResponse();
+                    if (null !== $response
+                        && null !== ($query = $this->matchSearchCriteriaFromValidationError($item, $response))
+                        && null !== ($data = $this->lookupByCriteria($query, $trackmage_order_id))
+                    ) {
+                        wc_add_order_item_meta($orderItemId, '_trackmage_order_item_id', $data['id'], true );
+                        $this->sync($orderItemId);
+                        return;
+                    }
+                    throw $e;
+                }
             } else {
-                $guzzleClient->put('/order_items/'.$trackmage_order_item_id, [
-                    'json' => [
-                        'productName' => $item['name'],
-                        'qty' => $item['quantity'],
-                        'price' => $product->get_price(),
-                        'rowTotal' => $item->get_total(),
-                        'externalSyncId' => $item->get_id(),
-                    ]
-                ]);
+                try {
+                    $guzzleClient->put('/order_items/'.$trackmage_order_item_id, [
+                        'json' => [
+                            'productName' => $item['name'],
+                            'qty' => $item['quantity'],
+                            'price' => $product->get_price(),
+                            'rowTotal' => $item->get_total(),
+                            'externalSyncId' => $orderItemId,
+                        ]
+                    ]);
+                } catch (ClientException $e) {
+                    $response = $e->getResponse();
+                    if (null !== $response && 404 === $response->getStatusCode()) {
+                        wc_delete_order_item_meta( $orderItemId, '_trackmage_order_item_id');
+                        $this->sync($orderItemId);
+                        return;
+                    }
+                    throw $e;
+                }
             }
-
             $this->getChangesDetector()->lockChanges($item);
         } catch ( \Throwable $e ) {
             throw new SynchronizationException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
         }
+    }
+
+    /**
+     * @param WC_Order_Item $item
+     * @param ResponseInterface $response
+     * @return array|null
+     */
+    private function matchSearchCriteriaFromValidationError(WC_Order_Item $item, ResponseInterface $response)
+    {
+        if (400 !== $response->getStatusCode()) {
+            return null;
+        }
+        $query = [];
+        $content = $response->getBody()->getContents();
+        if (false !== strpos($content, 'externalSyncId')) {
+            $query['externalSyncId'] = $item->get_id();
+        } else {
+            return null;
+        }
+
+        return $query;
+    }
+
+    /**
+     * @param array $query
+     * @param string $orderId
+     * @return array|null
+     */
+    private function lookupByCriteria(array $query, $orderId)
+    {
+        $client = Plugin::get_client();
+        $guzzleClient = $client->getGuzzleClient();
+        $query['itemsPerPage'] = 1;
+        $response = $guzzleClient->get("/orders/{$orderId}/items", ['query' => $query]);
+        $content = $response->getBody()->getContents();
+        $data = json_decode($content, true);
+        return isset($data['hydra:member'][0]) ? $data['hydra:member'][0] : null;
     }
 
     public function delete($id)

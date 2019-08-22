@@ -197,7 +197,7 @@ class OrderSyncTest extends WPTestCase {
         ], $requests);
         $this->initPlugin($guzzleClient);
 
-        // pre-create order item in WC linked to not existing TM id
+        // pre-create order in WC linked to not existing TM id
         $wcOrder = wc_create_order();
         $wcId = $wcOrder->get_id();
         add_post_meta( $wcId, '_trackmage_order_id', 'tm-old-order-id', true );
