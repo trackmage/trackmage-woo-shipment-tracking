@@ -12,7 +12,7 @@ class CriticalPathCest
         $I->haveCredentialsInWordpress();
 
         $I->loginAsAdmin();
-        $I->amOnAdminPage('/admin.php?page=trackmage');
+        $I->amOnAdminPage('/admin.php?page=trackmage-settings');
 
         $I->haveOptionInDatabase('trackmage_workspace', '0');
 
@@ -29,7 +29,7 @@ class CriticalPathCest
     public function testCredentials(\FunctionalTester $I)
     {
         $I->loginAsAdmin();
-        $I->amOnAdminPage('/admin.php?page=trackmage');
+        $I->amOnAdminPage('/admin.php?page=trackmage-settings');
         $I->see('Credentials');
 
         $this->testEmptyCredentials($I);
