@@ -97,7 +97,6 @@ class ChangesDetectorTest extends WPTestCase
         self::assertFalse($detector->isChanged($order));
     }
 
-
     public function testOrderNotChangedAfterLock()
     {
         $this->hash = '';
@@ -116,5 +115,25 @@ class ChangesDetectorTest extends WPTestCase
         self::assertTrue($detector->isChanged($decorated));
         $decorated = $detector->lockChanges($decorated);
         self::assertFalse($detector->isChanged($decorated));
+    }
+
+    public function testOrderItemNotChangedAfterLock()
+    {
+        $this->hash = '';
+        $item = new WC_Order_Item_Product();
+
+        $item->set_id(100);
+        $item->set_name('test');
+        $item->set_quantity(10);
+
+        $detector = new ChangesDetector(['[id]', '[name]', '[quantity]'], function($item) {
+            return $this->hash;
+        }, function($item, $hash) {
+            $this->hash = $hash;
+            return $item;
+        });
+        self::assertTrue($detector->isChanged($item));
+        $item = $detector->lockChanges($item);
+        self::assertFalse($detector->isChanged($item));
     }
 }

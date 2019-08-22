@@ -1,0 +1,147 @@
+<?php
+
+namespace TrackMage\WordPress\Syncrhonization;
+
+use GuzzleHttp\Exception\ClientException;
+use Psr\Http\Message\ResponseInterface;
+use TrackMage\WordPress\Exception\SynchronizationException;
+use TrackMage\WordPress\Plugin;
+use WC_Order;
+
+class OrderSync implements EntitySyncInterface
+{
+    use SyncSharedTrait;
+
+    /** @var ChangesDetector */
+    private $changesDetector;
+
+    /**
+     * @return ChangesDetector
+     */
+    private function getChangesDetector()
+    {
+        if (null === $this->changesDetector) {
+            $detector = new ChangesDetector([
+                '[order_number]', '[status]',
+            ], function($order) {
+                return get_post_meta( $order['id'], '_trackmage_hash', true );
+            }, function($order, $hash) {
+                add_post_meta( $order['id'], '_trackmage_hash', $hash, true );
+                return $order;
+            });
+            $this->changesDetector = $detector;
+        }
+
+        return $this->changesDetector;
+    }
+
+    public function sync($order_id ) {
+        $order = wc_get_order( $order_id );
+        if (!$this->canSyncOrder($order) || !$this->getChangesDetector()->isChanged(new ArrayAccessDecorator($order))) {
+            return;
+        }
+        $workspace = get_option( 'trackmage_workspace' );
+        $trackmage_order_id = get_post_meta( $order_id, '_trackmage_order_id', true );
+        $client = Plugin::get_client();
+        $guzzleClient = $client->getGuzzleClient();
+
+        // Create order on TrackMage.
+        try {
+            if (empty($trackmage_order_id)) {
+                try {
+                    $response = $guzzleClient->post('/orders', [
+                        'json' => [
+                            'workspace' => '/workspaces/' . $workspace,
+                            'externalSyncId' => $order_id,
+                            'orderNumber' => $order->get_order_number(),
+                            'status' => $order->get_status(),
+                        ]
+                    ]);
+                    $result = json_decode( $response->getBody()->getContents(), true );
+                    $trackmage_order_id = $result['id'];
+                    add_post_meta( $order_id, '_trackmage_order_id', $trackmage_order_id, true );
+                } catch (ClientException $e) {
+                    $response = $e->getResponse();
+                    if (null !== $response
+                        && null !== ($query = $this->matchSearchCriteriaFromValidationError($order, $response))
+                        && null !== ($data = $this->lookupOrderByCriteria($query, $workspace))
+                    ) {
+                        add_post_meta( $order_id, '_trackmage_order_id', $data['id'], true );
+                        $this->sync($order_id);
+                        return;
+                    }
+                    throw $e;
+                }
+            } else {
+                try {
+                    $guzzleClient->put("/orders/{$trackmage_order_id}", [
+                        'json' => [
+                            'externalSyncId' => $order_id,
+                            'orderNumber' => $order->get_order_number(),
+                            'status' => $order->get_status(),
+                        ]
+                    ]);
+                } catch (ClientException $e) {
+                    $response = $e->getResponse();
+                    if (null !== $response && 404 === $response->getStatusCode()) {
+                        delete_post_meta( $order_id, '_trackmage_order_id');
+                        $this->sync($order_id);
+                        return;
+                    }
+                    throw $e;
+                }
+            }
+            $this->getChangesDetector()->lockChanges(new ArrayAccessDecorator($order));
+
+//            /*
+//             * Create order items on TrackMage.
+//             */
+
+        } catch ( \Throwable $e ) {
+            throw new SynchronizationException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
+        }
+    }
+
+    /**
+     * @param WC_Order $order
+     * @param ResponseInterface $response
+     * @return array|null
+     */
+    private function matchSearchCriteriaFromValidationError(WC_Order $order, ResponseInterface $response)
+    {
+        if (400 !== $response->getStatusCode()) {
+            return null;
+        }
+        $query = [];
+        $content = $response->getBody()->getContents();
+        if (false !== strpos($content, 'externalSyncId')) {
+            $query['externalSyncId'] = $order->get_id();
+        } elseif (false !== strpos($content, 'orderNumber')) {
+            $query['orderNumber'] = $order->get_order_number();
+        } else {
+            return null;
+        }
+
+        return $query;
+    }
+
+    /**
+     * @param array $query
+     * @param string $workspace
+     * @return array|null
+     */
+    private function lookupOrderByCriteria(array $query, $workspace)
+    {
+        $client = Plugin::get_client();
+        $guzzleClient = $client->getGuzzleClient();
+        $query['itemsPerPage'] = 1;
+        $response = $guzzleClient->get("/workspaces/{$workspace}/orders", ['query' => $query]);
+        $content = $response->getBody()->getContents();
+        $data = json_decode($content, true);
+        return isset($data['hydra:member'][0]) ? $data['hydra:member'][0] : null;
+    }
+
+    public function delete($id)
+    {
+    }
+}
