@@ -304,7 +304,7 @@
               </td>
               <td><span data-update-status-slug>${slug}</span></td>
               <td colspan="2"><span data-update-status-alias>${
-                params.statusManager.aliases[alias]
+                params.statusManager.aliases.hasOwnProperty(alias) ? params.statusManager.aliases[alias] : ''
               }</span></td>
             </tr>
           `;

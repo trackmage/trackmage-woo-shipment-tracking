@@ -214,7 +214,7 @@ class Admin {
 	public function status_manager_add() {
 		$name  = $_POST['name'];
 		$slug  = 'wc-' . $_POST['slug'];
-		$alias = $_POST['alias'];
+		$alias = empty( $_POST['alias'] );
 
 		$custom_statuses = get_option( 'trackmage_custom_order_statuses', [] );
 		$status_aliases = get_option( 'trackmage_order_status_aliases', [] );
@@ -228,17 +228,13 @@ class Admin {
 			array_push( $errors, __( 'Status name cannot be empty.', 'trackmage' ) );
 		}
 
-		if ( empty ( $slug ) ) {
-			array_push( $errors, __( 'Status slug cannot be empty.', 'trackmage' ) );
-		}
-
 		if ( isset( $get_statuses[ $slug ] ) ) {
 			array_push( $errors, sprintf( __( 'The slug <em>“%1$s”</em> is already used by another status.', 'trackmage' ), $slug ) );
 		}
 
 		if ( ! empty( $alias ) && in_array( $alias, $status_aliases ) ) {
 			array_push( $errors, sprintf( __( 'The alias <em>“%1$s”</em> is already assigned to another status.', 'trackmage' ), $aliases[$alias] ) );
-		} else {
+		} else if ( ! empty( $alias ) ) {
 			$status_aliases[ $slug ] = $alias;
 		}
 

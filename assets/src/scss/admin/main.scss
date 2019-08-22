@@ -343,12 +343,34 @@
     display: inline-block;
   }
 
-  .add-status input[type="text"],
-  .add-status select {
-    width: 100%;
-    font-size: 15px;
-    min-height: 28px;
-    padding: 3px 5px;
-    margin: 1px;
+  .add-status {
+
+    select,
+    input[type="text"] {
+      width: 100%;
+      font-size: 15px;
+      min-height: 28px;
+      padding: 3px 5px;
+      margin: 0;
+    }
+
+    input[name="status_slug"] {
+      width: 85%;
+      float: left;
+    }
+
+    .slug-prefix {
+      width: 15%;
+      background: #e4e4e4;
+      height: 28px;
+      display: inline-block;
+      line-height: 28px;
+      text-align: center;
+      padding: 0 1px;
+      box-sizing: border-box;
+      float: left;
+      color: #6d6d6d;
+      text-shadow: 1px 1px #fff;
+    }
   }
 }

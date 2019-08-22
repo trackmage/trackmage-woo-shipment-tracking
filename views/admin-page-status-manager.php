@@ -54,7 +54,7 @@ $aliases = Utils::get_aliases();
             <tfoot>
                 <tr class="add-status">
                     <td><input type="text" name="status_name" placeholder="<?php _e( 'Name', 'trackmage' ); ?>" /></td>
-                    <td><input type="text" name="status_slug" placeholder="<?php _e( 'Slug', 'trackmage' ); ?>" /></td>
+                    <td><span class="input-prefix slug-prefix">wc-</span><input type="text" name="status_slug" placeholder="<?php _e( 'Slug', 'trackmage' ); ?>" /></td>
                     <td>
                         <select name="status_alias">
                             <option value=""><?php _e( '— Select —', 'trackmage' ); ?></option>
