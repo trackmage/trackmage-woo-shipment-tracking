@@ -257,4 +257,20 @@ class Utils {
 			return $output;
 		}
 	}
+
+	/**
+	 * Return all screen ids of the pages created or modified by the plugin.
+	 *
+	 * @since 1.0.0
+	 * @return array
+	 */
+	public static function getScreenIds() {
+		$screenIds = [
+			'toplevel_page_trackmage-settings',
+			'trackmage_page_trackmage-status-manager',
+			'shop_order'
+		];
+
+		return $screenIds;
+	}
 }

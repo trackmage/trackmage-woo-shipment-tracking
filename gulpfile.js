@@ -1,182 +1,174 @@
 // External packages.
-const gulp = require('gulp')
-const rename = require('gulp-rename')
-const sass = require('gulp-sass')
-const wpPot = require('gulp-wp-pot')
-const babel = require('gulp-babel')
-const uglify = require('gulp-uglify')
-const uglifycss = require('gulp-uglifycss')
-const zip = require('gulp-zip')
+const gulp = require("gulp"),
+  rename = require("gulp-rename"),
+  sass = require("gulp-sass"),
+  wpPot = require("gulp-wp-pot"),
+  babel = require("gulp-babel"),
+  uglify = require("gulp-uglify"),
+  uglifycss = require("gulp-uglifycss"),
+  zip = require("gulp-zip");
 
 // Paths.
 const paths = {
   styles: {
-    src: 'assets/src/scss/',
-    dist: 'assets/dist/css/',
+    frontend: {
+      src: "assets/src/scss/frontend/",
+      dist: "assets/dist/css/frontend/"
+    },
     admin: {
-      src: 'assets/src/scss/admin/',
-      dist: 'assets/dist/css/admin/'
+      src: "assets/src/scss/admin/",
+      dist: "assets/dist/css/admin/"
     }
   },
   scripts: {
-    src: 'assets/src/js/',
-    dist: 'assets/dist/js/',
+    frontend: {
+      src: "assets/src/js/frontend/",
+      dist: "assets/dist/js/frontend/"
+    },
     admin: {
-      src: 'assets/src/js/admin/',
-      dist: 'assets/dist/js/admin/'
+      src: "assets/src/js/admin/",
+      dist: "assets/dist/js/admin/"
     }
   },
-  locale: 'languages/'
-}
+  locale: "languages/"
+};
 
-/*
- * Tasks.
- */
-
-// Compile public styles.
-const compileSCSS = () => {
-  return gulp.src([
-      paths.styles.src + 'main.scss'
-    ])
+// Task: compile public styles.
+const compileScss = () => {
+  return gulp
+    .src([paths.styles.frontend.src + "main.scss"])
     .pipe(sass())
-    .pipe(rename({extname: '.css'}))
-    .pipe(gulp.dest(paths.styles.dist))
-}
+    .pipe(rename({ extname: ".css" }))
+    .pipe(gulp.dest(paths.styles.frontend.dist));
+};
 
-// Minify public styles.
-const minifyCSS = () => {
-  return gulp.src([
-      paths.styles.dist + 'main.css'
-    ])
-    .pipe(uglifycss({
-      uglyComments: true
-    }))
-    .pipe(rename({suffix: '.min'}))
-    .pipe(gulp.dest(paths.styles.dist))
-}
+// Task: minify public styles.
+const minifyCss = () => {
+  return gulp
+    .src([paths.styles.frontend.dist + "main.css"])
+    .pipe(
+      uglifycss({
+        uglyComments: true
+      })
+    )
+    .pipe(rename({ suffix: ".min" }))
+    .pipe(gulp.dest(paths.styles.frontend.dist));
+};
 
-// Compile public scripts.
-const compileJS = () => {
-  return gulp.src([
-      paths.scripts.src + '**/*.js'
-    ])
-    .pipe(babel({
-      presets: ['@babel/env']
-    }))
-    .pipe(gulp.dest(paths.scripts.dist))
-}
+// Task: compile public scripts.
+const compileJs = () => {
+  return gulp
+    .src([paths.scripts.frontend.src + "**/*.js"])
+    .pipe(
+      babel({
+        presets: ["@babel/env"]
+      })
+    )
+    .pipe(gulp.dest(paths.scripts.frontend.dist));
+};
 
-// Minify public scripts.
-const minifyJS = () => {
-  return gulp.src([
-      paths.scripts.dist + '**/*.js',
-      '!' + paths.scripts.dist + '**/*.min.js',
+// Task: minify public scripts.
+const minifyJs = () => {
+  return gulp
+    .src([
+      paths.scripts.frontend.dist + "**/*.js",
+      "!" + paths.scripts.frontend.dist + "**/*.min.js"
     ])
     .pipe(uglify())
-    .pipe(rename({suffix: '.min'}))
-    .pipe(gulp.dest(paths.scripts.dist))
-}
+    .pipe(rename({ suffix: ".min" }))
+    .pipe(gulp.dest(paths.scripts.frontend.dist));
+};
 
-// Compile admin styles.
-const compileAdminSCSS = () => {
-  return gulp.src([
-      paths.styles.admin.src + 'main.scss'
-    ])
+// Task: compile admin styles.
+const compileAdminScss = () => {
+  return gulp
+    .src([paths.styles.admin.src + "main.scss"])
     .pipe(sass())
-    .pipe(rename({extname: '.css'}))
-    .pipe(gulp.dest(paths.styles.admin.dist))
-}
+    .pipe(rename({ extname: ".css" }))
+    .pipe(gulp.dest(paths.styles.admin.dist));
+};
 
-// Minify admin styles.
-const minifyAdminCSS = () => {
-  return gulp.src([
-      paths.styles.admin.dist + 'main.css'
-    ])
-    .pipe(uglifycss({
-      uglyComments: true
-    }))
-    .pipe(rename({suffix: '.min'}))
-    .pipe(gulp.dest(paths.styles.admin.dist))
-}
+// Task: minify admin styles.
+const minifyAdminCss = () => {
+  return gulp
+    .src([paths.styles.admin.dist + "main.css"])
+    .pipe(
+      uglifycss({
+        uglyComments: true
+      })
+    )
+    .pipe(rename({ suffix: ".min" }))
+    .pipe(gulp.dest(paths.styles.admin.dist));
+};
 
-// Compile admin scripts.
-const compileAdminJS = () => {
-  return gulp.src([
-      paths.scripts.admin.src
-    ])
-    .pipe(babel({
-      presets: ['@babel/env']
-    }))
-    .pipe(gulp.dest(paths.scripts.admin.dist))
-}
+// Task: compile admin scripts.
+const compileAdminJs = () => {
+  return gulp
+    .src([paths.scripts.admin.src + "**/*.js"])
+    .pipe(
+      babel({
+        presets: ["@babel/env"]
+      })
+    )
+    .pipe(gulp.dest(paths.scripts.admin.dist));
+};
 
-// Minify admin scripts.
-const minifyAdminJS = () => {
-  return gulp.src([
-      paths.scripts.admin.dist + '**/*.js',
-      '!' + paths.scripts.admin.dist + '**/*.min.js',
+// Task: minify admin scripts.
+const minifyAdminJs = () => {
+  return gulp
+    .src([
+      paths.scripts.admin.dist + "**/*.js",
+      "!" + paths.scripts.admin.dist + "**/*.min.js"
     ])
     .pipe(uglify())
-    .pipe(rename({suffix: '.min'}))
-    .pipe(gulp.dest(paths.scripts.admin.dist))
-}
+    .pipe(rename({ suffix: ".min" }))
+    .pipe(gulp.dest(paths.scripts.admin.dist));
+};
 
 // Generate localization file.
-const generatePOT = () => {
-  return gulp.src([
-      '**/*.php',
-      '!vendor/'
-    ])
-    .pipe(wpPot({
-      domain: 'trackmage',
-      package: 'TrackMage'
-    }))
-    .pipe(gulp.dest(paths.locale + 'trackmage.pot'))
-}
-gulp.task('generatePOT', generatePOT)
-
-// Create WordPress plugin .zip file.
-const createPluginFile = () => {
-  return gulp.src([
-    '**/*',
-    '!node_modules/**',
-    '!.git/**',
-    '!assets/src/**',
-    '!.gitignore',
-    '!.gitmodules',
-    '!gulpfile.js',
-    '!package.json',
-    '!package-lock.json',
-    '!README.md',
-    '!trackmage.zip'
-  ])
-  .pipe(zip('trackmage.zip'))
-  .pipe(gulp.dest('.'))
-}
-gulp.task('createPluginFile', createPluginFile)
+const generatePot = () => {
+  return gulp
+    .src(["**/*.php", "!vendor/", "!tests/", "!docker/"])
+    .pipe(
+      wpPot({
+        domain: "trackmage",
+        package: "TrackMage"
+      })
+    )
+    .pipe(gulp.dest(paths.locale + "trackmage.pot"));
+};
+gulp.task("generatePot", generatePot);
 
 // Watch for changes.
 const watchChanges = () => {
-  gulp.watch([paths.styles.src + '**/*.scss', '!' + paths.styles.src.admin + '/**/*'], gulp.parallel(gulp.series(compileSCSS, minifyCSS), gulp.series(compileAdminSCSS, minifyAdminCSS)))
-  gulp.watch(paths.styles.admin.src + '**/*.scss', gulp.series(compileAdminSCSS, minifyAdminCSS))
-  gulp.watch([paths.scripts.src + '**/*.js', '!' + paths.scripts.src.admin + '/**/*'], gulp.series(compileJS, minifyJS))
-  gulp.watch(paths.scripts.src.admin + '**/*.js', gulp.series(compileAdminJS, minifyAdminJS))
-}
-watchChanges.description = 'Watch for changes to all sources.'
-gulp.task('watch', watchChanges)
+  gulp.watch(
+    [paths.styles.frontend.src + "**/*.scss"],
+    gulp.series(compileScss, minifyCss)
+  );
+  gulp.watch(
+    paths.styles.admin.src + "**/*.scss",
+    gulp.series(compileAdminScss, minifyAdminCss)
+  );
+  gulp.watch(
+    [paths.scripts.frontend.src + "**/*.js"],
+    gulp.series(compileJs, minifyJs)
+  );
+  gulp.watch(
+    paths.scripts.admin.src + "**/*.js",
+    gulp.series(compileAdminJs, minifyAdminJs)
+  );
+};
+watchChanges.description = "Watch for changes to all sources.";
+gulp.task("watch", watchChanges);
 
 // Build everything.
-gulp.task('build',
+gulp.task(
+  "build",
   gulp.parallel(
-    // generatePOT,
-    gulp.series(compileSCSS, minifyCSS),
-    gulp.series(compileAdminSCSS, minifyAdminCSS),
-    gulp.series(compileJS, minifyJS),
-    gulp.series(compileAdminJS, minifyAdminJS),
+    // generatePot,
+    gulp.series(compileScss, minifyCss),
+    gulp.series(compileAdminScss, minifyAdminCss),
+    gulp.series(compileJs, minifyJs),
+    gulp.series(compileAdminJs, minifyAdminJs)
   )
-)
-
-// Build evenything and create a plugin file.
-gulp.task('buildPlugin',
-  gulp.series('build', 'createPluginFile')
-)
+);

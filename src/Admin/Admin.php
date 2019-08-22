@@ -47,27 +47,28 @@ class Admin {
 			__( 'TrackMage', 'trackmage' ),
 			__( 'TrackMage', 'trackmage' ),
 			'manage_options',
-			'trackmage',
-			[ $this, 'render' ],
-			TRACKMAGE_URL . 'assets/dist/images/trackmage-icon-white.svg',
+			'trackmage-settings',
+			'',
+			TRACKMAGE_URL . 'assets/dist/images/trackmage-icon-white-16x16.png',
 			30
 		);
 
 		add_submenu_page(
-			'trackmage',
-			__( 'General', 'trackmage' ),
-			__( 'General', 'trackmage' ),
+			'trackmage-settings',
+			__( 'Settings', 'trackmage' ),
+			__( 'Settings', 'trackmage' ),
 			'manage_options',
-			'trackmage',
-			[ $this, 'render' ]
+			'trackmage-settings',
+			[ $this, 'renderSettings' ]
 		);
 
 		add_submenu_page(
-			'trackmage',
+			'trackmage-settings',
 			__( 'Status Manager', 'trackmage' ),
 			__( 'Status Manager', 'trackmage' ),
 			'manage_options',
-			'admin.php?page=trackmage&tab=status-manager'
+			'trackmage-status-manager',
+			[ $this, 'renderStatusManager' ]
 		);
 	}
 
@@ -87,12 +88,21 @@ class Admin {
 	}
 
 	/**
-	 * Renders setting pages.
+	 * Renders settings page.
 	 *
-	 * @since 0.1.0
+	 * @since 1.0.0
 	 */
-	public function render() {
+	public function renderSettings() {
 		require_once TRACKMAGE_VIEWS_DIR . 'admin-page-settings.php';
+	}
+
+	/**
+	 * Renders status manager page.
+	 *
+	 * @since 1.0.0
+	 */
+	public function renderStatusManager() {
+		require_once TRACKMAGE_VIEWS_DIR . 'admin-page-status-manager.php';
 	}
 
 	/**

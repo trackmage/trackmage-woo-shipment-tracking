@@ -1,11 +1,6 @@
 @import "alerts";
 @import "order";
 
-// Admin menu.
-#adminmenu li#toplevel_page_trackmage .wp-menu-image img {
-  height: 16px;
-}
-
 /** Plugin settings. */
 .wrap.trackmage {
   .postbox {
@@ -265,7 +260,7 @@
     }
   }
 
-  /** Tabs */
+  /** Settings Page */
   .tab {
     .intro {
       background: #eee;
@@ -319,31 +314,6 @@
     }
   }
 
-  /** Statuses tab*/
-  .tab-status-manager {
-    .status-manager {
-      margin-top: 20px;
-
-      .alias {
-        padding: 4px 6px;
-        border-radius: 4px;
-        margin: 0 5px 5px 0;
-        color: #777;
-        background: #e5e5e5;
-        display: inline-block;
-      }
-
-      .add-status input[type="text"],
-      .add-status select {
-        width: 100%;
-        font-size: 15px;
-        min-height: 28px;
-        padding: 3px 5px;
-        margin: 1px;
-      }
-    }
-  }
-
   .row-actions span.delete .button-link {
     color: #a00;
 
@@ -360,36 +330,25 @@
   }
 }
 
-/** Overlay */
-#trackmage-overlay {
-  background: rgba(255, 255, 255, 0.85);
-  width: 100%;
-  height: 100%;
-  display: none;
-  opacity: 0;
-  position: fixed;
-  right: 0;
-  top: 0;
-  z-index: 1000000;
+/** Statuse Manager */
+.status-manager {
+  margin-top: 20px;
 
-  .loader {
-    display: table-cell;
-    vertical-align: middle;
-    text-align: center;
+  .alias {
+    padding: 4px 6px;
+    border-radius: 4px;
+    margin: 0 5px 5px 0;
+    color: #777;
+    background: #e5e5e5;
+    display: inline-block;
+  }
 
-    img {
-      display: block;
-      margin: 0 auto;
-
-      &.icon-trackmage {
-        margin-top: 1em;
-        max-width: 60px;
-      }
-
-      &.loader {
-        margin-top: 1em;
-        height: 20px;
-      }
-    }
+  .add-status input[type="text"],
+  .add-status select {
+    width: 100%;
+    font-size: 15px;
+    min-height: 28px;
+    padding: 3px 5px;
+    margin: 1px;
   }
 }

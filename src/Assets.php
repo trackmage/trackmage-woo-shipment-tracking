@@ -9,7 +9,7 @@
 
 namespace TrackMage\WordPress;
 
-defined( 'WPINC' ) || exit;
+defined('WPINC') || exit;
 
 /**
  * TrackMage\WordPress\Assets class.
@@ -17,62 +17,49 @@ defined( 'WPINC' ) || exit;
  * @since 1.0.0
  */
 class Assets {
+    /**
+     * Init the TrackMage\WordPress\Assets class.
+     *
+     * @since 1.0.0
+     */
+    public static function init() {
+        add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueStyles']);
+        add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueScripts']);
+    }
 
-	private static $instance = null;
+    /**
+     * Enqueue frontend styles.
+     *
+     * @since 1.0.0
+     */
+    public static function enqueueStyles() {
+        $suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
 
-	private static function get_instance() {
-		if ( null === self::$instance ) {
-			self::$instance = new self();
-		}
+        // Register styles.
+        wp_register_style('trackmage', TRACKMAGE_URL . 'assets/dist/css/frontend/main' . $suffix . '.css', [], TRACKMAGE_VERSION, 'all');
 
-		return self::$instance;
-	}
+        // Main styles.
+        wp_enqueue_style('trackmage');
 
-	private function __construct() {
-		add_action( 'wp_enqueue_scripts', [ $this, 'styles' ] );
-		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
-	}
+    }
 
-	/**
-	 * Init the TrackMage\WordPress\Assets class.
-	 *
-	 * @since 1.0.0
-	 */
-	public static function init() {
-		self::get_instance();
-	}
+    /**
+     * Enqueue frontend scripts.
+     *
+     * @since 1.0.0
+     */
+    public static function enqueueScripts() {
+        $suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
 
-	/**
-	 * Enqueue public styles.
-	 *
-	 * @since 1.0.0
-	 */
-	public function styles() {
-		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
-
-		// Register styles.
-		wp_register_style( 'trackmage_styles', TRACKMAGE_URL . 'assets/dist/css/main' . $suffix . '.css', [], TRACKMAGE_VERSION, 'all' );
-
-		// Enqueue styles.
-		wp_enqueue_style( 'trackmage_styles' );
-
-	}
-
-	/**
-	 * Enqueue public scripts.
-	 *
-	 * @since 1.0.0
-	 */
-	public function scripts() {
-		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
-
-		// Register public scripts.
-		wp_register_script( 'trackmage_scripts', TRACKMAGE_URL . 'assets/dist/js/scripts' . $suffix . '.js', [ 'jquery' ], TRACKMAGE_VERSION, true );
-		
-		// Enqueue public scripts.
-		wp_enqueue_script( 'trackmage_scripts' );
-		wp_localize_script( 'trackmage_scripts', 'trackmage_params', [
-			'ajax_url' => admin_url( 'admin-ajax.php' ),
-		] );
-	}
+        // Register public scripts.
+        wp_register_script('trackmage', TRACKMAGE_URL . 'assets/dist/js/frontend/main' . $suffix . '.js', ['jquery'], TRACKMAGE_VERSION, true);
+        
+        // Enqueue public scripts.
+        wp_enqueue_script('trackmage');
+        wp_localize_script('trackmage', 'trackmage', [
+            'urls' => [
+                'ajax' => admin_url('admin-ajax.php'),
+            ],
+        ]);
+    }
 }
