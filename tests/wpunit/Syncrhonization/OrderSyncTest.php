@@ -25,9 +25,8 @@ class OrderSyncTest extends WPTestCase {
         WC()->init();
     }
 
-    protected function setUp() {
-        parent::setUp();
-
+    protected function _before()
+    {
         $this->orderSync = new OrderSync();
     }
 
@@ -259,6 +258,48 @@ class OrderSyncTest extends WPTestCase {
         $this->assertMethodsWereCalled($requests, [
             ['PUT', '/orders/'.self::TM_ORDER_ID],
         ]);
+    }
+
+    public function testAlreadySyncedOrderSendsDelete()
+    {
+        //GIVEN
+        $requests = [];
+        $guzzleClient = $this->createClient([
+            $this->createJsonResponse(204),
+        ], $requests);
+        $this->initPlugin($guzzleClient);
+
+        // pre-create order in TM
+        $wcOrder = wc_create_order();
+        $wcId = $wcOrder->get_id();
+        add_post_meta( $wcId, '_trackmage_order_id', self::TM_ORDER_ID, true );
+
+        //WHEN
+        $this->orderSync->delete($wcId);
+
+        //THEN
+        $this->assertMethodsWereCalled($requests, [
+            ['DELETE', '/orders/'.self::TM_ORDER_ID],
+        ]);
+        self::assertSame('', get_post_meta( $wcId, '_trackmage_order_id', true ));
+    }
+
+    public function testNotSyncedOrderIgnoresDelete()
+    {
+        //GIVEN
+        $requests = [];
+        $guzzleClient = $this->createClient([], $requests);
+        $this->initPlugin($guzzleClient);
+
+        // pre-create order in TM
+        $wcOrder = wc_create_order();
+        $wcId = $wcOrder->get_id();
+
+        //WHEN
+        $this->orderSync->delete($wcId);
+
+        //THEN
+        self::assertCount(0, $requests);
     }
 
     private function initPlugin(ClientInterface $guzzleClient = null)

@@ -91,14 +91,16 @@ class OrderItemSync implements EntitySyncInterface
                     ]);
                     $result = json_decode( $response->getBody()->getContents(), true );
                     $trackmage_order_item_id = $result['id'];
-                    wc_add_order_item_meta($orderItemId, '_trackmage_order_item_id', $trackmage_order_item_id, true );
+                    wc_add_order_item_meta($orderItemId, '_trackmage_order_item_id', $trackmage_order_item_id, true )
+                        || wc_update_order_item_meta($orderItemId, '_trackmage_order_item_id', $trackmage_order_item_id);
                 } catch (ClientException $e) {
                     $response = $e->getResponse();
                     if (null !== $response
                         && null !== ($query = $this->matchSearchCriteriaFromValidationError($item, $response))
                         && null !== ($data = $this->lookupByCriteria($query, $trackmage_order_id))
                     ) {
-                        wc_add_order_item_meta($orderItemId, '_trackmage_order_item_id', $data['id'], true );
+                        wc_add_order_item_meta($orderItemId, '_trackmage_order_item_id', $data['id'], true )
+                            || wc_update_order_item_meta($orderItemId, '_trackmage_order_item_id', $data['id']);
                         $this->sync($orderItemId);
                         return;
                     }
@@ -170,6 +172,21 @@ class OrderItemSync implements EntitySyncInterface
 
     public function delete($id)
     {
-        // TODO: Implement delete() method.
+        $client = Plugin::get_client();
+        $guzzleClient = $client->getGuzzleClient();
+
+        $trackmage_order_item_id = wc_get_order_item_meta( $id, '_trackmage_order_item_id', true );
+        if (empty($trackmage_order_item_id)) {
+            return;
+        }
+        try {
+            $guzzleClient->delete('/order_items/'.$trackmage_order_item_id);
+        } catch ( ClientException $e ) {
+            throw new SynchronizationException('Unable to delete order item: '.$e->getMessage(), $e->getCode(), $e);
+        } catch ( \Throwable $e ) {
+            throw new SynchronizationException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
+        } finally {
+            wc_delete_order_item_meta($id, '_trackmage_order_item_id');
+        }
     }
 }

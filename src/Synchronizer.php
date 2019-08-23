@@ -37,46 +37,27 @@ class Synchronizer
         add_action( 'woocommerce_update_order', [ $this, 'syncOrder' ], 10, 1 );
         add_action( 'woocommerce_checkout_update_order_meta', [ $this, 'syncOrder' ], 10, 1 );
 
+        add_action('wp_trash_post', function ($postId) {//woocommerce_trash_order is not fired
+            $type = get_post_type($postId);
+            if ($type === 'shop_order'){
+                // This doesn't work whatsoever:
+                // the trashed order status remains the same
+                // and change detector doesn't find the difference.
+                // So OrderSync skips this update.
+                $this->syncOrder($postId);
+            }
+        }, 10, 1);
+        add_action('before_delete_post', function ($postId) { //woocommerce_delete_order is not fired
+            $type = get_post_type($postId);
+            if ($type === 'shop_order'){
+                $this->deleteOrder($postId);
+            }
+        }, 10, 1);
+
         add_action( 'woocommerce_new_order_item', [ $this, 'syncOrderItem' ], 10, 1 );
         add_action( 'woocommerce_update_order_item', [ $this, 'syncOrderItem' ], 10, 1 );
-//        woocommerce_before_delete_order_item, woocommerce_delete_order_item or woocommerce_delete_order_items
+        add_action( 'woocommerce_delete_order_item', [ $this, 'deleteOrderItem' ], 10, 1 );
     }
-
-//    /**
-//     * Sync with TrackMage on status change.
-//     *
-//     * @param string $order_id
-//     * @return void
-//     */
-//    public function status_changed( $order_id, $old_status, $status ) {
-//        if ($this->disableEvents) {
-//            return;
-//        }
-//        $this->syncOrder($order_id);
-//    }
-//
-//    /**
-//     * Sync with TrackMage on order creation.
-//     *
-//     * @param string $order_id
-//     * @return void
-//     */
-//    public function new_order( $order_id ) {
-//        if ($this->disableEvents) {
-//            return;
-//        }
-//
-//        $order = wc_get_order( $order_id );
-//
-//        // Exit if order meta has not been saved yet.
-//        // This will happen with the new orders created from the checkout page.
-//        // A second try will happen when the `woocommerce_checkout_update_order_meta` action is fired shortly.
-//        if ( empty( $order->get_items() ) ) {
-//            return;
-//        }
-//
-//        $this->syncOrder($order_id);
-//    }
 
     public function syncOrder( $order_id ) {
         if ($this->disableEvents) {
@@ -89,9 +70,20 @@ class Synchronizer
         }
     }
 
-    public function deleteOrder( $order_item_id )
+    public function deleteOrder( $order_id )
     {
-//        $this->getOrderSync()->delete($order_id);
+        if ($this->disableEvents) {
+            return;
+        }
+        $order = wc_get_order( $order_id );
+        foreach ($order->get_items() as $item) { //woocommerce_delete_order_item is not fired on order delete
+            $this->deleteOrderItem($item->get_id());
+        }
+        try {
+            $this->getOrderSync()->delete($order_id);
+        } catch (RuntimeException $e) {
+            //log error
+        }
     }
 
     public function syncOrderItem( $order_item_id )
@@ -108,25 +100,32 @@ class Synchronizer
 
     public function deleteOrderItem( $item_id )
     {
-
+        if ($this->disableEvents) {
+            return;
+        }
+        try {
+            $this->getOrderItemSync()->delete($item_id);
+        } catch (RuntimeException $e) {
+            //log error
+        }
     }
 
-    public function syncShipment()
+    public function syncShipment($shipment_id)
     {
         
     }
 
-    public function deleteShipment()
+    public function deleteShipment($shipment_id)
     {
 
     }
 
-    public function syncShipmentItem()
+    public function syncShipmentItem($shipment_item_id)
     {
 
     }
 
-    public function deleteShipmentItem()
+    public function deleteShipmentItem($shipment_item_id)
     {
 
     }
