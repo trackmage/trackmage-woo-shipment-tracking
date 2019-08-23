@@ -2,6 +2,7 @@ SHELL := /bin/bash
 
 TEST_PLUGIN_NAME ?= "trackmage-wordpress-plugin"
 TRAVIS_WP_FOLDER ?= "wordpress"
+BUILD_FOLDER ?= "build"
 TRAVIS_WP_URL ?= "http://wp.test"
 TRAVIS_WP_DOMAIN ?= "wp.test"
 TRAVIS_DB_NAME ?= "wp_site"
@@ -18,6 +19,8 @@ PROJECT := $(shell basename ${CURDIR})
 
 
 .PHONY: wp_dump \
+	build  \
+	deploy  \
 	ci_before_install  \
 	ci_before_script \
 	ci_docker_restart \
@@ -69,7 +72,14 @@ ci_before_install: ci_setup_db ci_setup_wp
 	WP_CONTAINER_IP=`docker inspect -f '{{ .NetworkSettings.Networks.docker_default.IPAddress }}' wpbrowser_wp` \
 	docker-compose -f docker/${COMPOSE_FILE} up -d chromedriver
 
+build:
+	rm -rf ${BUILD_FOLDER} || true
+	mkdir ${BUILD_FOLDER}
+	rsync -a --include-from=.rsync --exclude="*" . ${BUILD_FOLDER}
+	(cd ${BUILD_FOLDER} && COMPOSER_MEMORY_LIMIT=-1 composer update --no-dev --prefer-dist \
+		&& npm ci && npm run build && rm -rf node_modules/)
 
+ci_install: build
 ci_install:
 	# install dev deps
 	COMPOSER_MEMORY_LIMIT=-1 composer update
@@ -102,8 +112,8 @@ ci_install:
 	docker run -it --rm --volumes-from wpbrowser_wp --network container:wpbrowser_wp wordpress:cli-php${PHP_VERSION} wp plugin activate woocommerce
 
 	# setup the plugin
-	rsync -a --include-from=.rsync --exclude="*" . ${TRAVIS_WP_FOLDER}/wp-content/plugins/${TEST_PLUGIN_NAME}
-	(cd ${TRAVIS_WP_FOLDER}/wp-content/plugins/${TEST_PLUGIN_NAME} && COMPOSER_MEMORY_LIMIT=-1 composer update --no-dev && npm ci && npm run build && rm -rf node_modules/)
+	rm -rf ${TRAVIS_WP_FOLDER}/wp-content/plugins/${TEST_PLUGIN_NAME} || true
+	cp -r ${BUILD_FOLDER} ${TRAVIS_WP_FOLDER}/wp-content/plugins/${TEST_PLUGIN_NAME}/
 	docker run -it --rm --volumes-from wpbrowser_wp --network container:wpbrowser_wp wordpress:cli-php${PHP_VERSION} wp plugin activate ${TEST_PLUGIN_NAME}
 
 	# Make sure everyone can write to the tests/_data folder.
@@ -165,3 +175,9 @@ sync_hosts_entries: remove_hosts_entries
 wp_dump:
 	docker run -it --rm --volumes-from wpbrowser_wp --network container:wpbrowser_wp wordpress:cli-php${PHP_VERSION} wp db export \
 		/project/tests/_data/dump.sql
+
+deploy: export SSHPASS = ${STAGE_SSH_PASS}
+deploy: export DEPLOY_DIR = /var/www/html/wp-content/plugins/trackmage
+deploy:
+	cd ${BUILD_FOLDER} && tar zcf - . | sshpass -e ssh -oStrictHostKeyChecking=no www-data@51.15.103.205 -p 48022 "\
+		rm -rf ${DEPLOY_DIR} && mkdir ${DEPLOY_DIR} && cd ${DEPLOY_DIR} && cat | tar zx"

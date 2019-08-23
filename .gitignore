@@ -2,6 +2,7 @@ node_modules
 assets/dist/css
 assets/dist/js
 vendor
+/build
 
 trackmage.zip
 languages/trackmage.pot

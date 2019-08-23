@@ -15,6 +15,13 @@ make ci_script
 make down
 ```
 
+Deployment on stage server
+```
+make build
+export STAGE_SSH_PASS=<password>
+make deploy
+```
+
 Docs:
 ```
 https://codeception.com/for/wordpress
