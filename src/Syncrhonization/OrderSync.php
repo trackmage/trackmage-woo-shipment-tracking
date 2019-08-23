@@ -60,14 +60,16 @@ class OrderSync implements EntitySyncInterface
                     ]);
                     $result = json_decode( $response->getBody()->getContents(), true );
                     $trackmage_order_id = $result['id'];
-                    add_post_meta( $order_id, '_trackmage_order_id', $trackmage_order_id, true );
+                    add_post_meta( $order_id, '_trackmage_order_id', $trackmage_order_id, true )
+                        || update_post_meta($order_id, '_trackmage_order_id', $trackmage_order_id);
                 } catch (ClientException $e) {
                     $response = $e->getResponse();
                     if (null !== $response
                         && null !== ($query = $this->matchSearchCriteriaFromValidationError($order, $response))
                         && null !== ($data = $this->lookupByCriteria($query, $workspace))
                     ) {
-                        add_post_meta( $order_id, '_trackmage_order_id', $data['id'], true );
+                        add_post_meta( $order_id, '_trackmage_order_id', $data['id'], true )
+                            || update_post_meta($order_id, '_trackmage_order_id', $data['id']);
                         $this->sync($order_id);
                         return;
                     }
@@ -139,5 +141,21 @@ class OrderSync implements EntitySyncInterface
 
     public function delete($id)
     {
+        $client = Plugin::get_client();
+        $guzzleClient = $client->getGuzzleClient();
+
+        $trackmage_order_id = get_post_meta( $id, '_trackmage_order_id', true );
+        if (empty($trackmage_order_id)) {
+            return;
+        }
+        try {
+            $guzzleClient->delete('/orders/'.$trackmage_order_id);
+        } catch ( ClientException $e ) {
+            throw new SynchronizationException('Unable to delete order: '.$e->getMessage(), $e->getCode(), $e);
+        } catch ( \Throwable $e ) {
+            throw new SynchronizationException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
+        } finally {
+            delete_post_meta($id, '_trackmage_order_id');
+        }
     }
 }

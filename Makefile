@@ -149,9 +149,12 @@ ci_local_prepare: sync_hosts_entries ci_before_install ensure_pingable_hosts ci_
 ci_run: ci_prepare ci_script
 
 # Gracefully stop the Docker containers used in the tests.
-down:
+docker_down:
 	# Shutdown all working containers
 	docker-compose -f docker/docker-compose.yml down
+
+down: docker_down
+down:
 	# Remove wordpress installation
 	rm -rf wordpress/
 	# Cleanup codeception
