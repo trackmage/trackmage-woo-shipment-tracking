@@ -5,7 +5,7 @@ language: php
 matrix:
   include:
     - php: '5.6'
-      env: WORDPRESS_VERSION="5.2.1" WOOCOMMERCE_VERSION="3.6.5" PHP_VERSION="5.6"
+      env: WORDPRESS_VERSION="5.2.1" WOOCOMMERCE_VERSION="3.6.5" PHP_VERSION="5.6" DEPLOY_STAGE="true"
     - php: '5.6'
       env: WORDPRESS_VERSION="4.9.10" WOOCOMMERCE_VERSION="3.6.5" PHP_VERSION="5.6"
     - php: '7.2'
@@ -23,7 +23,6 @@ cache:
     - $HOME/.composer/cache/files
     - $HOME/.npm
     - $TRAVIS_BUILD_DIR/vendor
-    - $TRAVIS_BUILD_DIR/node_modules
 
 addons:
   hosts:
@@ -37,6 +36,7 @@ before_install:
   # Disable services enabled by default
   - sudo /etc/init.d/mysql stop
   - sudo /etc/init.d/postgresql stop
+  - sudo apt-get install sshpass
   - nvm install 10.11.0
   - node -v
   - npm install -g npm@latest
@@ -55,3 +55,14 @@ before_script:
 
 script:
   - make ci_script
+
+before_deploy:
+  - make build
+
+deploy:
+  provider: script
+  script: make deploy
+  skip_cleanup: true
+  on:
+    branch: develop
+    condition: $DEPLOY_STAGE = "true"
