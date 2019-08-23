@@ -37,6 +37,7 @@ class Orders {
 
 	public function hide_order_itemmeta( $fields ) {
 		$fields[] = '_trackmage_order_item_id';
+		$fields[] = '_trackmage_hash';
 		return $fields;
 	}
 
