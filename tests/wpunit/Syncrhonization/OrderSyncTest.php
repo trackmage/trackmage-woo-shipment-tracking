@@ -58,7 +58,7 @@ class OrderSyncTest extends WPTestCase {
         $this->assertSubmittedJsonIncludes([
             'externalSyncId' => (string) $wcId,
             'orderNumber' => $wcOrder->get_order_number(),
-            'status' => 'completed',
+            'status' => ['name' => 'completed'],
         ], $requests[0]['request']);
         //make sure that TM ID is saved to WC order meta
         self::assertSame(self::TM_ORDER_ID, get_post_meta($wcId, '_trackmage_order_id', true));
@@ -91,7 +91,7 @@ class OrderSyncTest extends WPTestCase {
         $this->assertSubmittedJsonIncludes([
             'externalSyncId' => (string) $wcId,
             'orderNumber' => $wcOrder->get_order_number(),
-            'status' => 'pending',
+            'status' => ['name' => 'pending'],
         ], $requests[0]['request']);
     }
 

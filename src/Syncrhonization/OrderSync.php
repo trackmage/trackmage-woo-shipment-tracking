@@ -26,7 +26,8 @@ class OrderSync implements EntitySyncInterface
             ], function($order) {
                 return get_post_meta( $order['id'], '_trackmage_hash', true );
             }, function($order, $hash) {
-                add_post_meta( $order['id'], '_trackmage_hash', $hash, true );
+                add_post_meta( $order['id'], '_trackmage_hash', $hash, true )
+                    || update_post_meta( $order['id'], '_trackmage_hash', $hash);
                 return $order;
             });
             $this->changesDetector = $detector;
@@ -52,9 +53,9 @@ class OrderSync implements EntitySyncInterface
                     $response = $guzzleClient->post('/orders', [
                         'json' => [
                             'workspace' => '/workspaces/' . $workspace,
-                            'externalSyncId' => $order_id,
+                            'externalSyncId' => (string)$order_id,
                             'orderNumber' => $order->get_order_number(),
-                            'status' => $order->get_status(),
+                            'status' => ['name' => $order->get_status()],
                         ]
                     ]);
                     $result = json_decode( $response->getBody()->getContents(), true );
@@ -76,9 +77,9 @@ class OrderSync implements EntitySyncInterface
                 try {
                     $guzzleClient->put("/orders/{$trackmage_order_id}", [
                         'json' => [
-                            'externalSyncId' => $order_id,
+                            'externalSyncId' => (string)$order_id,
                             'orderNumber' => $order->get_order_number(),
-                            'status' => $order->get_status(),
+                            'status' => ['name' => $order->get_status()],
                         ]
                     ]);
                 } catch (ClientException $e) {

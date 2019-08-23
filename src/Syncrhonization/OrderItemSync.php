@@ -24,11 +24,12 @@ class OrderItemSync implements EntitySyncInterface
     {
         if (null === $this->changesDetector) {
             $detector = new ChangesDetector([
-                '[order_number]', '[status]',
+                '[name]', '[quantity]', '[price]', '[total]',
             ], function(WC_Order_Item $item) {
                 return wc_get_order_item_meta( $item->get_id(), '_trackmage_hash', true );
             }, function(WC_Order_Item $item, $hash) {
-                wc_add_order_item_meta( $item->get_id(), '_trackmage_hash', $hash, true );
+                wc_add_order_item_meta( $item->get_id(), '_trackmage_hash', $hash, true )
+                    || wc_update_order_item_meta($item->get_id(), '_trackmage_hash', $hash);
                 return $item;
             });
             $this->changesDetector = $detector;
@@ -85,7 +86,7 @@ class OrderItemSync implements EntitySyncInterface
                             'qty' => $item['quantity'],
                             'price' => $product->get_price(),
                             'rowTotal' => $item->get_total(),
-                            'externalSyncId' => $orderItemId,
+                            'externalSyncId' => (string)$orderItemId,
                         ]
                     ]);
                     $result = json_decode( $response->getBody()->getContents(), true );
@@ -111,7 +112,7 @@ class OrderItemSync implements EntitySyncInterface
                             'qty' => $item['quantity'],
                             'price' => $product->get_price(),
                             'rowTotal' => $item->get_total(),
-                            'externalSyncId' => $orderItemId,
+                            'externalSyncId' => (string)$orderItemId,
                         ]
                     ]);
                 } catch (ClientException $e) {
