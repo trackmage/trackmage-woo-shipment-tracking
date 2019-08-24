@@ -365,18 +365,15 @@ class Ajax {
             }
 
             // Update shipment details in the database.
-            global $wpdb;
-            $wpdb->update(
-                $wpdb->postmeta,
-                ['meta_value' => maybe_serialize(
-                    [
-                        'id' => '1337-test-guid-from-api',
-                        'tracking_number' => $trackingNumber,
-                        'carrier' => $carrier,
-                        'items' => $items,
-                    ]
-                )],
-                ['meta_id' => $metaId]
+            update_metadata_by_mid(
+                'post',
+                $metaId,
+                [
+                    'id' => '1337-test-guid-from-api',
+                    'tracking_number' => $trackingNumber,
+                    'carrier' => $carrier,
+                    'items' => $items,
+                ]
             );
 
             try {
