@@ -16,7 +16,7 @@ use TrackMage\WordPress\Utils;
 $sync_statuses = get_option( 'trackmage_sync_statuses', [] );
 
 // Get the registered statuses.
-$statuses = Utils::get_order_statuses();
+$statuses = Utils::getOrderStatuses();
 
 // Get the aliases.
 $aliases = Utils::get_aliases();

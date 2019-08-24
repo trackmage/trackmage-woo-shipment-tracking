@@ -1,32 +1,38 @@
 (($, window, document, undefined) => {
   const params = {
-    main: trackmageAdmin,
-    metaBoxes: trackmageAdminMetaBoxes
+    main: window.trackmageAdmin,
+    metaBoxes: window.trackmageAdminMetaBoxes
   };
 
   /**
-   * Initializes select2 on a select element to get order items.
+   * Init selectWoo on a `<select>` element to get order items.
    *
    * @param {object} el The select element.
    * @param {number} orderId Order ID.
    */
-  function initWooSelectOrderItems(el, orderId) {
+  function initSelectWooOrderItems(el, orderId) {
     $(el).selectWoo({
+      width: "100%",
       ajax: {
         url: params.main.urls.ajax,
         method: "post",
         dataType: "json",
         delay: 250,
-        data: function(params) {
+        data: function(p) {
           return {
-            term: params.metaBoxes.term,
-            action: "trackmage_order_get_order_items",
-            order_id: orderId
+            term: p.term,
+            action: "trackmage_get_order_items",
+            orderId: orderId
           };
         },
         processResults: function(data) {
           return {
-            results: data
+            results: data.map(item => {
+              return {
+                id: item.id,
+                text: item.name
+              };
+            })
           };
         }
       }
@@ -34,180 +40,401 @@
   }
 
   /**
-   * Toggle shipment tracking action group.
+   * Toggle action group in the meta box.
+   *
+   * @param {string} group The id of the group to be displayed.
+   * @return {object} The element of the displayed group.
    */
   function toggleActionGroup(group) {
-    // Hide all other action groups.
-    $(
-      "#poststuff #trackmage-shipment-tracking .trackmage-shipment-tracking__actions .actions-group"
-    ).hide();
+    // Hide all other groups and the associated elements.
+    $("#trackmage-shipment-tracking .actions__action-group").hide();
+    $("#trackmage-shipment-tracking [data-action-group]").hide();
 
-    // Display the action group.
-    $(
-      "#poststuff #trackmage-shipment-tracking .trackmage-shipment-tracking__actions .actions__" +
-        group
-    ).show();
+    // Display the desired group and its associated elements.
+    const groupEl = $(
+      `#trackmage-shipment-tracking .actions__action-group--${group}`
+    );
+    $(groupEl).show();
+    $(`#trackmage-shipment-tracking [data-action-group=${group}]`).show();
+
+    // Return the element of the displayed group.
+    return groupEl;
   }
 
-  /**
-   * Show the add tracking number form.
-   */
+  // Add items row.
   $(document).on(
     "click",
-    "#trackmage-shipment-tracking .trackmage-shipment-tracking__actions .actions__default .new",
+    "#trackmage-shipment-tracking .items__btn-add-row",
     function(e) {
       e.preventDefault();
 
-      // Toggle action group.
-      toggleActionGroup("new");
+      const btnAddRow = $(this);
 
-      // Init wooSelect.
-      const el = $(
-        '#trackmage-shipment-tracking .trackmage-shipment-tracking__add-tracking-number [name="order_item_id"]'
-      );
-      const orderId = $(
-        '#trackmage-shipment-tracking [name="trackmage_order_id"]'
-      ).val();
-      initWooSelectOrderItems(el, orderId);
-      $(
-        '#trackmage-shipment-tracking .trackmage-shipment-tracking__add-tracking-number [name="carrier"]'
-      ).selectWoo();
-
-      // Show the add tracking number form.
-      $(
-        "#trackmage-shipment-tracking .trackmage-shipment-tracking__add-tracking-number"
-      ).show();
-    }
-  );
-
-  $(
-    "#poststuff #trackmage-shipment-tracking .trackmage-shipment-tracking__actions .actions__new .cancel"
-  ).on("click", function(e) {
-    e.preventDefault();
-
-    toggleActionGroup("default");
-    $(
-      "#poststuff #trackmage-shipment-tracking .trackmage-shipment-tracking__add-tracking-number"
-    ).hide();
-  });
-
-  $(
-    '#trackmage-shipment-tracking .trackmage-shipment-tracking__add-tracking-number [name="carrier"]'
-  ).select2({});
-
-  $(document).on(
-    "click",
-    "#trackmage-shipment-tracking .trackmage-shipment-tracking__add-tracking-number #add-item-row",
-    function(e) {
-      e.preventDefault();
-
-      const row = $(`
-          <div class="item-row">
-            <select name="order_item_id" data-placeholder="Search for a product&hellip;"></select>
-            <input type="number" name="qty" placeholder="Qty" />
-            <a class="delete-item-row" href=""></a>
-          </div>
-        `);
-
-      // Init wooSelect.
-      const el = $(row).find('[name="order_item_id"]');
-      const orderId = $(
-        '#trackmage-shipment-tracking [name="trackmage_order_id"]'
-      ).val();
-      initWooSelectOrderItems(el, orderId);
-
-      // Append row.
-      $(
-        "#trackmage-shipment-tracking .trackmage-shipment-tracking__add-tracking-number .items"
-      ).append(row);
-
-      // On remove row.
-      $(row)
-        .find(".delete-item-row")
-        .on("click", function(e) {
-          e.preventDefault();
-          $(row).remove();
-        });
-    }
-  );
-
-  /*
-   * Add new tracking number.
-   */
-  $(document).on(
-    "click",
-    "#trackmage-shipment-tracking #add-tracking-number",
-    function(e) {
-      e.preventDefault();
-
-      let items = [];
-      $(
-        "#trackmage-shipment-tracking .trackmage-shipment-tracking__add-tracking-number .item-row"
-      ).each(function() {
-        const order_item_id = $(this)
-          .find('[name="order_item_id"]')
-          .val();
-        const qty = $(this)
-          .find('[name="qty"]')
-          .val();
-        items.push({
-          order_item_id: order_item_id,
-          qty: qty
-        });
-      });
-
-      // Request data.
-      const data = {
-        action: "trackmage_order_add_tracking_number",
-        security: params.metaBoxes.add_tracking_number_nonce,
-        order_id: $(
-          '#trackmage-shipment-tracking [name="trackmage_order_id"]'
-        ).val(),
-        tracking_number: $(
-          '#trackmage-shipment-tracking .trackmage-shipment-tracking__add-tracking-number [name="tracking_number"]'
-        ).val(),
-        carrier: $(
-          '#trackmage-shipment-tracking .trackmage-shipment-tracking__add-tracking-number [name="carrier"]'
-        ).val(),
-        items: items
-      };
-
+      // Get row HTML.
       $.ajax({
         url: params.main.urls.ajax,
         method: "post",
-        data: data,
-        beforeSend: function() {
-          blockUI($("#trackmage-shipment-tracking .inside"));
+        data: {
+          action: "trackmage_get_view",
+          path: "meta-boxes/order-add-shipment-items-row.php"
         },
         success: function(response) {
-          const alert = {
-            title: params.metaBoxes.i18n.addTrackingNumber,
-            message: response.data.message
-              ? response.data.message
-              : !response.success
-              ? params.main.i18n.unknownError
-              : "",
-            type: response.success ? "success" : "failure"
-          };
+          const row = $(response.data.html);
 
-          trackmageAlert(alert.title, alert.message, alert.type, false);
+          // Show the delete icon.
+          $(row)
+            .find(".items__delete")
+            .css("display", "block");
 
-          // Re-load the meta box.
-          $("#trackmage-shipment-tracking .inside").html(response.data.html);
+          // Init selectWoo.
+          initSelectWooOrderItems(
+            $(row).find('[name="order_item_id"]'),
+            params.metaBoxes.orderId
+          );
+
+          // Append row.
+          $(btnAddRow).before(row);
         },
         error: function(response) {
-          console.log(response);
           trackmageAlert(
-            params.metaBoxes.i18n.addTrackingNumber,
+            params.main.i18n.failure,
             response.data.message,
             "failure",
             false
           );
-        },
-        complete: function() {
-          unblockUI($("#trackmage-shipment-tracking .inside"));
         }
       });
+    }
+  );
+
+  // Remove items row.
+  $(document).on(
+    "click",
+    "#trackmage-shipment-tracking .items__row .items__delete",
+    function(e) {
+      e.preventDefault();
+      const row = $(this).closest(".items__row");
+      $(row).remove();
+    }
+  );
+
+  /*
+   * Edit shipment.
+   */
+  $(document).on(
+    "click",
+    "#trackmage-shipment-tracking .shipment__actions__action--edit",
+    function(e) {
+      const shipment = $(this).closest(".shipment");
+      const metaId = $(shipment).data("meta-id");
+
+      // Show the edit shipment form.
+      $("#trackmage-shipment-tracking .edit-shipment").show();
+
+      // Toggle action group.
+      const actionGroup = toggleActionGroup("edit");
+
+      // On cancel.
+      $(actionGroup)
+        .off("click", ".btn-cancel")
+        .on("click", ".btn-cancel", e => {
+          e.preventDefault();
+          toggleActionGroup("default");
+          $("#trackmage-shipment-tracking .edit-shipment").hide();
+        });
+
+      // On save.
+      $(document)
+        .off(
+          "click",
+          "#trackmage-shipment-tracking .actions__action-group--edit .btn-save"
+        )
+        .on(
+          "click",
+          "#trackmage-shipment-tracking .actions__action-group--edit .btn-save",
+          function(e) {
+            e.preventDefault();
+
+            let items = [];
+            $(
+              "#trackmage-shipment-tracking .edit-shipment .items__rows .items__row"
+            ).each(function() {
+              const orderItemId = $(this)
+                .find('[name="order_item_id"]')
+                .val();
+              const qty = $(this)
+                .find('[name="qty"]')
+                .val();
+              items.push({
+                order_item_id: orderItemId,
+                qty: qty
+              });
+            });
+
+            // Request data.
+            const data = {
+              action: "trackmage_update_shipment",
+              security: params.metaBoxes.nonces.updateShipment,
+              orderId: params.metaBoxes.orderId,
+              metaId: metaId,
+              trackingNumber: $(
+                '#trackmage-shipment-tracking .edit-shipment [name="tracking_number"]'
+              ).val(),
+              carrier: $(
+                '#trackmage-shipment-tracking .edit-shipment [name="carrier"]'
+              ).val(),
+              items: items
+            };
+
+            $.ajax({
+              url: params.main.urls.ajax,
+              method: "post",
+              data: data,
+              beforeSend: function() {
+                trackmageBlockUi($("#trackmage-shipment-tracking .inside"));
+              },
+              success: function(response) {
+                console.log(response.data);
+                const alert = {
+                  title: response.success
+                    ? params.main.i18n.success
+                    : params.main.i18n.failure,
+                  message: response.data.message
+                    ? response.data.message
+                    : !response.success
+                    ? params.main.i18n.unknownError
+                    : "",
+                  type: response.success ? "success" : "failure"
+                };
+
+                trackmageAlert(alert.title, alert.message, alert.type, false);
+
+                // Re-load the meta box.
+                $("#trackmage-shipment-tracking .inside").html(
+                  response.data.html
+                );
+              },
+              error: function(response) {
+                window.trackmageAlert(
+                  params.main.i18n.failure,
+                  response.data.message,
+                  "failure",
+                  false
+                );
+              },
+              complete: function() {
+                trackmageUnblockUi($("#trackmage-shipment-tracking .inside"));
+              }
+            });
+          }
+        );
+
+      // Get the edit shipment form.
+      $.ajax({
+        url: params.main.urls.ajax,
+        method: "post",
+        data: {
+          action: "trackmage_edit_shipment",
+          metaId: metaId,
+          security: params.metaBoxes.nonces.editShipment,
+          orderId: params.metaBoxes.orderId
+        },
+        success: function(response) {
+          if (!response.success) {
+            toggleActionGroup("default");
+            return;
+          }
+
+          const html = $(response.data.html);
+          const trackingNumber = response.data.trackingNumber;
+          const carrier = response.data.carrier;
+          const items = response.data.items;
+
+          // Show the delete icon for all rows except the first one.
+          $(html)
+            .find(".items__rows .items__row:not(:first-of-type) .items__delete")
+            .css("display", "block");
+
+          // Append the HTML.
+          $("#trackmage-shipment-tracking .edit-shipment").html(html);
+
+          // Init selectWoo and set values.
+          $(html)
+            .find('[name="carrier"]')
+            .selectWoo({
+              width: "100%"
+            })
+            .val(carrier)
+            .trigger("change");
+
+          let index = 1;
+          items.forEach(item => {
+            const itemEl = $(
+              `#trackmage-shipment-tracking .edit-shipment .items__rows .items__row:nth-of-type(${index})`
+            );
+            const itemProductEl = $(itemEl).find('[name="order_item_id"]');
+            const itemQtyEl = $(itemEl).find('[name="qty"]');
+
+            $(itemQtyEl).val(item.qty);
+
+            // Select product item.
+            const selectedProduct = new Option(
+              item.name,
+              item.order_item_id,
+              true,
+              true
+            );
+            $(itemProductEl)
+              .append(selectedProduct)
+              .trigger("change");
+            initSelectWooOrderItems(itemProductEl, params.metaBoxes.orderId);
+
+            index++;
+          });
+        }
+      });
+    }
+  );
+
+  /*
+   * Add new shipment.
+   */
+  $(document).on(
+    "click",
+    "#trackmage-shipment-tracking .actions__action-group--default .btn-new",
+    e => {
+      e.preventDefault();
+
+      // Show the add shipment form.
+      $("#trackmage-shipment-tracking .add-shipment").show();
+
+      // Toggle action group.
+      const actionGroup = toggleActionGroup("new");
+
+      // Listen to add all order items button.
+      $(
+        '#trackmage-shipment-tracking .add-shipment [name="add_all_order_items"]'
+      )
+        .off("change")
+        .on("change", function(e) {
+          const checked = $(this).is(":checked");
+          const itemRows = $(
+            "#trackmage-shipment-tracking .add-shipment .items__rows"
+          );
+          if (checked) {
+            $(itemRows).hide();
+          } else {
+            $(itemRows).show();
+          }
+        })
+        .trigger("click");
+
+      // Init selectWoo.
+      $(
+        '#trackmage-shipment-tracking .add-shipment [name="carrier"]'
+      ).selectWoo({
+        width: "100%"
+      });
+      initSelectWooOrderItems(
+        $('#trackmage-shipment-tracking .add-shipment [name="order_item_id"]'),
+        params.metaBoxes.orderId
+      );
+
+      // On cancel.
+      $(actionGroup)
+        .off("click", ".btn-cancel")
+        .on("click", ".btn-cancel", e => {
+          e.preventDefault();
+          toggleActionGroup("default");
+          $("#trackmage-shipment-tracking .add-shipment").hide();
+        });
+
+      // On add shipment.
+      $(document)
+        .off(
+          "click",
+          "#trackmage-shipment-tracking .actions__action-group--new .btn-add-shipment"
+        )
+        .on(
+          "click",
+          "#trackmage-shipment-tracking .actions__action-group--new .btn-add-shipment",
+          function(e) {
+            e.preventDefault();
+
+            let items = [];
+            $(
+              "#trackmage-shipment-tracking .add-shipment .items__rows .items__row"
+            ).each(function() {
+              const orderItemId = $(this)
+                .find('[name="order_item_id"]')
+                .val();
+              const qty = $(this)
+                .find('[name="qty"]')
+                .val();
+              items.push({
+                order_item_id: orderItemId,
+                qty: qty
+              });
+            });
+
+            // Request data.
+            const data = {
+              action: "trackmage_add_shipment",
+              security: params.metaBoxes.nonces.addShipment,
+              orderId: params.metaBoxes.orderId,
+              trackingNumber: $(
+                '#trackmage-shipment-tracking .add-shipment [name="tracking_number"]'
+              ).val(),
+              carrier: $(
+                '#trackmage-shipment-tracking .add-shipment [name="carrier"]'
+              ).val(),
+              addAllOrderItems: $(
+                '#trackmage-shipment-tracking .add-shipment [name="add_all_order_items"]'
+              ).is(":checked"),
+              items: items
+            };
+
+            $.ajax({
+              url: params.main.urls.ajax,
+              method: "post",
+              data: data,
+              beforeSend: function() {
+                trackmageBlockUi($("#trackmage-shipment-tracking .inside"));
+              },
+              success: function(response) {
+                const alert = {
+                  title: response.success
+                    ? params.main.i18n.success
+                    : params.main.i18n.failure,
+                  message: response.data.message
+                    ? response.data.message
+                    : !response.success
+                    ? params.main.i18n.unknownError
+                    : "",
+                  type: response.success ? "success" : "failure"
+                };
+
+                trackmageAlert(alert.title, alert.message, alert.type, false);
+
+                // Re-load the meta box.
+                $("#trackmage-shipment-tracking .inside").html(
+                  response.data.html
+                );
+              },
+              error: function(response) {
+                window.trackmageAlert(
+                  params.main.i18n.failure,
+                  response.data.message,
+                  "failure",
+                  false
+                );
+              },
+              complete: function() {
+                trackmageUnblockUi($("#trackmage-shipment-tracking .inside"));
+              }
+            });
+          }
+        );
     }
   );
 })(jQuery, window, document);

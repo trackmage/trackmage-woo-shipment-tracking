@@ -56,6 +56,7 @@ class Assets {
      * @since 1.0.0
      */
     public static function enqueueScripts() {
+        global $post;
         $screen   = get_current_screen();
         $screenId = $screen ? $screen->id : '';
         $suffix   = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
@@ -109,9 +110,9 @@ class Assets {
                     'alias'               => __('Alias', 'trackmage'),
                     'cancel'              => __('Cancel', 'trackmage'),
                     'update'              => __('Update', 'trackmage'),
-                    'successUpdateStatus' => __('Status has been updated successfully!', 'trackmage'),
-                    'successAddStatus'    => __('Status has been added successfully!', 'trackmage'),
-                    'successDeleteStatus' => __('Status has been deleted successfully!', 'trackmage'),
+                    'successUpdateStatus' => __('Status updated successfully!', 'trackmage'),
+                    'successAddStatus'    => __('Status added successfully!', 'trackmage'),
+                    'successDeleteStatus' => __('Status deleted successfully!', 'trackmage'),
                     'confirmDeleteStatus' => __('Are you sure you want to delete this status?', 'trackmage'),
                 ],
             ]);
@@ -121,11 +122,14 @@ class Assets {
             // Meta-boxes.
             wp_enqueue_script('trackmage-admin-meta-boxes');
             wp_localize_script('trackmage-admin-meta-boxes', 'trackmageAdminMetaBoxes', [
+                'orderId' => $post->ID,
                 'nonces' => [
-                    'addTrackingNumber' => wp_create_nonce('add-tracking-number'),
+                    'addShipment' => wp_create_nonce('add-shipment'),
+                    'editShipment' => wp_create_nonce('edit-shipment'),
+                    'updateShipment' => wp_create_nonce('update-shipment'),
                 ],
                 'i18n' => [
-                    'successAddTrackingNumber' => __('Tracking number added successfully.', 'trackmage'),
+                    'successAddShipment' => __('Shipment added successfully!', 'trackmage'),
                 ],
             ]);
         }

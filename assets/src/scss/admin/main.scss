@@ -1,5 +1,11 @@
+@import "inline-edit";
 @import "alerts";
 @import "order";
+
+.clear-fix {
+  display: block;
+  clear: both;
+}
 
 /** Plugin settings. */
 .wrap.trackmage {

@@ -395,7 +395,7 @@
       data: function (params) {
         return {
           term: params.statusManager.term,
-          action: "trackmage_wooselect_order_statuses"
+          action: "trackmage_get_order_statuses"
         };
       },
       processResults: function (data, params) {

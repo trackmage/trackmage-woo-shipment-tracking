@@ -1,6 +1,6 @@
 (($, window, document, undefined) => {
   const params = {
-    main: trackmageAdmin,
+    main: trackmageAdmin
   };
 
   /**
@@ -84,7 +84,7 @@
       });
   };
 
-  function blockUI(el) {
+  window.trackmageBlockUi = function trackmageBlockUi(el) {
     $(el).block({
       message: null,
       overlayCSS: {
@@ -92,11 +92,11 @@
         opacity: 0.6
       }
     });
-  }
+  };
 
-  function unblockUI(el) {
+  window.trackmageUnblockUi = function trackmageUnblockUi(el) {
     $(el).unblock();
-  }
+  };
 
   /**
    * On document ready.

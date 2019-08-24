@@ -149,7 +149,7 @@ class Admin {
 		$modified_statuses = get_option( 'trackmage_modified_order_statuses', [] );
 		$status_aliases = get_option( 'trackmage_order_status_aliases', [] );
 		$aliases = Utils::get_aliases();
-		$get_statuses = Utils::get_order_statuses();
+		$get_statuses = Utils::getOrderStatuses();
 
 		// Errors array.
 		$errors = [];
@@ -219,7 +219,7 @@ class Admin {
 		$custom_statuses = get_option( 'trackmage_custom_order_statuses', [] );
 		$status_aliases = get_option( 'trackmage_order_status_aliases', [] );
 		$aliases = Utils::get_aliases();
-		$get_statuses = Utils::get_order_statuses();
+		$get_statuses = Utils::getOrderStatuses();
 		
 		// Errors array.
 		$errors = [];
