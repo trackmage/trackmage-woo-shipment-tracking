@@ -8,19 +8,14 @@
 
 defined( 'WPINC' ) || exit;
 
-$carrier = array_map(function($c) use (&$shipment) {
-    if ($c['code'] === $shipment['carrier']) {
-        return $c['name'];
-    };
-}, $carriers)[0];
+$carrierKey = array_search($shipment['carrier'], array_column($carriers, 'code'));
+$carrier = $carriers[$carrierKey]['name'];
 ?>
 <tr class="shipment" data-meta-id="<?php echo $metaId; ?>">
     <td class="shipment__tracking-number">
         <a href=""><?php echo $shipment['tracking_number']; ?></a>
     </td>
-    <td class="shipment__status">
-        None
-    </td>
+    <td class="shipment__status"></td>
     <td class="shipment__carrier">
         <?php echo $carrier; ?>
     </td>
