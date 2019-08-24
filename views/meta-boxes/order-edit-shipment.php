@@ -8,9 +8,9 @@
 
 defined( 'WPINC' ) || exit;
 
-use TrackMage\WordPress\Utils;
+use TrackMage\WordPress\Helper;
 
-$carriers = Utils::get_shipment_carriers();
+$carriers = Helper::get_shipment_carriers();
 ?>
 <?php if (isset($shipment)) : ?>
 <div class="trackmage-edit-row">

@@ -48,7 +48,7 @@ class Endpoint {
 			ob_start();
 
 			// HTTP headers.
-			$headers = Utils::getallheaders();
+			$headers = Helper::getallheaders();
 
 			// Endpoint request.
 			$request = strtolower( $wp->query_vars['trackmage'] );

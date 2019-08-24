@@ -9,7 +9,7 @@
 
 namespace TrackMage\WordPress\Admin;
 
-use TrackMage\WordPress\Utils;
+use TrackMage\WordPress\Helper;
 
 defined('WPINC') || exit;
 
@@ -67,7 +67,7 @@ class Assets {
         wp_register_script('trackmage-admin-status-manager', TRACKMAGE_URL . 'assets/dist/js/admin/status-manager' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
         wp_register_script('trackmage-admin-meta-boxes', TRACKMAGE_URL . 'assets/dist/js/admin/meta-boxes' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
 
-        if (in_array($screenId, Utils::getScreenIds())) {
+        if (in_array($screenId, Helper::getScreenIds())) {
             // External scripts.
             wp_enqueue_script('selectWoo');
 
@@ -101,7 +101,7 @@ class Assets {
             // Status manager.
             wp_enqueue_script('trackmage-admin-status-manager');
             wp_localize_script('trackmage-admin-status-manager', 'trackmageAdminStatusManager', [
-                'aliases' => Utils::get_aliases(),
+                'aliases' => Helper::get_aliases(),
                 'i18n' => [
                     'edit'                => __('Edit', 'trackmage'),
                     'delete'              => __('Delete', 'trackmage'),

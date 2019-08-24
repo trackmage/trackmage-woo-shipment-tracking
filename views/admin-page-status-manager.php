@@ -11,15 +11,15 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-use TrackMage\WordPress\Utils;
+use TrackMage\WordPress\Helper;
 
 $sync_statuses = get_option( 'trackmage_sync_statuses', [] );
 
 // Get the registered statuses.
-$statuses = Utils::getOrderStatuses();
+$statuses = Helper::getOrderStatuses();
 
 // Get the aliases.
-$aliases = Utils::get_aliases();
+$aliases = Helper::get_aliases();
 ?>
 <div class="wrap trackmage">
     <h1><?php _e( 'Status Manager', 'trackmage' ); ?></h1>

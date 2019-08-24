@@ -3,14 +3,14 @@
  * Order shipments HTML for meta box
  */
 
-use TrackMage\WordPress\Utils;
+use TrackMage\WordPress\Helper;
 
 defined('WPINC') || exit;
 
 $order = wc_get_order($orderId);
 $orderItems = $order->get_items();
-$shipments = Utils::get_post_meta($orderId, '_trackmage_shipment');
-$carriers = Utils::get_shipment_carriers();
+$shipments = Helper::get_post_meta($orderId, '_trackmage_shipment');
+$carriers = Helper::get_shipment_carriers();
 ?>
 <input type="hidden" value="<?php echo $orderId; ?>" name="trackmage_order_id" />
 <div class="shipments">

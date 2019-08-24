@@ -66,7 +66,7 @@ class Ajax {
      * @todo Return plain resutls. Do specific selectWoo stuff in the front-end.
      */
     public static function getOrderStatuses() {
-        $statuses = Utils::getOrderStatuses();
+        $statuses = Helper::getOrderStatuses();
         $results = [];
 
         foreach ($statuses as $slug => $status) {
@@ -310,7 +310,7 @@ class Ajax {
         $order               = wc_get_order($orderId);
         $orderItems          = $order->get_items();
         $_trackmage_order_id = get_post_meta($orderId, '_trackmage_order_id', true);
-        $_trackmage_shipment = Utils::get_post_meta($orderId, '_trackmage_shipment');
+        $_trackmage_shipment = Helper::get_post_meta($orderId, '_trackmage_shipment');
 
         try {
             // Check tracking number.
@@ -414,7 +414,7 @@ class Ajax {
         $order               = wc_get_order($orderId);
         $orderItems          = $order->get_items();
         $_trackmage_order_id = get_post_meta($orderId, '_trackmage_order_id', true);
-        $_trackmage_shipment = Utils::get_post_meta($orderId, '_trackmage_shipment');
+        $_trackmage_shipment = Helper::get_post_meta($orderId, '_trackmage_shipment');
 
         // Delete shipment record from the database.
         delete_metadata_by_mid('post', $metaId);

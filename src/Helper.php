@@ -19,7 +19,7 @@ use TrackMage\Client\Swagger\ApiException;
  * @package TrackMage\WordPress
  * @author  TrackMage
  */
-class Utils {
+class Helper {
 
     /**
      * Check the validity of API credentials

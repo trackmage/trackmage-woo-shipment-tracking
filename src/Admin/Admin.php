@@ -11,7 +11,7 @@
 namespace TrackMage\WordPress\Admin;
 
 use TrackMage\WordPress\Plugin;
-use TrackMage\WordPress\Utils;
+use TrackMage\WordPress\Helper;
 use TrackMage\Client\Swagger\Model\WorkflowSetWorkflowSetIntegration;
 use TrackMage\Client\Swagger\ApiException;
 
@@ -111,7 +111,7 @@ class Admin {
 	 * @since 0.1.0
 	 */
 	public function test_credentials() {
-		$credentials = Utils::check_credentials( $_POST['clientId'], $_POST['clientSecret'] );
+		$credentials = Helper::check_credentials( $_POST['clientId'], $_POST['clientSecret'] );
 
 		if ( 0 === $credentials ) {
 			wp_send_json_error( [
@@ -148,8 +148,8 @@ class Admin {
 		$custom_statuses = get_option( 'trackmage_custom_order_statuses', [] );
 		$modified_statuses = get_option( 'trackmage_modified_order_statuses', [] );
 		$status_aliases = get_option( 'trackmage_order_status_aliases', [] );
-		$aliases = Utils::get_aliases();
-		$get_statuses = Utils::getOrderStatuses();
+		$aliases = Helper::get_aliases();
+		$get_statuses = Helper::getOrderStatuses();
 
 		// Errors array.
 		$errors = [];
@@ -218,8 +218,8 @@ class Admin {
 
 		$custom_statuses = get_option( 'trackmage_custom_order_statuses', [] );
 		$status_aliases = get_option( 'trackmage_order_status_aliases', [] );
-		$aliases = Utils::get_aliases();
-		$get_statuses = Utils::getOrderStatuses();
+		$aliases = Helper::get_aliases();
+		$get_statuses = Helper::getOrderStatuses();
 		
 		// Errors array.
 		$errors = [];
@@ -314,7 +314,7 @@ class Admin {
 		}
 
 		$client = Plugin::get_client();
-		$url = Utils::get_endpoint();
+		$url = Helper::get_endpoint();
 
 		// Find and remove any activated webhook, if any.
 		$webhook = get_option( 'trackmage_webhook', '' );

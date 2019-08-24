@@ -6,7 +6,7 @@
  * @author  TrackMage
  */
 
-use TrackMage\WordPress\Utils;
+use TrackMage\WordPress\Helper;
 
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
@@ -18,8 +18,8 @@ $client_id     = get_option( 'trackmage_client_id', '' );
 $client_secret = get_option( 'trackmage_client_secret', '' );
 $workspace     = get_option( 'trackmage_workspace', 0 );
 
-$workspaces = Utils::get_workspaces();
-$credentials = Utils::check_credentials();
+$workspaces = Helper::get_workspaces();
+$credentials = Helper::check_credentials();
 ?>
 
 <div class="intro">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu.</div>
@@ -50,7 +50,7 @@ $credentials = Utils::check_credentials();
     <!-- End Section: Credentials -->
 
     <!-- Section: Workspace -->
-    <div class="section<?php Utils::add_css_class( ! $credentials, 'disabled', true, true ); ?>">
+    <div class="section<?php Helper::add_css_class( ! $credentials, 'disabled', true, true ); ?>">
         <h2 class="headline"><?php _e( 'Workspace', 'trackmage' ); ?></h2>
         <p class="message"><?php echo sprintf( __( 'Please select a workspace in TrackMage.', 'trackmage' ) ); ?></p>
         <table class="form-table">
