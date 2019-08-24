@@ -51,6 +51,7 @@ class Ajax {
             'edit_shipment' => 'editShipment',
             'add_shipment' => 'addShipment',
             'update_shipment' => 'updateShipment',
+            'delete_shipment' => 'deleteShipment',
         ];
 
         foreach ($ajaxEvents as $name => $method) {
@@ -292,8 +293,6 @@ class Ajax {
      * @since 1.0.0
      */
     public static function updateShipment() {
-        // wp_send_json_succss(['message' => 'test']);
-
         check_ajax_referer('update-shipment', 'security');
 
         if (! current_user_can('edit_shop_orders')) {
@@ -396,5 +395,45 @@ class Ajax {
         } catch (\Exception $e) {
             wp_send_json_error(['message' => $e->getMessage()]);
         }
+    }
+
+    /**
+     * Delete shipment.
+     *
+     * @since 1.0.0
+     */
+    public static function deleteShipment() {
+        check_ajax_referer('delete-shipment', 'security');
+
+        if (! current_user_can('edit_shop_orders')) {
+            wp_die(-1);
+        }
+
+        // Request data.
+        $orderId = $_POST['orderId'];
+        $metaId = $_POST['metaId'];
+
+        // Order data.
+        $order               = wc_get_order($orderId);
+        $orderItems          = $order->get_items();
+        $_trackmage_order_id = get_post_meta($orderId, '_trackmage_order_id', true);
+        $_trackmage_shipment = Utils::get_post_meta($orderId, '_trackmage_shipment');
+
+        // Delete shipment record from the database.
+        delete_metadata_by_mid('post', $metaId);
+
+        try {
+            // Get HTML to return.
+            ob_start();
+            include TRACKMAGE_VIEWS_DIR . 'meta-boxes/order-shipments.php';
+            $html = ob_get_clean();
+        } catch (\Exception $e) {
+            wp_send_json_error(['message' => $e->getMessage()]);
+        }
+
+        wp_send_json_success([
+            'message' => __('Shipment deleted successfully!', 'trackmage'),
+            'html' => $html,
+        ]);
     }
 }

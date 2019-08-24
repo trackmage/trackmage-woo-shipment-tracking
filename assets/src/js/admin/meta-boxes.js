@@ -437,4 +437,66 @@
         );
     }
   );
+
+  /*
+   * Delete shipment.
+   */
+  $(document).on(
+    "click",
+    "#trackmage-shipment-tracking .shipment__actions__action--delete",
+    function (e) {
+      e.preventDefault();
+
+      if (confirm(params.metaBoxes.i18n.confirmDeleteShipment)) {
+        const shipment = $(this).closest(".shipment");
+        const metaId = $(shipment).data("meta-id");
+
+        $.ajax({
+          url: params.main.urls.ajax,
+          method: "post",
+          data: {
+            action: 'trackmage_delete_shipment',
+            security: params.metaBoxes.nonces.deleteShipment,
+            orderId: params.metaBoxes.orderId,
+            metaId: metaId,
+          },
+          beforeSend: function() {
+            trackmageBlockUi($("#trackmage-shipment-tracking .inside"));
+          },
+          success: function(response) {
+            console.log(response);
+            const alert = {
+              title: response.success
+                ? params.main.i18n.success
+                : params.main.i18n.failure,
+              message: response.data.message
+                ? response.data.message
+                : !response.success
+                ? params.main.i18n.unknownError
+                : "",
+              type: response.success ? "success" : "failure"
+            };
+
+            trackmageAlert(alert.title, alert.message, alert.type, false);
+
+            // Re-load the meta box.
+            $("#trackmage-shipment-tracking .inside").html(
+              response.data.html
+            );
+          },
+          error: function(response) {
+            window.trackmageAlert(
+              params.main.i18n.failure,
+              response.data.message,
+              "failure",
+              false
+            );
+          },
+          complete: function() {
+            trackmageUnblockUi($("#trackmage-shipment-tracking .inside"));
+          }
+        });
+      }
+    }
+  );
 })(jQuery, window, document);

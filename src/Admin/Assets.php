@@ -127,9 +127,10 @@ class Assets {
                     'addShipment' => wp_create_nonce('add-shipment'),
                     'editShipment' => wp_create_nonce('edit-shipment'),
                     'updateShipment' => wp_create_nonce('update-shipment'),
+                    'deleteShipment' => wp_create_nonce('delete-shipment'),
                 ],
                 'i18n' => [
-                    'successAddShipment' => __('Shipment added successfully!', 'trackmage'),
+                    'confirmDeleteShipment' => __('Are you sure you want to delete this shipment?', 'trackmage'),
                 ],
             ]);
         }
