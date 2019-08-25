@@ -102,6 +102,11 @@ class Assets {
             wp_enqueue_script('trackmage-admin-status-manager');
             wp_localize_script('trackmage-admin-status-manager', 'trackmageAdminStatusManager', [
                 'aliases' => Helper::get_aliases(),
+                'nonces' => [
+                    'addStatus' => wp_create_nonce('add-status'),
+                    'updateStatus' => wp_create_nonce('update-status'),
+                    'deleteStatus' => wp_create_nonce('delete-status'),
+                ],
                 'i18n' => [
                     'edit'                => __('Edit', 'trackmage'),
                     'delete'              => __('Delete', 'trackmage'),
@@ -110,9 +115,6 @@ class Assets {
                     'alias'               => __('Alias', 'trackmage'),
                     'cancel'              => __('Cancel', 'trackmage'),
                     'update'              => __('Update', 'trackmage'),
-                    'successUpdateStatus' => __('Status updated successfully!', 'trackmage'),
-                    'successAddStatus'    => __('Status added successfully!', 'trackmage'),
-                    'successDeleteStatus' => __('Status deleted successfully!', 'trackmage'),
                     'confirmDeleteStatus' => __('Are you sure you want to delete this status?', 'trackmage'),
                 ],
             ]);

@@ -194,7 +194,6 @@
                 trackmageBlockUi($("#trackmage-shipment-tracking .inside"));
               },
               success: function(response) {
-                console.log(response.data);
                 const alert = {
                   title: response.success
                     ? params.main.i18n.success
@@ -215,7 +214,7 @@
                 );
               },
               error: function(response) {
-                window.trackmageAlert(
+                trackmageAlert(
                   params.main.i18n.failure,
                   response.data.message,
                   "failure",
@@ -422,7 +421,7 @@
                 );
               },
               error: function(response) {
-                window.trackmageAlert(
+                trackmageAlert(
                   params.main.i18n.failure,
                   response.data.message,
                   "failure",
@@ -464,7 +463,6 @@
             trackmageBlockUi($("#trackmage-shipment-tracking .inside"));
           },
           success: function(response) {
-            console.log(response);
             const alert = {
               title: response.success
                 ? params.main.i18n.success
@@ -485,7 +483,7 @@
             );
           },
           error: function(response) {
-            window.trackmageAlert(
+            trackmageAlert(
               params.main.i18n.failure,
               response.data.message,
               "failure",

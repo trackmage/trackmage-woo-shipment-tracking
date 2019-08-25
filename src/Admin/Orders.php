@@ -30,7 +30,6 @@ class Orders {
         add_action( 'add_meta_boxes', [ $this, 'add_meta_box'] );
         add_action( 'save_post', [ $this, 'save_meta_box'] );
         add_filter( 'wc_order_statuses', [ $this, 'order_statuses' ], 999999, 1 );
-        add_action( 'wp_ajax_trackmage_order_get_order_items', [ $this, 'get_order_items' ] );
         add_filter( 'woocommerce_hidden_order_itemmeta', [ $this, 'hide_order_itemmeta' ], 10, 1 );
     }
 

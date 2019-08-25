@@ -3,10 +3,11 @@
     main: trackmageAdmin,
     statusManager: trackmageAdminStatusManager
   };
+
   /**
    * Edit status.
    */
-  $(document).on("click", "#statusManager .row-actions .edit-status", function (
+  $(document).on("click", "#statusManager .row-actions .edit-status", function(
     e
   ) {
     let tbody = $(this).closest("tbody");
@@ -54,9 +55,7 @@
                       params.statusManager.i18n.alias
                     }</span>
                     <select name="status_alias">
-                      <option value="">${
-                        params.main.i18n.noSelect
-                      }</option>
+                      <option value="">${params.main.i18n.noSelect}</option>
                       ${Object.keys(params.statusManager.aliases)
                         .map(
                           key =>
@@ -107,7 +106,7 @@
     // On cancel.
     $(editRow)
       .find("button.cancel")
-      .on("click", function () {
+      .on("click", function() {
         $(editRow).remove();
         $(row).removeClass("hidden");
       });
@@ -115,7 +114,7 @@
     // On save.
     $(editRow)
       .find("button.save")
-      .on("click", function () {
+      .on("click", function() {
         let save = $(this);
         let name = $(editRow).find('[name="status_name"]');
         let slug = $(editRow).find('[name="status_slug"]');
@@ -123,7 +122,8 @@
 
         // Request data.
         let data = {
-          action: "trackmage_status_manager_save",
+          action: "trackmage_update_status",
+          security: params.statusManager.nonces.updateStatus,
           name: $(name).val(),
           currentSlug: currentSlug,
           slug: $(slug).val(),
@@ -131,66 +131,68 @@
           isCustom: isCustom
         };
 
-        // Response message.
-        let message = "";
-
         $.ajax({
           url: params.main.urls.ajax,
           method: "post",
           data: data,
-          beforeSend: function () {
+          beforeSend: function() {
             trackmageToggleSpinner(save, "activate");
             trackmageToggleFormElement(save, "disable");
           },
-          success: function (response) {
-            trackmageToggleSpinner(save, "deactivate");
-            trackmageToggleFormElement(save, "enable");
-
-            if (response.data.status === "success") {
+          success: function(response) {
+            if (response.success) {
               updateRow(
                 response.data.result.name,
                 response.data.result.slug,
                 response.data.result.alias
               );
-              message = params.statusManager.i18n.successUpdateStatus;
               $(editRow).remove();
               $(row)
                 .removeClass("hidden")
-                .effect("highlight", {
-                  color: "#c3f3d7"
-                }, 500);
-            } else if (response.data.errors) {
-              message = response.data.errors.join(" ");
+                .effect(
+                  "highlight",
+                  {
+                    color: "#c3f3d7"
+                  },
+                  500
+                );
+            } else {
               $(editRow)
                 .removeClass("hidden")
-                .effect("highlight", {
-                  color: "#ffe0e3"
-                }, 500);
-            } else {
-              message = params.main.i18n.unknownError;
+                .effect(
+                  "highlight",
+                  {
+                    color: "#ffe0e3"
+                  },
+                  500
+                );
             }
 
-            // Response notification.
+            const alert = {
+              title: response.success
+                ? params.main.i18n.success
+                : params.main.i18n.failure,
+              message: response.data.message
+                ? response.data.message
+                : !response.success
+                ? params.main.i18n.unknownError
+                : "",
+              type: response.success ? "success" : "failure"
+            };
+
+            trackmageAlert(alert.title, alert.message, alert.type, false);
+          },
+          error: function() {
             trackmageAlert(
-              params.statusManager.i18n.updateStatus,
-              message,
-              response.data.status,
-              true
+              params.main.i18n.failure,
+              params.main.i18n.unknownError,
+              "failure",
+              false
             );
           },
-          error: function () {
+          complete: function() {
             trackmageToggleSpinner(save, "deactivate");
             trackmageToggleFormElement(save, "enable");
-
-            message = params.main.i18n.unknownError;
-
-            // Response notification.
-            trackmageAlert(
-              params.statusManager.i18n.updateStatus,
-              message,
-              response.data.status,
-              true
-            );
           }
         });
       });
@@ -209,9 +211,9 @@
       $(row)
         .find("[data-update-status-alias]")
         .html(
-          params.statusManager.aliases[alias] ?
-          params.statusManager.aliases[alias] :
-          ""
+          params.statusManager.aliases[alias]
+            ? params.statusManager.aliases[alias]
+            : ""
         );
       $(row).data("status-alias", alias);
     }
@@ -220,7 +222,7 @@
   /**
    * Add status.
    */
-  $("#statusManager .add-status #addStatus").on("click", function (e) {
+  $("#statusManager .add-status #addStatus").on("click", function(e) {
     let add = $(this);
 
     let name = $('#statusManager .add-status [name="status_name"]');
@@ -229,61 +231,55 @@
 
     // Request data.
     let data = {
-      action: "trackmage_status_manager_add",
+      action: "trackmage_add_status",
+      security: params.statusManager.nonces.addStatus,
       name: $(name).val(),
       slug: $(slug).val(),
       alias: $(alias).val()
     };
 
-    // Response message.
-    let message = "";
-
     $.ajax({
       url: params.main.urls.ajax,
       method: "post",
       data: data,
-      beforeSend: function () {
+      beforeSend: function() {
         trackmageToggleSpinner(add, "activate");
         trackmageToggleFormElement(add, "disable");
       },
-      success: function (response) {
-        trackmageToggleSpinner(add, "deactivate");
-        trackmageToggleFormElement(add, "enable");
-
-        if (response.data.status === "success") {
+      success: function(response) {
+        if (response.success) {
           addRow(
             response.data.result.name,
             response.data.result.slug,
             response.data.result.alias
           );
-          message = params.statusManager.i18n.successAddStatus;
-        } else if (response.data.errors) {
-          message = response.data.errors.join(" ");
-        } else {
-          message = params.main.i18n.unknownError;
         }
 
-        // Response notification.
+        const alert = {
+          title: response.success
+            ? params.main.i18n.success
+            : params.main.i18n.failure,
+          message: response.data.message
+            ? response.data.message
+            : !response.success
+            ? params.main.i18n.unknownError
+            : "",
+          type: response.success ? "success" : "failure"
+        };
+
+        trackmageAlert(alert.title, alert.message, alert.type, false);
+      },
+      error: function() {
         trackmageAlert(
-          params.statusManager.i18n.addStatus,
-          message,
-          response.data.status,
-          true
+          params.main.i18n.failure,
+          params.main.i18n.unknownError,
+          "failure",
+          false
         );
       },
-      error: function () {
+      complete: function() {
         trackmageToggleSpinner(add, "deactivate");
         trackmageToggleFormElement(add, "enable");
-
-        message = params.main.i18n.unknownError;
-
-        // Response notification.
-        trackmageAlert(
-          params.statusManager.i18n.addStatus,
-          message,
-          response.data.status,
-          true
-        );
       }
     });
 
@@ -304,16 +300,22 @@
               </td>
               <td><span data-update-status-slug>${slug}</span></td>
               <td colspan="2"><span data-update-status-alias>${
-                params.statusManager.aliases.hasOwnProperty(alias) ? params.statusManager.aliases[alias] : ''
+                params.statusManager.aliases.hasOwnProperty(alias)
+                  ? params.statusManager.aliases[alias]
+                  : ""
               }</span></td>
             </tr>
           `;
 
       $(row)
         .appendTo(statusManagerBody)
-        .effect("highlight", {
-          color: "#c3f3d7"
-        }, 500);
+        .effect(
+          "highlight",
+          {
+            color: "#c3f3d7"
+          },
+          500
+        );
     }
   });
 
@@ -323,60 +325,60 @@
   $(document).on(
     "click",
     "#statusManager .row-actions .delete-status",
-    function (e) {
+    function(e) {
       if (confirm(params.statusManager.i18n.confirmDeleteStatus)) {
         let row = $(this).closest("tr");
         let slug = $(row).data("status-slug");
 
         // Request data.
         let data = {
-          action: "trackmage_status_manager_delete",
+          action: "trackmage_delete_status",
+          security: params.statusManager.nonces.deleteStatus,
           slug: slug
         };
-
-        // Response message.
-        let message = "";
 
         $.ajax({
           url: params.main.urls.ajax,
           method: "post",
           data: data,
-          beforeSend: function () {},
-          success: function (response) {
-            if (response.data.status === "success") {
-              deleteRow(response.data.result.slug);
-              message = params.statusManager.i18n.successDeleteStatus;
-            } else if (response.data.errors) {
-              message = response.data.errors.join(" ");
-            } else {
-              message = params.main.i18n.unknownError;
+          beforeSend: function() {},
+          success: function(response) {
+            if (response.success) {
+              deleteRow();
             }
 
-            // Response notification.
-            trackmageAlert(
-              params.statusManager.i18n.deleteStatus,
-              message,
-              response.data.status,
-              true
-            );
-          },
-          error: function () {
-            message = params.main.i18n.unknownError;
+            const alert = {
+              title: response.success
+                ? params.main.i18n.success
+                : params.main.i18n.failure,
+              message: response.data.message
+                ? response.data.message
+                : !response.success
+                ? params.main.i18n.unknownError
+                : "",
+              type: response.success ? "success" : "failure"
+            };
 
-            // Response notification.
+            trackmageAlert(alert.title, alert.message, alert.type, false);
+          },
+          error: function() {
             trackmageAlert(
-              params.statusManager.i18n.deleteStatus,
-              message,
-              response.data.status,
-              true
+              params.main.i18n.failure,
+              params.main.i18n.unknownError,
+              "failure",
+              false
             );
           }
         });
 
-        function deleteRow(slug) {
-          $(row).effect("highlight", {
-            color: "#ffe0e3"
-          }, 500);
+        function deleteRow() {
+          $(row).effect(
+            "highlight",
+            {
+              color: "#ffe0e3"
+            },
+            500
+          );
           setTimeout(() => {
             $(row).remove();
           }, 500);
@@ -392,27 +394,20 @@
       method: "post",
       dataType: "json",
       delay: 250,
-      data: function (params) {
+      data: function(params) {
         return {
-          term: params.statusManager.term,
+          term: params.term,
           action: "trackmage_get_order_statuses"
         };
       },
-      processResults: function (data, params) {
+      processResults: function(data, params) {
         return {
           results: data.filter((s, index) => {
-            let term =
-              typeof params.statusManager.term === "undefined" ?
-              "" :
-              params.statusManager.term;
+            let term = typeof params.term === "undefined" ? "" : params.term;
             if (
               term === "" ||
-              (s.id
-                .toLowerCase()
-                .includes(params.statusManager.term.toLowerCase()) ||
-                s.text
-                .toLowerCase()
-                .includes(params.statusManager.term.toLowerCase()))
+              (s.id.toLowerCase().includes(params.term.toLowerCase()) ||
+                s.text.toLowerCase().includes(params.term.toLowerCase()))
             ) {
               return true;
             }

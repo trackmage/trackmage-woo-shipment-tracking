@@ -52,6 +52,9 @@ class Ajax {
             'add_shipment' => 'addShipment',
             'update_shipment' => 'updateShipment',
             'delete_shipment' => 'deleteShipment',
+            'add_status' => 'addStatus',
+            'update_status' => 'updateStatus',
+            'delete_status' => 'deleteStatus',
         ];
 
         foreach ($ajaxEvents as $name => $method) {
@@ -431,6 +434,202 @@ class Ajax {
         wp_send_json_success([
             'message' => __('Shipment deleted successfully!', 'trackmage'),
             'html' => $html,
+        ]);
+    }
+
+    /**
+     * Status manager: update status.
+     *
+     * @since 1.0.0
+     * @todo Refactor error handling using Exceptions instead of $errors array.
+     */
+    public function updateStatus() {
+        check_ajax_referer('update-status', 'security');
+
+        if (! current_user_can('manage_woocommerce')) {
+            wp_die(-1);
+        }
+
+        $name = $_POST['name'];
+        $current_slug = $_POST['currentSlug'];
+        $slug = $_POST['slug'];
+        $alias = $_POST['alias'];
+        $is_custom = '1' === $_POST['isCustom'] ? true : false;
+
+        $custom_statuses = get_option('trackmage_custom_order_statuses', []);
+        $modified_statuses = get_option('trackmage_modified_order_statuses', []);
+        $status_aliases = get_option('trackmage_order_status_aliases', []);
+        $aliases = Helper::get_aliases();
+        $get_statuses = Helper::getOrderStatuses();
+
+        // Errors array.
+        $errors = [];
+
+        if (empty ($name)) {
+            array_push($errors, __('Status name cannot be empty.', 'trackmage'));
+        }
+
+        if (empty ($slug)) {
+            array_push($errors, __('Status slug cannot be empty.', 'trackmage'));
+        }
+
+        if ($current_slug !== $slug && isset($get_statuses[$slug])) {
+            array_push($errors, sprintf(__('The slug <em>“%1$s”</em> is already used by another status.', 'trackmage'), $slug));
+        }
+
+        if ($is_custom && $current_slug !== $slug) {
+            unset($custom_statuses[$current_slug]);
+        }
+        
+        if (! $is_custom && $current_slug !== $slug) {
+            array_push($errors, __('The slug of core statuses and statuses created by other plugins and themes cannot be changed.', 'trackmage'));
+        }
+
+        if ($is_custom) {
+            $custom_statuses[$slug] = __($name, 'trackmage');
+        } else {
+            $modified_statuses[$slug] = __($name, 'trackmage');
+        }
+
+        if (! empty($alias)
+            && in_array($alias, $status_aliases)
+            && isset($status_aliases[$current_slug])
+            && $alias !== $status_aliases[$current_slug])
+        {
+            array_push($errors, sprintf(__('The alias <em>“%1$s”</em> is already assigned to another status.', 'trackmage'), $aliases[$alias]));
+        } else {
+            $status_aliases[$slug] = $alias;
+        }
+
+        if (! empty($errors)) {
+            wp_send_json_error([
+                'message' => $errors,
+            ]);
+        }
+
+        update_option('trackmage_custom_order_statuses', $custom_statuses);
+        update_option('trackmage_modified_order_statuses', $modified_statuses);
+        update_option('trackmage_order_status_aliases', $status_aliases);
+
+        wp_send_json_success([
+            'message' => __('Status updated successfully!', 'trackmage'),
+            'result' => [
+                'name'  => $name,
+                'slug'  => $slug,
+                'alias' => $alias,
+            ]
+        ]);
+    }
+
+    /**
+     * Status manager: add new status.
+     *
+     * @since 1.0.0
+     * @todo Refactor error handling using Exceptions instead of $errors array.
+     */
+    public function addStatus() {
+        check_ajax_referer('add-status', 'security');
+
+        if (! current_user_can('manage_woocommerce')) {
+            wp_die(-1);
+        }
+
+        $name  = $_POST['name'];
+        $slug  = strtolower('wc-' . $_POST['slug']);
+        $alias = $_POST['alias'];
+
+        $custom_statuses = get_option('trackmage_custom_order_statuses', []);
+        $status_aliases = get_option('trackmage_order_status_aliases', []);
+        $aliases = Helper::get_aliases();
+        $get_statuses = Helper::getOrderStatuses();
+        
+        // Errors array.
+        $errors = [];
+
+        if (empty ($name)) {
+            array_push($errors, __('Status name cannot be empty.', 'trackmage'));
+        }
+
+        if  (empty($_POST['slug'])) {
+            $slug = 'wc-' . preg_replace('#\s+#', '-', strtolower($name));
+        }
+
+        if (isset($get_statuses[$slug])) {
+            array_push($errors, sprintf(__('The slug <em>“%1$s”</em> is already used by another status.', 'trackmage'), $slug));
+        }
+
+        if (! empty($alias) && in_array($alias, $status_aliases)) {
+            array_push($errors, sprintf(__('The alias <em>“%1$s”</em> is already assigned to another status.', 'trackmage'), $aliases[$alias]));
+        } else if (! empty($alias)) {
+            $status_aliases[$slug] = $alias;
+        }
+
+        if (! empty($errors)) {
+            wp_send_json_error([
+                'message' => $errors,
+            ]);
+        }
+
+        $custom_statuses[$slug] = __($name, 'trackmage');
+
+        update_option('trackmage_custom_order_statuses', $custom_statuses);
+        update_option('trackmage_order_status_aliases', $status_aliases);
+
+        wp_send_json_success([
+            'message' => __('Status added successfully!', 'trackmage'),
+            'result' => [
+                'name'  => $name,
+                'slug'  => $slug,
+                'alias' => $alias,
+            ]
+        ]);
+    }
+
+    /**
+     * Status manager: delete status.
+     *
+     * @since 1.0.0
+     * @todo Refactor error handling using Exceptions instead of $errors array.
+     */
+    public function deleteStatus() {
+        check_ajax_referer('delete-status', 'security');
+
+        if (! current_user_can('manage_woocommerce')) {
+            wp_die(-1);
+        }
+
+        $slug = $_POST['slug'];
+        $custom_statuses = get_option('trackmage_custom_order_statuses', []);
+        $status_aliases = get_option('trackmage_order_status_aliases', []);
+        
+        // Errors array.
+        $errors = [];
+
+        if (empty ($slug)) {
+            array_push($errors, __('Could not delete the selected status.', 'trackmage'));
+        }
+
+        if (! array_key_exists($slug, $custom_statuses)) {
+            array_push($errors, __('Core statuses and statuses created by other plugins and themes cannot be deleted.', 'trackmage'));
+        }
+
+        if (! empty($errors)) {
+            wp_send_json_error([
+                'message' => $errors,
+            ]);
+        }
+
+        unset($custom_statuses[$slug]);
+        unset($status_aliases[$slug]);
+
+        update_option('trackmage_custom_order_statuses', $custom_statuses);
+        update_option('trackmage_order_status_aliases', $status_aliases);
+
+        wp_send_json_success([
+            'message' => __('Status deleted successfully', 'trackmage'),
+            'result' => [
+                'name'  => $name,
+            ]
         ]);
     }
 }
