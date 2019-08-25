@@ -10,7 +10,7 @@
 	"require": {
 		"brightnucleus/config": "^0.4",
 		"symfony/property-access": "^3.4|^4.3",
-		"trackmage/trackmage-sdk-php": "dev-master"
+		"trackmage/trackmage-sdk-php": "dev-shipments"
 	},
 	"require-dev": {
 		"ext-intl": "*",

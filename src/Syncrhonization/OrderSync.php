@@ -15,6 +15,17 @@ class OrderSync implements EntitySyncInterface
     /** @var ChangesDetector */
     private $changesDetector;
 
+    /** @var string|null */
+    private $source;
+
+    /**
+     * @param string|null $source
+     */
+    public function __construct($source = null)
+    {
+        $this->source = $source;
+    }
+
     /**
      * @return ChangesDetector
      */
@@ -54,6 +65,7 @@ class OrderSync implements EntitySyncInterface
                         'json' => [
                             'workspace' => '/workspaces/' . $workspace,
                             'externalSyncId' => (string)$order_id,
+                            'externalSource' => $this->source,
                             'orderNumber' => $order->get_order_number(),
                             'status' => ['name' => $order->get_status()],
                         ]
@@ -79,8 +91,6 @@ class OrderSync implements EntitySyncInterface
                 try {
                     $guzzleClient->put("/orders/{$trackmage_order_id}", [
                         'json' => [
-                            'externalSyncId' => (string)$order_id,
-                            'orderNumber' => $order->get_order_number(),
                             'status' => ['name' => $order->get_status()],
                         ]
                     ]);
@@ -114,8 +124,7 @@ class OrderSync implements EntitySyncInterface
         $content = $response->getBody()->getContents();
         if (false !== strpos($content, 'externalSyncId')) {
             $query['externalSyncId'] = $order->get_id();
-        } elseif (false !== strpos($content, 'orderNumber')) {
-            $query['orderNumber'] = $order->get_order_number();
+            $query['externalSource'] = $this->source;
         } else {
             return null;
         }

@@ -17,6 +17,17 @@ class OrderItemSync implements EntitySyncInterface
     /** @var ChangesDetector */
     private $changesDetector;
 
+    /** @var string|null */
+    private $source;
+
+    /**
+     * @param string|null $source
+     */
+    public function __construct($source = null)
+    {
+        $this->source = $source;
+    }
+
     /**
      * @return ChangesDetector
      */
@@ -87,6 +98,7 @@ class OrderItemSync implements EntitySyncInterface
                             'price' => $product->get_price(),
                             'rowTotal' => $item->get_total(),
                             'externalSyncId' => (string)$orderItemId,
+                            'externalSource' => $this->source,
                         ]
                     ]);
                     $result = json_decode( $response->getBody()->getContents(), true );
@@ -114,7 +126,6 @@ class OrderItemSync implements EntitySyncInterface
                             'qty' => $item['quantity'],
                             'price' => $product->get_price(),
                             'rowTotal' => $item->get_total(),
-                            'externalSyncId' => (string)$orderItemId,
                         ]
                     ]);
                 } catch (ClientException $e) {
@@ -147,6 +158,7 @@ class OrderItemSync implements EntitySyncInterface
         $content = $response->getBody()->getContents();
         if (false !== strpos($content, 'externalSyncId')) {
             $query['externalSyncId'] = $item->get_id();
+            $query['externalSource'] = $this->source;
         } else {
             return null;
         }

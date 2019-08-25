@@ -8,6 +8,8 @@ use TrackMage\WordPress\Syncrhonization\OrderSync;
 
 class Synchronizer
 {
+    const SOURCE = 'wp';
+
     /** @var bool ignore events */
     private $disableEvents = false;
 
@@ -136,7 +138,7 @@ class Synchronizer
     private function getOrderSync()
     {
         if (null === $this->orderSync) {
-            $this->orderSync = new OrderSync();
+            $this->orderSync = new OrderSync(self::SOURCE);
         }
         return $this->orderSync;
     }
@@ -147,7 +149,7 @@ class Synchronizer
     private function getOrderItemSync()
     {
         if (null === $this->orderItemSync) {
-            $this->orderItemSync = new OrderItemSync();
+            $this->orderItemSync = new OrderItemSync(self::SOURCE);
         }
         return $this->orderItemSync;
     }

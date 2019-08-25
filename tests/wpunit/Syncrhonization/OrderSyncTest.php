@@ -9,6 +9,7 @@ class OrderSyncTest extends WPTestCase {
     use GuzzleMockTrait;
     const TM_ORDER_ID = 'tm-order-id';
     const TM_WS_ID = '1001';
+    const SOURCE = 'wp';
 
     /** @var WpunitTester */
     protected $tester;
@@ -27,7 +28,7 @@ class OrderSyncTest extends WPTestCase {
 
     protected function _before()
     {
-        $this->orderSync = new OrderSync();
+        $this->orderSync = new OrderSync(self::SOURCE);
     }
 
     public function testNewOrderGetsPosted()
@@ -56,6 +57,7 @@ class OrderSyncTest extends WPTestCase {
         ]);
         $this->assertSubmittedJsonIncludes([
             'externalSyncId' => (string) $wcId,
+            'externalSource' => self::SOURCE,
             'orderNumber' => $wcOrder->get_order_number(),
             'status' => ['name' => 'completed'],
         ], $requests[0]['request']);
@@ -88,8 +90,6 @@ class OrderSyncTest extends WPTestCase {
             ['PUT', '/orders/'.self::TM_ORDER_ID],
         ]);
         $this->assertSubmittedJsonIncludes([
-            'externalSyncId' => (string) $wcId,
-            'orderNumber' => $wcOrder->get_order_number(),
             'status' => ['name' => 'pending'],
         ], $requests[0]['request']);
     }
@@ -122,37 +122,6 @@ class OrderSyncTest extends WPTestCase {
         self::assertCount(1, $requests);
     }
 
-    public function testIfSameExistsItLookUpIdByOrderNumberId()
-    {
-        //GIVEN
-        add_option('trackmage_workspace', self::TM_WS_ID);
-
-        $requests = [];
-        $guzzleClient = $this->createClient([
-            $this->createJsonResponse(400, ['hydra:description' => 'orderNumber: This value is already used.']),
-            $this->createJsonResponse(200, ['hydra:member' => [['id' => self::TM_ORDER_ID]]]),
-            $this->createJsonResponse(201, ['id' => self::TM_ORDER_ID]),
-        ], $requests);
-        $this->initPlugin($guzzleClient);
-
-        // pre-create order item in WC
-        $wcOrder = wc_create_order();
-        $wcId = $wcOrder->get_id();
-
-        //WHEN
-        $this->orderSync->sync($wcId);
-
-        //THEN
-        // make sure it updates the linked order in TM
-        $this->assertMethodsWereCalled($requests, [
-            ['POST', '/orders'],
-            ['GET', '/workspaces/'.self::TM_WS_ID.'/orders', ['orderNumber' => $wcOrder->get_order_number()]],
-            ['PUT', '/orders/'.self::TM_ORDER_ID],
-        ]);
-
-        self::assertSame(self::TM_ORDER_ID, get_post_meta( $wcId, '_trackmage_order_id', true ));
-    }
-
     public function testIfSameExistsItLookUpIdByExternalSyncId()
     {
         //GIVEN
@@ -177,7 +146,7 @@ class OrderSyncTest extends WPTestCase {
         // make sure it updates the linked order in TM
         $this->assertMethodsWereCalled($requests, [
             ['POST', '/orders'],
-            ['GET', '/workspaces/'.self::TM_WS_ID.'/orders', ['externalSyncId' => (string) $wcId]],
+            ['GET', '/workspaces/'.self::TM_WS_ID.'/orders', ['externalSyncId' => (string) $wcId, 'externalSource' => self::SOURCE]],
             ['PUT', '/orders/'.self::TM_ORDER_ID],
         ]);
 

@@ -20,6 +20,7 @@ class OrderItemSyncTest extends WPTestCase
     const TM_ORDER_ID = 'tm-order-id';
     const PRODUCT_NAME = 'Test Product';
     const TM_ORDER_ITEM_ID = 'tm-order-item-id';
+    const SOURCE = 'wp';
 
     /** @var WpunitTester */
     protected $tester;
@@ -47,7 +48,7 @@ class OrderItemSyncTest extends WPTestCase
 
     protected function _before()
     {
-        $this->orderItemSync = new OrderItemSync();
+        $this->orderItemSync = new OrderItemSync(self::SOURCE);
     }
 
     public function testOrderItemIsNotPostedBecauseOrderMustBeSyncedFirst()
@@ -104,6 +105,7 @@ class OrderItemSyncTest extends WPTestCase
 //            'price' => self::PRICE, TODO: price is empty
             'rowTotal' => self::PRICE,
             'externalSyncId' => $wcItemId,
+            'externalSource' => self::SOURCE,
         ], $requests[0]['request']);
         //make sure that TM ID is saved to WC order item meta
         self::assertSame(self::TM_ORDER_ITEM_ID, wc_get_order_item_meta($wcItemId, '_trackmage_order_item_id', true));
@@ -141,7 +143,6 @@ class OrderItemSyncTest extends WPTestCase
             'qty' => self::QTY,
 //            'price' => self::PRICE, TODO: price is empty
             'rowTotal' => self::PRICE,
-            'externalSyncId' => $wcItemId,
         ], $requests[0]['request']);
     }
 
@@ -203,7 +204,7 @@ class OrderItemSyncTest extends WPTestCase
         // make sure it updates the linked order item in TM
         $this->assertMethodsWereCalled($requests, [
             ['POST', '/order_items'],
-            ['GET', '/orders/'.self::TM_ORDER_ID.'/items', ['externalSyncId' => $wcItemId]],
+            ['GET', '/orders/'.self::TM_ORDER_ID.'/items', ['externalSyncId' => $wcItemId, 'externalSource' => self::SOURCE]],
             ['PUT', '/order_items/'.self::TM_ORDER_ITEM_ID],
         ]);
         //make sure that TM ID is saved to WC order item meta

@@ -35,7 +35,7 @@ class Helper {
 
         try {
             $client = new TrackMageClient( $client_id, $client_secret );
-            $client->setHost('https://api.stage.trackmage.com');
+            $client->setHost('https://api.test.trackmage.com');
             $workspaces = $client->getWorkspaceApi()->getWorkspaceCollection();
         } catch( ApiException $e ) {
             if ( 'Authorization error' === $e->getMessage() ) {

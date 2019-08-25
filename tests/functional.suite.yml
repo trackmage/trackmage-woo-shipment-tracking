@@ -37,5 +37,5 @@ modules:
             themes: '/wp-content/themes'
             uploads: '/wp-content/uploads'
         Helper\Functional:
-            trackmageApi: 'https://api.stage.trackmage.com'
+            trackmageApi: 'https://api.test.trackmage.com'
             buildFlavor: '%BUILD_FLAVOR%'
