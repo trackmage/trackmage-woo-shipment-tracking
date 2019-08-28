@@ -21,6 +21,8 @@ $trackmage_settings = [
 return [
 	'TrackMage' => [
 		'WordPress' => [
+		    'dropOnDeactivate' => true,
+            'logLevel' => 'info',
 			'Plugin'   => $trackmage_plugin,
 			'Settings' => $trackmage_settings,
 		],

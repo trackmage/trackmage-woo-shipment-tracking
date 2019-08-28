@@ -34,7 +34,7 @@ class OrderItemSyncTest extends WPTestCase
     public static function _setUpBeforeClass() {
         parent::_setUpBeforeClass();
 
-        $synchronizer = Plugin::get_synchronizer();
+        $synchronizer = Plugin::instance()->getSynchronizer();
         $synchronizer->setDisableEvents(true);
 
         WC()->init();

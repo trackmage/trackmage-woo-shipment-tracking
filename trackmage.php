@@ -24,12 +24,16 @@
  * Requires WP:       4.7
  */
 
+use BrightNucleus\Config\ConfigFactory;
+use TrackMage\WordPress\Plugin;
+
+
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-if ( version_compare( PHP_VERSION, '5.6', '<' ) ) {
+if (PHP_VERSION_ID < 50600) {
 	add_action( 'plugins_loaded', 'trackmage_init_deactivation' );
 
 	/**
@@ -71,7 +75,87 @@ if ( version_compare( PHP_VERSION, '5.6', '<' ) ) {
 	return false;
 }
 
+
+
+if ( ! defined( 'TRACKMAGE_VERSION' ) ) {
+    // phpcs:ignore NeutronStandard.Constants.DisallowDefine.Define
+    define( 'TRACKMAGE_VERSION', '1.0.0' );
+}
+
+if ( ! defined( 'TRACKMAGE_DIR' ) ) {
+    // phpcs:ignore NeutronStandard.Constants.DisallowDefine.Define
+    define( 'TRACKMAGE_DIR', plugin_dir_path( __FILE__ ) );
+}
+
+if ( ! defined( 'TRACKMAGE_VIEWS_DIR' ) ) {
+    // phpcs:ignore NeutronStandard.Constants.DisallowDefine.Define
+    define( 'TRACKMAGE_VIEWS_DIR', plugin_dir_path( __FILE__ ) . 'views/' );
+}
+
+if ( ! defined( 'TRACKMAGE_URL' ) ) {
+    // phpcs:ignore NeutronStandard.Constants.DisallowDefine.Define
+    define( 'TRACKMAGE_URL', plugin_dir_url( __FILE__ ) );
+}
+
+// Load Composer autoloader.
+if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
+    require_once __DIR__ . '/vendor/autoload.php';
+}
+require_once ABSPATH . '/wp-admin/includes/plugin.php';
+
+define('TRACKMAGE_PLUGIN_FILE',	__FILE__);
+
+add_action('plugins_loaded', 'trackMageInit');
+register_activation_hook(__FILE__, 'trackMageActivate');
+register_deactivation_hook(__FILE__, 'trackMageDeactivate');
+
+
 /**
- * Load plugin initialisation file.
+ * trackMageActivate
+ *
+ * Plugin activate event
  */
-require plugin_dir_path( __FILE__ ) . '/init.php';
+function trackMageActivate() {
+    Plugin::instance()->init(ConfigFactory::create( __DIR__ . '/config/defaults.php' )->getSubConfig( 'TrackMage\WordPress' ));
+
+    foreach(Plugin::instance()->getRepos() as $repository) {
+        try {
+            $repository->init();
+        } catch(Exception $e) {
+            Plugin::instance()->getLogger()->critical("Unable to create table {$repository->getTable()}: {$e->getMessage()}");
+        }
+    }
+}
+
+/**
+ * Plugin deactivate event
+ */
+function trackMageDeactivate() {
+    foreach(Plugin::instance()->getRepos() as $repository) {
+        try {
+            $repository->drop();
+        } catch(Exception $e) {
+            Plugin::instance()->getLogger()->critical("Unable to drop table {$repository->getTable()}: {$e->getMessage()}");
+        }
+    }
+}
+
+
+/**
+ * Initialize trackMage plugin components
+ */
+function trackMageInit() {
+    if(!is_plugin_active('woocommerce/woocommerce.php') && !is_plugin_active_for_network('woocommerce/woocommerce.php')) {
+        add_action('admin_notices', 'trackMageWooCommerceError');
+        return;
+    }
+    Plugin::instance()->init(ConfigFactory::create( __DIR__ . '/config/defaults.php' )->getSubConfig( 'TrackMage\WordPress' ));
+}
+
+
+/**
+ * Display error message: WooCommerce not active
+ */
+function trackMageWooCommerceError() {
+    printf('<div class="error"><p>%s</p></div>', __('To use TrackMage for WooCommerce it is required that WooCommerce is installed and activated'));
+}

@@ -3,7 +3,6 @@ config/***
 languages/***
 src/***
 views/***
-init.php
 trackmage.php
 composer.json
 gulpfile.js

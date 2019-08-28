@@ -14,10 +14,12 @@ use TrackMage\WordPress\Admin\Admin;
 use TrackMage\WordPress\Admin\Orders;
 use BrightNucleus\Config\ConfigInterface;
 use BrightNucleus\Config\ConfigTrait;
-use BrightNucleus\Config\Exception\FailedToProcessConfigException;
-use BrightNucleus\Settings\Settings;
 use TrackMage\Client\TrackMageClient;
 use TrackMage\Client\Swagger\ApiException;
+use TrackMage\WordPress\Repository\EntityRepositoryInterface;
+use TrackMage\WordPress\Repository\LogRepository;
+use TrackMage\WordPress\Repository\ShipmentItemRepository;
+use TrackMage\WordPress\Repository\ShipmentRepository;
 
 /**
  * Main plugin class.
@@ -27,6 +29,20 @@ use TrackMage\Client\Swagger\ApiException;
 class Plugin {
 
 	use ConfigTrait;
+
+	/** @var ShipmentRepository|null */
+	private $shipmentRepo;
+
+	/** @var ShipmentItemRepository|null */
+	private $shipmentItemRepo;
+
+	/** @var LogRepository|null */
+	private $logRepo;
+
+	/** @var Logger|null */
+	private $logger;
+
+	private $wpdb;
 
 	/**
 	 * Static instance of the plugin.
@@ -46,7 +62,15 @@ class Plugin {
 	protected static $client = null;
 
 	/** @var Synchronizer */
-	private static $synchronizer;
+	private $synchronizer;
+
+    /**
+     * @param \wpdb $wpdb
+     */
+    public function __construct($wpdb)
+    {
+        $this->wpdb = $wpdb;
+    }
 
 	/**
 	 * Returns the singleton instance of TrackMageClient.
@@ -77,44 +101,39 @@ class Plugin {
     /**
      * @return Synchronizer
      */
-    public static function get_synchronizer()
+    public function getSynchronizer()
     {
-        if (self::$synchronizer === null) {
-            self::$synchronizer = new Synchronizer();
+        if ($this->synchronizer === null) {
+            $this->synchronizer = new Synchronizer($this->getLogger());
         }
 
-        return self::$synchronizer;
+        return $this->synchronizer;
 	}
 
-	/**
-	 * Instantiate a Plugin object.
-	 *
-	 * Don't call the constructor directly, use the `Plugin::get_instance()`
-	 * static method instead.
-	 *
-	 * @since 0.1.0
-	 *
-	 * @throws FailedToProcessConfigException If the Config could not be parsed correctly.
-	 * @param ConfigInterface $config Config to parametrize the object.
-	 */
-	public function __construct( ConfigInterface $config ) {
-		$this->processConfig( $config );
-	}
+    /**
+     * @return self
+     */
+    public static function instance() {
+        if(null === self::$instance) {
+            global $wpdb;
+            self::$instance = new self($wpdb);
+        }
+        return self::$instance;
+    }
 
-	/**
+    /**
 	 * Launch the initialization process.
 	 *
 	 * @since 0.1.0
 	 */
-	public function run() {
-		// Hooks.
-		add_action( 'plugins_loaded', [ $this, 'load_textdomain' ] );
+	public function init(ConfigInterface $config) {
+        $this->processConfig( $config );
 
 		// Initialize classes.
 		new Endpoint;
 		new Templates;
 		new Admin;
-		new Orders(self::get_synchronizer());
+		new Orders($this->getSynchronizer());
 
 		$init_classes = [
 			'Ajax',
@@ -127,11 +146,53 @@ class Plugin {
 		}
 	}
 
-	/**
-	 * Load the plugin text domain.
-	 *
-	 * @since 0.1.0
-	 */
-	public function load_textdomain() {
-	}
+    /**
+     * @return ShipmentRepository
+     */
+    public function getShipmentRepo() {
+        if($this->shipmentRepo === null) {
+            $dropOnDeactivate = $this->getConfigKey('dropOnDeactivate');
+            $this->shipmentRepo = new ShipmentRepository($this->wpdb, $dropOnDeactivate);
+        }
+        return $this->shipmentRepo;
+    }
+
+    /**
+     * @return ShipmentItemRepository
+     */
+    public function getShipmentItemsRepo() {
+        if($this->shipmentItemRepo === null) {
+            $dropOnDeactivate = $this->getConfigKey('dropOnDeactivate');
+            $this->shipmentItemRepo = new ShipmentItemRepository($this->wpdb, $dropOnDeactivate);
+        }
+        return $this->shipmentItemRepo;
+    }
+
+    /**
+     * @return LogRepository
+     */
+    public function getLogRepo() {
+        if($this->logRepo === null) {
+            $dropOnDeactivate = $this->getConfigKey('dropOnDeactivate');
+            $this->logRepo = new LogRepository($this->wpdb, $dropOnDeactivate);
+        }
+        return $this->logRepo;
+    }
+
+    /**
+     * @return Logger
+     */
+    public function getLogger() {
+        if($this->logger === null) {
+            $this->logger = new Logger($this->getLogRepo());
+        }
+        return $this->logger;
+    }
+
+    /**
+     * @return EntityRepositoryInterface[]
+     */
+    public function getRepos() {
+        return [$this->getShipmentRepo(), $this->getShipmentItemsRepo(), $this->getLogRepo()];
+    }
 }

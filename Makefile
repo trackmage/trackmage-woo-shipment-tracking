@@ -144,7 +144,7 @@ ensure_pingable_hosts:
 
 ci_prepare: ci_before_install ensure_pingable_hosts ci_install ci_before_script
 
-ci_local_prepare: sync_hosts_entries ci_before_install ensure_pingable_hosts ci_install ci_before_script
+ci_local_prepare: ci_before_install ensure_pingable_hosts ci_install ci_before_script
 
 ci_run: ci_prepare ci_script
 

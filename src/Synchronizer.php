@@ -2,6 +2,7 @@
 
 namespace TrackMage\WordPress;
 
+use Psr\Log\LoggerInterface;
 use TrackMage\WordPress\Exception\RuntimeException;
 use TrackMage\WordPress\Syncrhonization\OrderItemSync;
 use TrackMage\WordPress\Syncrhonization\OrderSync;
@@ -9,6 +10,7 @@ use TrackMage\WordPress\Syncrhonization\OrderSync;
 class Synchronizer
 {
     const SOURCE = 'wp';
+    const TAG = '[Synchronizer]';
 
     /** @var bool ignore events */
     private $disableEvents = false;
@@ -19,8 +21,11 @@ class Synchronizer
     /** @var OrderItemSync|null */
     private $orderItemSync;
 
-    public function __construct()
+    private $logger;
+
+    public function __construct(LoggerInterface $logger)
     {
+        $this->logger = $logger;
         $this->bindEvents();
     }
 
@@ -61,54 +66,54 @@ class Synchronizer
         add_action( 'woocommerce_delete_order_item', [ $this, 'deleteOrderItem' ], 10, 1 );
     }
 
-    public function syncOrder( $order_id ) {
+    public function syncOrder($orderId ) {
         if ($this->disableEvents) {
             return;
         }
         try {
-            $this->getOrderSync()->sync($order_id);
+            $this->getOrderSync()->sync($orderId);
         } catch (RuntimeException $e) {
-            //log error
+            $this->logger->warning(self::TAG.'Unable to sync remote order', ['order_id' => $orderId]);
         }
     }
 
-    public function deleteOrder( $order_id )
+    public function deleteOrder($orderId)
     {
         if ($this->disableEvents) {
             return;
         }
-        $order = wc_get_order( $order_id );
+        $order = wc_get_order( $orderId );
         foreach ($order->get_items() as $item) { //woocommerce_delete_order_item is not fired on order delete
             $this->deleteOrderItem($item->get_id());
         }
         try {
-            $this->getOrderSync()->delete($order_id);
+            $this->getOrderSync()->delete($orderId);
         } catch (RuntimeException $e) {
-            //log error
+            $this->logger->warning(self::TAG.'Unable to delete remote order', ['order_id' => $orderId]);
         }
     }
 
-    public function syncOrderItem( $order_item_id )
+    public function syncOrderItem($itemId )
     {
         if ($this->disableEvents) {
             return;
         }
         try {
-            $this->getOrderItemSync()->sync($order_item_id);
+            $this->getOrderItemSync()->sync($itemId);
         } catch (RuntimeException $e) {
-            //log error
+            $this->logger->warning(self::TAG.'Unable to sync remote order item', ['item_id' => $itemId]);
         }
     }
 
-    public function deleteOrderItem( $item_id )
+    public function deleteOrderItem($itemId )
     {
         if ($this->disableEvents) {
             return;
         }
         try {
-            $this->getOrderItemSync()->delete($item_id);
+            $this->getOrderItemSync()->delete($itemId);
         } catch (RuntimeException $e) {
-            //log error
+            $this->logger->warning(self::TAG.'Unable to delete remote order item', ['item_id' => $itemId]);
         }
     }
 
