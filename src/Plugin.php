@@ -193,6 +193,6 @@ class Plugin {
      * @return EntityRepositoryInterface[]
      */
     public function getRepos() {
-        return [$this->getShipmentRepo(), $this->getShipmentItemsRepo(), $this->getLogRepo()];
+        return [$this->getLogRepo(), $this->getShipmentRepo(), $this->getShipmentItemsRepo()];
     }
 }

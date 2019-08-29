@@ -142,8 +142,8 @@ class Ajax {
         $orderId = $_POST['orderId'];
         $order = wc_get_order($orderId);
         $orderItems = $order->get_items();
-        $metaId = $_POST['metaId'];
-        $shipment = get_post_meta_by_id($metaId) ? get_post_meta_by_id($metaId)->meta_value : false;
+        $shipmentId = $_POST['id'];
+        $shipment = Helper::geShipmentWithJoinedItems($shipmentId);
 
         if ($shipment) {
             try {
@@ -160,11 +160,7 @@ class Ajax {
                 'tracking_number' => $shipment['tracking_number'],
                 'carrier' => $shipment['carrier'],
                 'items' => array_map(function($item) use ($orderItems) {
-                    return [
-                        'name' => $orderItems[$item['order_item_id']]['name'],
-                        'order_item_id' => $item['order_item_id'],
-                        'qty' => $item['qty'],
-                    ];
+                    return array_merge($item, ['name' => $orderItems[$item['order_item_id']]['name']]);
                 }, $shipment['items']),
             ]);
         }
@@ -186,91 +182,37 @@ class Ajax {
 
         // Request data.
         $orderId = $_POST['orderId'];
-        $trackingNumber = $_POST['trackingNumber'];
-        $carrier = $_POST['carrier'];
         $addAllOrderItems = $_POST['addAllOrderItems'] === 'true' ? true : false;
-        $items = $_POST['items'];
+
+        $shipment = [
+            'order_id' => $_POST['orderId'],
+            'tracking_number' => $_POST['trackingNumber'],
+            'carrier' => $_POST['carrier'],
+            'items' => $_POST['items'],
+        ];
 
         // Order data.
         $order               = wc_get_order($orderId);
         $orderItems          = $order->get_items();
-        $_trackmage_order_id = get_post_meta($orderId, '_trackmage_order_id', true);
-        $_trackmage_shipment = get_post_meta($orderId, '_trackmage_shipment', false);
+        $existingShipments = Helper::getOrderShipmentsWithJoinedItems($orderId);
 
         try {
-            // Check tracking number.
-            if (empty($trackingNumber)) {
-                throw new \Exception(__('Tracking number cannot be left empty.', 'trackmage'));
-            }
-
-            // Check carrier.
-            if (empty($carrier)) {
-                throw new \Exception(__('Carrier cannot be left empty.', 'trackmage'));
-            }
-
-            // Check if no items added.
-            if (! is_array($items) || empty($items)) {
-                throw new \Exception(__('No items added.', 'trackmage'));
-            }
-
             if ($addAllOrderItems) {
-                if (! empty($_trackmage_shipment)) {
+                if (! empty($existingShipments)) {
                     throw new \Exception(__('Other shipments have already been created, please delete them first or uncheck “Add all order items”.','trackmage'));
                 }
 
-                $items = [];
-                array_walk($orderItems, function(&$item, $key) use (&$items) {
-                    array_push($items, [
-                        'order_item_id' => $key,
+                $shipment['items'] = array_map(function(\WC_Order_Item $item) {
+                    return [
+                        'order_item_id' => $item->get_id(),
                         'qty' => $item->get_quantity(),
-                    ]);
-                });
+
+                    ];
+                }, $orderItems);
             }
 
-            foreach ($items as $item) {
-                // Check if any of the selected items no longer exists.
-                if (! array_key_exists($item['order_item_id'], $orderItems)) {
-                    throw new \Exception(__('Order item does not exist.', 'trackmage'));
-                }
-            }
-
-            foreach ($items as $item) {
-                // Check if any of the items has non-positive quantities.
-                if (0 >= $item['qty']) {
-                    throw new \Exception(__('Item quantity must be a positive integer.', 'trackmage'));
-                }
-
-                // Check the available quantities for each item.
-                $totalQty = $orderItems[$item['order_item_id']]->get_quantity();
-                $usedQty = 0;
-                foreach ($_trackmage_shipment as $shipment) {
-                    foreach ($shipment['items'] as $shipmentItem) {
-                        if ($item['order_item_id'] === $shipmentItem['order_item_id']) {
-                            $usedQty += (int) $shipmentItem['qty'];
-                        }
-                    }
-                }
-                $availQty = $totalQty - $usedQty;
-
-                // Check the available quantities of each item.
-                if ($availQty < $item['qty']) {
-                    throw new \Exception(__('No available quantity.', 'trackmage'));
-                }
-            }
-
-
-            // Insert shipment details into the database.
-            add_post_meta(
-                $orderId,
-                '_trackmage_shipment',
-                [
-                    'id' => '1333-test-guid-from-api',
-                    'tracking_number' => $trackingNumber,
-                    'carrier' => $carrier,
-                    'items' => $items,
-                ],
-                false
-            );
+            Helper::validateShipment($shipment, $orderItems, $existingShipments);
+            $shipment = Helper::saveShipmentWithJoinedItems($shipment);
 
             try {
                 // Get HTML to return.
@@ -304,80 +246,26 @@ class Ajax {
 
         // Request data.
         $orderId = $_POST['orderId'];
-        $metaId = $_POST['metaId'];
-        $trackingNumber = $_POST['trackingNumber'];
-        $carrier = $_POST['carrier'];
-        $items = $_POST['items'];
+
+        $shipment = [
+            'id' => $_POST['id'],
+            'order_id' => $_POST['orderId'],
+            'tracking_number' => $_POST['trackingNumber'],
+            'carrier' => $_POST['carrier'],
+            'items' => $_POST['items'],
+        ];
+
+        $existingShipments = Helper::getOrderShipmentsWithJoinedItems($orderId);
 
         // Order data.
         $order               = wc_get_order($orderId);
         $orderItems          = $order->get_items();
-        $_trackmage_order_id = get_post_meta($orderId, '_trackmage_order_id', true);
-        $_trackmage_shipment = Helper::get_post_meta($orderId, '_trackmage_shipment');
 
         try {
-            // Check tracking number.
-            if (empty($trackingNumber)) {
-                throw new \Exception(__('Tracking number cannot be left empty.', 'trackmage'));
-            }
-
-            // Check carrier.
-            if (empty($carrier)) {
-                throw new \Exception(__('Carrier cannot be left empty.', 'trackmage'));
-            }
-
-            // Check if no items added.
-            if (! is_array($items) || empty($items)) {
-                throw new \Exception(__('No items added.', 'trackmage'));
-            }
-
-            foreach ($items as $item) {
-                // Check if any of the selected items no longer exists.
-                if (! array_key_exists($item['order_item_id'], $orderItems)) {
-                    throw new \Exception(__('Order item does not exist.', 'trackmage'));
-                }
-            }
-
-            foreach ($items as $item) {
-                // Check if any of the items has non-positive quantities.
-                if (0 >= $item['qty']) {
-                    throw new \Exception(__('Item quantity must be a positive integer.', 'trackmage'));
-                }
-
-                // Check the available quantities for each item.
-                $totalQty = $orderItems[$item['order_item_id']]->get_quantity();
-                $usedQty = 0;
-                foreach ($_trackmage_shipment as $id => $shipment) {
-                    // Exclude the quantities of the items in the current shipment.
-                    if ((int) $id === (int) $metaId) {
-                        continue;
-                    }
-
-                    foreach ($shipment['items'] as $shipmentItem) {
-                        if ($item['order_item_id'] === $shipmentItem['order_item_id']) {
-                            $usedQty += (int) $shipmentItem['qty'];
-                        }
-                    }
-                }
-                $availQty = $totalQty - $usedQty;
-
-                // Check the available quantities of each item.
-                if ($availQty < $item['qty']) {
-                    throw new \Exception(__('No available quantity.', 'trackmage'));
-                }
-            }
+            Helper::validateShipment($shipment, $orderItems, $existingShipments);
 
             // Update shipment details in the database.
-            update_metadata_by_mid(
-                'post',
-                $metaId,
-                [
-                    'id' => '1337-test-guid-from-api',
-                    'tracking_number' => $trackingNumber,
-                    'carrier' => $carrier,
-                    'items' => $items,
-                ]
-            );
+            $shipment = Helper::saveShipmentWithJoinedItems($shipment);
 
             try {
                 // Get HTML to return.
@@ -411,17 +299,14 @@ class Ajax {
 
         // Request data.
         $orderId = $_POST['orderId'];
-        $metaId = $_POST['metaId'];
+        $shipmentId = $_POST['id'];
+
+        // Delete shipment record from the database.
+        Helper::deleteShipment($shipmentId);
 
         // Order data.
         $order               = wc_get_order($orderId);
         $orderItems          = $order->get_items();
-        $_trackmage_order_id = get_post_meta($orderId, '_trackmage_order_id', true);
-        $_trackmage_shipment = Helper::get_post_meta($orderId, '_trackmage_shipment');
-
-        // Delete shipment record from the database.
-        delete_metadata_by_mid('post', $metaId);
-
         try {
             // Get HTML to return.
             ob_start();

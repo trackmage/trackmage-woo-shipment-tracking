@@ -18,6 +18,7 @@ $carriers = Helper::get_shipment_carriers();
         <fieldset class="trackmage-edit-row__col">
             <legend class="trackmage-edit-row__legend"><?php _e('Edit Shipment', 'trackmage'); ?></legend>
             <div class="trackmage-edit-row__fields">
+                <input type="hidden" name="id" value="<?php echo $shipment['id']; ?>" />
                 <label class="trackmage-edit-row__field">
                     <div class="trackmage-edit-row__field-title"><?php _e('Tracking Number', 'trackmage'); ?></div>
                     <div class="trackmage-edit-row__field-wrap"><input type="text" name="tracking_number" value="<?php echo $shipment['tracking_number']; ?>" /></div>

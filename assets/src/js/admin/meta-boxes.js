@@ -126,7 +126,7 @@
     "#trackmage-shipment-tracking .shipment__actions__action--edit",
     function(e) {
       const shipment = $(this).closest(".shipment");
-      const metaId = $(shipment).data("meta-id");
+      const shipmentId = $(shipment).data("id");
 
       // Show the edit shipment form.
       $("#trackmage-shipment-tracking .edit-shipment").show();
@@ -159,6 +159,9 @@
             $(
               "#trackmage-shipment-tracking .edit-shipment .items__rows .items__row"
             ).each(function() {
+              const id = $(this)
+                .find('[name="id"]')
+                .val();
               const orderItemId = $(this)
                 .find('[name="order_item_id"]')
                 .val();
@@ -166,6 +169,7 @@
                 .find('[name="qty"]')
                 .val();
               items.push({
+                id: id,
                 order_item_id: orderItemId,
                 qty: qty
               });
@@ -176,7 +180,7 @@
               action: "trackmage_update_shipment",
               security: params.metaBoxes.nonces.updateShipment,
               orderId: params.metaBoxes.orderId,
-              metaId: metaId,
+              id: shipmentId,
               trackingNumber: $(
                 '#trackmage-shipment-tracking .edit-shipment [name="tracking_number"]'
               ).val(),
@@ -234,7 +238,7 @@
         method: "post",
         data: {
           action: "trackmage_edit_shipment",
-          metaId: metaId,
+          id: shipmentId,
           security: params.metaBoxes.nonces.editShipment,
           orderId: params.metaBoxes.orderId
         },
@@ -271,9 +275,11 @@
             const itemEl = $(
               `#trackmage-shipment-tracking .edit-shipment .items__rows .items__row:nth-of-type(${index})`
             );
+            const itemIdEl = $(itemEl).find('[name="id"]');
             const itemProductEl = $(itemEl).find('[name="order_item_id"]');
             const itemQtyEl = $(itemEl).find('[name="qty"]');
 
+            $(itemIdEl).val(item.id);
             $(itemQtyEl).val(item.qty);
 
             // Select product item.
@@ -371,6 +377,7 @@
                 .find('[name="qty"]')
                 .val();
               items.push({
+                id: '',
                 order_item_id: orderItemId,
                 qty: qty
               });
@@ -448,7 +455,7 @@
 
       if (confirm(params.metaBoxes.i18n.confirmDeleteShipment)) {
         const shipment = $(this).closest(".shipment");
-        const metaId = $(shipment).data("meta-id");
+        const shipmentId = $(shipment).data("id");
 
         $.ajax({
           url: params.main.urls.ajax,
@@ -457,7 +464,7 @@
             action: 'trackmage_delete_shipment',
             security: params.metaBoxes.nonces.deleteShipment,
             orderId: params.metaBoxes.orderId,
-            metaId: metaId,
+            id: shipmentId,
           },
           beforeSend: function() {
             trackmageBlockUi($("#trackmage-shipment-tracking .inside"));

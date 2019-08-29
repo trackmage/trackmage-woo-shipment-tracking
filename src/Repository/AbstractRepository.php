@@ -74,6 +74,19 @@ class AbstractRepository implements EntityRepositoryInterface
     }
 
     /**
+     * @param array $data
+     * @param array $criteria
+     * @return array|null
+     */
+    public function update(array $data, array $criteria)
+    {
+        if ($this->db->update($this->table, $data, $criteria) === false) {
+            return null;
+        }
+        return $this->findOneBy($criteria);
+    }
+
+    /**
      * @param int $id
      * @return array|null
      */

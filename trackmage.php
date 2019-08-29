@@ -121,6 +121,7 @@ function trackMageActivate() {
     foreach(Plugin::instance()->getRepos() as $repository) {
         try {
             $repository->init();
+            Plugin::instance()->getLogger()->info("Successfully created table {$repository->getTable()}");
         } catch(Exception $e) {
             Plugin::instance()->getLogger()->critical("Unable to create table {$repository->getTable()}: {$e->getMessage()}");
         }

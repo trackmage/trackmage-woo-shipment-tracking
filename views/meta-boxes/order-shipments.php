@@ -9,7 +9,7 @@ defined('WPINC') || exit;
 
 $order = wc_get_order($orderId);
 $orderItems = $order->get_items();
-$shipments = Helper::get_post_meta($orderId, '_trackmage_shipment');
+$shipments = Helper::getOrderShipmentsWithJoinedItems($orderId);
 $carriers = Helper::get_shipment_carriers();
 ?>
 <input type="hidden" value="<?php echo $orderId; ?>" name="trackmage_order_id" />
@@ -26,7 +26,7 @@ $carriers = Helper::get_shipment_carriers();
         </thead>
         <tbody class="shipments__tbody">
             <?php
-            foreach ($shipments as $metaId => $shipment) {
+            foreach ($shipments as $shipment) {
                 include 'order-shipment.php';
             }
             ?>
