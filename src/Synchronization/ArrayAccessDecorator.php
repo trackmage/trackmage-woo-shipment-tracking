@@ -1,6 +1,6 @@
 <?php
 
-namespace TrackMage\WordPress\Syncrhonization;
+namespace TrackMage\WordPress\Synchronization;
 
 class ArrayAccessDecorator implements \ArrayAccess
 {

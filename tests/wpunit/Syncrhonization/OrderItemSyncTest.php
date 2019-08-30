@@ -7,7 +7,7 @@ use GuzzleHttp\ClientInterface;
 use GuzzleMockTrait;
 use TrackMage\WordPress\Exception\SynchronizationException;
 use TrackMage\WordPress\Plugin;
-use TrackMage\WordPress\Syncrhonization\OrderItemSync;
+use TrackMage\WordPress\Synchronization\OrderItemSync;
 use WC_Product_Simple;
 use WpunitTester;
 
@@ -16,10 +16,10 @@ class OrderItemSyncTest extends WPTestCase
     use GuzzleMockTrait;
 
     const QTY = 1;
-    const PRICE = '100';
     const TM_ORDER_ID = 'tm-order-id';
-    const PRODUCT_NAME = 'Test Product';
     const TM_ORDER_ITEM_ID = 'tm-order-item-id';
+    const PRODUCT_NAME = 'Test Product';
+    const PRICE = '100';
     const SOURCE = 'wp';
 
     /** @var WpunitTester */

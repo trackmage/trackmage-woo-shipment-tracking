@@ -3,7 +3,7 @@
 use Codeception\TestCase\WPTestCase;
 use GuzzleHttp\ClientInterface;
 use TrackMage\WordPress\Plugin;
-use TrackMage\WordPress\Syncrhonization\OrderSync;
+use TrackMage\WordPress\Synchronization\OrderSync;
 
 class OrderSyncTest extends WPTestCase {
     use GuzzleMockTrait;
@@ -56,6 +56,7 @@ class OrderSyncTest extends WPTestCase {
             ['POST', '/orders'],
         ]);
         $this->assertSubmittedJsonIncludes([
+            'workspace' => '/workspaces/'.self::TM_WS_ID,
             'externalSyncId' => (string) $wcId,
             'externalSource' => self::SOURCE,
             'orderNumber' => $wcOrder->get_order_number(),
@@ -135,7 +136,7 @@ class OrderSyncTest extends WPTestCase {
         ], $requests);
         $this->initPlugin($guzzleClient);
 
-        // pre-create order item in WC
+        // pre-create order in WC
         $wcOrder = wc_create_order();
         $wcId = $wcOrder->get_id();
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace TrackMage\WordPress\Syncrhonization;
+namespace TrackMage\WordPress\Synchronization;
 
 use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\ResponseInterface;

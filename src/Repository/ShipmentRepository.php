@@ -20,6 +20,7 @@ class ShipmentRepository extends AbstractRepository
                     `carrier` VARCHAR(64) DEFAULT NULL,
                     `status` VARCHAR(100) DEFAULT NULL,
                     `trackmage_id` VARCHAR(100) DEFAULT NULL,
+                    `hash` VARCHAR(100) DEFAULT NULL,
                     PRIMARY KEY (id),
                     INDEX shipment_idx_order_id (order_id),
                     INDEX shipment_idx_tracking_number (tracking_number)

@@ -165,8 +165,10 @@ class Helper {
         if (null !== $shipmentId = self::parseId($shipment)) {
             unset($shipment['id']);
             $shipment = $shipmentRepo->update($shipment, ['id' => $shipmentId]);
+            do_action('trackmage_update_shipment', $shipmentId);
         } else {
             $shipment = $shipmentRepo->insert($shipment);
+            do_action('trackmage_new_shipment', $shipment['id']);
         }
         if ($shipment === null) {
             throw new RuntimeException('Unable to save shipment');
@@ -192,9 +194,11 @@ class Helper {
             if (null !== $itemId = self::parseId($item)) {
                 unset($item['id']);
                 $item = $shipmentItemRepo->update($item, ['id' => $itemId]);
+                do_action('trackmage_update_shipment_item', $itemId);
             } else {
                 $item['shipment_id'] = $shipmentId;
                 $item = $shipmentItemRepo->insert($item);
+                do_action('trackmage_new_shipment_item', $item['id']);
             }
             if ($item === null) {
                 throw new RuntimeException('Unable to save shipment item');
@@ -209,6 +213,7 @@ class Helper {
             if (in_array($existingItemId, $itemsIds, true)) {
                 continue;
             }
+            do_action('trackmage_delete_shipment_item', $existingItemId);
             $shipmentItemRepo->delete(['id' => $existingItemId]);
         }
 
@@ -225,6 +230,7 @@ class Helper {
             throw new InvalidArgumentException('Unable to find shipment: '.$shipmentId);
         }
         self::saveShipmentItems($shipmentId, []);
+        do_action('trackmage_delete_shipment', $shipmentId);
         $shipmentRepo->delete(['id' => $shipmentId]);
     }
 

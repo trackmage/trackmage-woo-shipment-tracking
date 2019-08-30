@@ -7,7 +7,7 @@ use TrackMage\WordPress\Exception\RuntimeException;
 
 class OrParser implements OpParserInterface
 {
-    protected $key = '$or';
+    protected $op = '$or';
 
     public function getSql($op, $value, $parentOp)
     {
@@ -19,6 +19,6 @@ class OrParser implements OpParserInterface
 
     public function supports($op)
     {
-        return $this->key === $op;
+        return $this->op === $op;
     }
 }

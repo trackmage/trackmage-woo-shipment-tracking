@@ -19,6 +19,7 @@ class ShipmentItemRepository extends AbstractRepository
                     `shipment_id` INT NOT NULL,
                     `qty` INT NOT NULL,
                     `trackmage_id` VARCHAR(100) DEFAULT NULL,
+                    `hash` VARCHAR(100) DEFAULT NULL,
                     PRIMARY KEY (id),
                     INDEX shipment_item_idx_shipment_id (shipment_id),
                     INDEX shipment_item_idx_search (order_item_id, shipment_id)

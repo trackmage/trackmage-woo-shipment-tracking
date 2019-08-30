@@ -6,7 +6,7 @@ use TrackMage\WordPress\CriteriaConverter\OpParserInterface;
 
 class AndParser implements OpParserInterface
 {
-    protected $key = '$and';
+    protected $op = '$and';
 
     public function getSql($op, $value, $parentOp)
     {
@@ -17,7 +17,7 @@ class AndParser implements OpParserInterface
             return '`'.addslashes($op).'` = '.$value;
         }
         if (count($value) > 1) {
-            if ($op!==$this->key) {
+            if ($op !== $this->op) {
                 return false;
             }
 

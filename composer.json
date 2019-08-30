@@ -8,6 +8,7 @@
 	"homepage": "https://github.com/trackmage/trackmage-wordpress-plugin",
 	"license": "GPL-2.0-or-later",
 	"require": {
+		"ext-json": "*",
 		"brightnucleus/config": "^0.4",
 		"psr/log": "^1.1",
 		"symfony/property-access": "^3.4|^4.3",

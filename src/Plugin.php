@@ -20,6 +20,10 @@ use TrackMage\WordPress\Repository\EntityRepositoryInterface;
 use TrackMage\WordPress\Repository\LogRepository;
 use TrackMage\WordPress\Repository\ShipmentItemRepository;
 use TrackMage\WordPress\Repository\ShipmentRepository;
+use TrackMage\WordPress\Synchronization\OrderItemSync;
+use TrackMage\WordPress\Synchronization\OrderSync;
+use TrackMage\WordPress\Synchronization\ShipmentItemSync;
+use TrackMage\WordPress\Synchronization\ShipmentSync;
 
 /**
  * Main plugin class.
@@ -30,7 +34,9 @@ class Plugin {
 
 	use ConfigTrait;
 
-	/** @var ShipmentRepository|null */
+    const SOURCE = 'wp';
+
+    /** @var ShipmentRepository|null */
 	private $shipmentRepo;
 
 	/** @var ShipmentItemRepository|null */
@@ -42,7 +48,19 @@ class Plugin {
 	/** @var Logger|null */
 	private $logger;
 
-	private $wpdb;
+    /** @var OrderSync|null */
+    private $orderSync;
+
+    /** @var OrderItemSync|null */
+    private $orderItemSync;
+
+    /** @var ShipmentSync|null */
+    private $shipmentSync;
+
+    /** @var ShipmentItemSync|null */
+    private $shipmentItemSync;
+
+    private $wpdb;
 
 	/**
 	 * Static instance of the plugin.
@@ -104,7 +122,8 @@ class Plugin {
     public function getSynchronizer()
     {
         if ($this->synchronizer === null) {
-            $this->synchronizer = new Synchronizer($this->getLogger());
+            $this->synchronizer = new Synchronizer($this->getLogger(), $this->getOrderSync(), $this->getOrderItemSync(),
+                $this->getShipmentSync(), $this->getShipmentItemSync());
         }
 
         return $this->synchronizer;
@@ -195,4 +214,50 @@ class Plugin {
     public function getRepos() {
         return [$this->getLogRepo(), $this->getShipmentRepo(), $this->getShipmentItemsRepo()];
     }
+
+
+    /**
+     * @return OrderSync
+     */
+    public function getOrderSync()
+    {
+        if (null === $this->orderSync) {
+            $this->orderSync = new OrderSync(self::SOURCE);
+        }
+        return $this->orderSync;
+    }
+
+    /**
+     * @return OrderItemSync
+     */
+    public function getOrderItemSync()
+    {
+        if (null === $this->orderItemSync) {
+            $this->orderItemSync = new OrderItemSync(self::SOURCE);
+        }
+        return $this->orderItemSync;
+    }
+
+    /**
+     * @return ShipmentSync
+     */
+    public function getShipmentSync()
+    {
+        if (null === $this->shipmentSync) {
+            $this->shipmentSync = new ShipmentSync($this->getShipmentRepo(), self::SOURCE);
+        }
+        return $this->shipmentSync;
+    }
+
+    /**
+     * @return ShipmentItemSync
+     */
+    public function getShipmentItemSync()
+    {
+        if (null === $this->shipmentItemSync) {
+            $this->shipmentItemSync = new ShipmentItemSync($this->getShipmentItemsRepo(), $this->getShipmentRepo(), self::SOURCE);
+        }
+        return $this->shipmentItemSync;
+    }
+
 }

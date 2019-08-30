@@ -1,28 +1,30 @@
 <?php
 
-namespace TrackMage\WordPress\Syncrhonization;
+namespace TrackMage\WordPress\Synchronization;
 
 use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\ResponseInterface;
+use TrackMage\WordPress\Exception\InvalidArgumentException;
 use TrackMage\WordPress\Exception\SynchronizationException;
 use TrackMage\WordPress\Plugin;
-use WC_Order;
+use TrackMage\WordPress\Repository\ShipmentRepository;
 
-class OrderSync implements EntitySyncInterface
+class ShipmentSync implements EntitySyncInterface
 {
     use SyncSharedTrait;
+
+    private $source;
+    private $shipmentRepo;
 
     /** @var ChangesDetector */
     private $changesDetector;
 
-    /** @var string|null */
-    private $source;
-
     /**
      * @param string|null $source
      */
-    public function __construct($source = null)
+    public function __construct(ShipmentRepository $shipmentRepo, $source = null)
     {
+        $this->shipmentRepo = $shipmentRepo;
         $this->source = $source;
     }
 
@@ -33,13 +35,11 @@ class OrderSync implements EntitySyncInterface
     {
         if (null === $this->changesDetector) {
             $detector = new ChangesDetector([
-                '[order_number]', '[status]',
-            ], function($order) {
-                return get_post_meta( $order['id'], '_trackmage_hash', true );
-            }, function($order, $hash) {
-                add_post_meta( $order['id'], '_trackmage_hash', $hash, true )
-                    || update_post_meta( $order['id'], '_trackmage_hash', $hash);
-                return $order;
+                '[tracking_number]',
+            ], function(array $shipment) {
+                return $shipment['hash'];
+            }, function(array $shipment, $hash) {
+                return $this->shipmentRepo->update(['hash' => $hash], ['id' => $shipment['id']]);
             });
             $this->changesDetector = $detector;
         }
@@ -47,75 +47,79 @@ class OrderSync implements EntitySyncInterface
         return $this->changesDetector;
     }
 
-    public function sync($order_id ) {
-        $order = wc_get_order( $order_id );
-        if (!$this->canSyncOrder($order) || !$this->getChangesDetector()->isChanged(new ArrayAccessDecorator($order))) {
+    public function sync($shipmentId)
+    {
+        $shipment = $this->shipmentRepo->find($shipmentId);
+        if ($shipment === null) {
+            throw new InvalidArgumentException('Unable to find shipment: '. $shipmentId);
+        }
+        $orderId = $shipment['order_id'];
+        $order = wc_get_order($orderId);
+        if (!$this->canSyncOrder($order) || !$this->getChangesDetector()->isChanged($shipment)) {
             return;
         }
-        $workspace = get_option( 'trackmage_workspace' );
-        $trackmage_order_id = get_post_meta( $order_id, '_trackmage_order_id', true );
+        $workspace = get_option('trackmage_workspace');
+        $trackmage_id = $shipment['trackmage_id'];
         $client = Plugin::get_client();
         $guzzleClient = $client->getGuzzleClient();
 
-        // Create order on TrackMage.
+
         try {
-            if (empty($trackmage_order_id)) {
+            if (empty($trackmage_id)) {
                 try {
-                    $response = $guzzleClient->post('/orders', [
+                    $response = $guzzleClient->post('/shipments', [
                         'json' => [
                             'workspace' => '/workspaces/' . $workspace,
-                            'externalSyncId' => (string)$order_id,
+                            'trackingNumber' => $shipment['tracking_number'],
+                            'carrier' => $shipment['carrier'],
+                            'externalSyncId' => (string)$shipmentId,
                             'externalSource' => $this->source,
-                            'orderNumber' => $order->get_order_number(),
-                            'status' => ['name' => $order->get_status()],
                         ]
                     ]);
                     $result = json_decode( $response->getBody()->getContents(), true );
-                    $trackmage_order_id = $result['id'];
-                    add_post_meta( $order_id, '_trackmage_order_id', $trackmage_order_id, true )
-                        || update_post_meta($order_id, '_trackmage_order_id', $trackmage_order_id);
+                    $shipment = $this->shipmentRepo->update(['trackmage_id' => $result['id']], ['id' => $shipmentId]);
                 } catch (ClientException $e) {
                     $response = $e->getResponse();
                     if (null !== $response
-                        && null !== ($query = $this->matchSearchCriteriaFromValidationError($order, $response))
+                        && null !== ($query = $this->matchSearchCriteriaFromValidationError($shipment, $response))
                         && null !== ($data = $this->lookupByCriteria($query, $workspace))
                     ) {
-                        add_post_meta( $order_id, '_trackmage_order_id', $data['id'], true )
-                            || update_post_meta($order_id, '_trackmage_order_id', $data['id']);
-                        $this->sync($order_id);
+                        $shipment = $this->shipmentRepo->update(['trackmage_id' => $data['id']], ['id' => $shipmentId]);
+                        $this->sync($shipmentId);
                         return;
                     }
                     throw $e;
                 }
             } else {
                 try {
-                    $guzzleClient->put("/orders/{$trackmage_order_id}", [
+                    $guzzleClient->put('/shipments/'.$trackmage_id, [
                         'json' => [
-                            'status' => ['name' => $order->get_status()],
+                            'trackingNumber' => $shipment['tracking_number'],
                         ]
                     ]);
                 } catch (ClientException $e) {
                     $response = $e->getResponse();
                     if (null !== $response && 404 === $response->getStatusCode()) {
-                        delete_post_meta( $order_id, '_trackmage_order_id');
-                        $this->sync($order_id);
+                        $shipment = $this->shipmentRepo->update(['trackmage_id' => null], ['id' => $shipmentId]);
+                        $this->sync($shipmentId);
                         return;
                     }
                     throw $e;
                 }
             }
-            $this->getChangesDetector()->lockChanges(new ArrayAccessDecorator($order));
+            $this->getChangesDetector()->lockChanges($shipment);
         } catch ( \Throwable $e ) {
             throw new SynchronizationException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
         }
     }
 
+
     /**
-     * @param WC_Order $order
+     * @param array $shipment
      * @param ResponseInterface $response
      * @return array|null
      */
-    private function matchSearchCriteriaFromValidationError(WC_Order $order, ResponseInterface $response)
+    private function matchSearchCriteriaFromValidationError(array $shipment, ResponseInterface $response)
     {
         if (400 !== $response->getStatusCode()) {
             return null;
@@ -123,7 +127,7 @@ class OrderSync implements EntitySyncInterface
         $query = [];
         $content = $response->getBody()->getContents();
         if (false !== strpos($content, 'externalSyncId')) {
-            $query['externalSyncId'] = $order->get_id();
+            $query['externalSyncId'] = $shipment['id'];
             $query['externalSource'] = $this->source;
         } else {
             return null;
@@ -142,29 +146,32 @@ class OrderSync implements EntitySyncInterface
         $client = Plugin::get_client();
         $guzzleClient = $client->getGuzzleClient();
         $query['itemsPerPage'] = 1;
-        $response = $guzzleClient->get("/workspaces/{$workspace}/orders", ['query' => $query]);
+        $response = $guzzleClient->get("/workspaces/{$workspace}/shipments", ['query' => $query]);
         $content = $response->getBody()->getContents();
         $data = json_decode($content, true);
         return isset($data['hydra:member'][0]) ? $data['hydra:member'][0] : null;
     }
+
 
     public function delete($id)
     {
         $client = Plugin::get_client();
         $guzzleClient = $client->getGuzzleClient();
 
-        $trackmage_order_id = get_post_meta( $id, '_trackmage_order_id', true );
-        if (empty($trackmage_order_id)) {
+        $shipment = $this->shipmentRepo->find($id);
+
+        $trackmage_id = $shipment['trackmage_id'];
+        if (empty($trackmage_id)) {
             return;
         }
         try {
-            $guzzleClient->delete('/orders/'.$trackmage_order_id);
+            $guzzleClient->delete('/shipments/'.$trackmage_id);
         } catch ( ClientException $e ) {
-            throw new SynchronizationException('Unable to delete order: '.$e->getMessage(), $e->getCode(), $e);
+            throw new SynchronizationException('Unable to delete shipment: '.$e->getMessage(), $e->getCode(), $e);
         } catch ( \Throwable $e ) {
             throw new SynchronizationException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
         } finally {
-            delete_post_meta($id, '_trackmage_order_id');
+            $shipment = $this->shipmentRepo->update(['trackmage_id' => null], ['id' => $id]);
         }
     }
 }

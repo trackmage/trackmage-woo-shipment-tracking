@@ -1,8 +1,8 @@
 <?php
 
 use Codeception\TestCase\WPTestCase;
-use TrackMage\WordPress\Syncrhonization\ArrayAccessDecorator;
-use TrackMage\WordPress\Syncrhonization\ChangesDetector;
+use TrackMage\WordPress\Synchronization\ArrayAccessDecorator;
+use TrackMage\WordPress\Synchronization\ChangesDetector;
 use TrackMage\WordPress\Exception\InvalidArgumentException;
 
 class ChangesDetectorTest extends WPTestCase

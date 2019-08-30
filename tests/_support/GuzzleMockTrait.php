@@ -41,7 +41,7 @@ trait GuzzleMockTrait
             $requests = [$requests];
         }
         $actualList = array_map(function (Request $request) {
-            parse_str($request->getUri()->getQuery(), $query);
+            $query = $this->parseQuery($request->getUri()->getQuery());
             return [$request->getMethod(), $request->getUri()->getPath(), $query];
         }, array_column($requests, 'request'));
         self::assertEquals(count($expectedList), count($actualList));
@@ -54,6 +54,22 @@ trait GuzzleMockTrait
                 self::assertArraySubset($expectedQuery, $actualList[$key][2]);
             }
         }
+    }
+
+    /**
+     * parse_str() converts dots and spaces to underscores
+     * @param $data
+     * @return array|false
+     */
+    private function parseQuery($data)
+    {
+        $data = preg_replace_callback('/(?:^|(?<=&))[^=[]+/', function($match) {
+            return bin2hex(urldecode($match[0]));
+        }, $data);
+
+        parse_str($data, $values);
+
+        return array_combine(array_map('hex2bin', array_keys($values)), $values);
     }
 
     private function splitRequest(Request $request)

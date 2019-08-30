@@ -33,18 +33,18 @@ class Converter
         };
 
         $conditions = [];
-        foreach ($criteria as $key => $value)
+        foreach ($criteria as $op => $value)
         {
-            if (!$this->isFilteredKey($key)) {
+            if (!$this->isFilteredOp($op)) {
                 continue;
             }
-            $conditions[] = $this->getSqlForOpValue($key, $value, '');
+            $conditions[] = $this->getSqlForOpValue($op, $value, '');
         }
 
         return implode(' AND ', $conditions);
     }
 
-    private function getSqlForOpValue($op, $value, $parentKey)
+    private function getSqlForOpValue($op, $value, $parentOp)
     {
         $opParser = $this->resolveParser($op);
         if ($opParser === null) {
@@ -52,7 +52,7 @@ class Converter
         }
         $parsed_value = $this->getParsedValue($value, $op);
 
-        return $opParser->getSql($op, $parsed_value, $parentKey);
+        return $opParser->getSql($op, $parsed_value, $parentOp);
     }
 
     /**
@@ -71,7 +71,7 @@ class Converter
             if ($k === $i && !is_array($v)) {
                 $parsedValue[] = $v;
             } else {
-                if (!$this->isFilteredKey($k)) {
+                if (!$this->isFilteredOp($k)) {
                     continue;
                 }
                 $parsedValue[] = $this->getSqlForOpValue($k, $v, $parentOp);
@@ -91,12 +91,12 @@ class Converter
         return $this->defaultParser;
     }
 
-    private function isFilteredKey($key)
+    private function isFilteredOp($op)
     {
-        if (!is_scalar($key)) {
+        if (!is_scalar($op)) {
             return true;
         }
-        $filtered_key = preg_replace('/[^a-zA-Z0-9_\$]/', '', $key);
-        return $filtered_key === (string)$key;
+        $filteredOp = preg_replace('/[^a-zA-Z0-9_\$]/', '', $op);
+        return $filteredOp === (string)$op;
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace TrackMage\WordPress\Syncrhonization;
+namespace TrackMage\WordPress\Synchronization;
 
 interface EntitySyncInterface
 {
