@@ -32,21 +32,21 @@ use TrackMage\WordPress\Synchronization\ShipmentSync;
  */
 class Plugin {
 
-	use ConfigTrait;
+    use ConfigTrait;
 
     const SOURCE = 'wp';
 
     /** @var ShipmentRepository|null */
-	private $shipmentRepo;
+    private $shipmentRepo;
 
-	/** @var ShipmentItemRepository|null */
-	private $shipmentItemRepo;
+    /** @var ShipmentItemRepository|null */
+    private $shipmentItemRepo;
 
-	/** @var LogRepository|null */
-	private $logRepo;
+    /** @var LogRepository|null */
+    private $logRepo;
 
-	/** @var Logger|null */
-	private $logger;
+    /** @var Logger|null */
+    private $logger;
 
     /** @var OrderSync|null */
     private $orderSync;
@@ -62,25 +62,25 @@ class Plugin {
 
     private $wpdb;
 
-	/**
-	 * Static instance of the plugin.
-	 *
-	 * @since 0.1.0
-	 *
-	 * @var self
-	 */
-	protected static $instance;
+    /**
+     * Static instance of the plugin.
+     *
+     * @since 0.1.0
+     *
+     * @var self
+     */
+    protected static $instance;
 
-	/**
-	 * The singleton instance of TrackMageClient.
-	 *
-	 * @since 0.1.0
-	 * @var TrackMageClient
-	 */
-	protected static $client = null;
+    /**
+     * The singleton instance of TrackMageClient.
+     *
+     * @since 0.1.0
+     * @var TrackMageClient
+     */
+    protected static $client = null;
 
-	/** @var Synchronizer */
-	private $synchronizer;
+    /** @var Synchronizer */
+    private $synchronizer;
 
     /**
      * @param \wpdb $wpdb
@@ -90,31 +90,31 @@ class Plugin {
         $this->wpdb = $wpdb;
     }
 
-	/**
-	 * Returns the singleton instance of TrackMageClient.
-	 *
-	 * Ensures only one instance of TrackMageClient is/can be loaded.
-	 *
-	 * @since 0.1.0
-	 * @return TrackMageClient
-	 */
-	public static function get_client($config = []) {
-		if ( null === self::$client ) {
-			self::$client = new TrackMageClient();
+    /**
+     * Returns the singleton instance of TrackMageClient.
+     *
+     * Ensures only one instance of TrackMageClient is/can be loaded.
+     *
+     * @since 0.1.0
+     * @return TrackMageClient
+     */
+    public static function get_client($config = []) {
+        if ( null === self::$client ) {
+            self::$client = new TrackMageClient();
 
-			try {
-				$client_id = isset( $config['client_id'] ) ? $config['client_id'] : get_option( 'trackmage_client_id', '' );
-				$client_secret = isset( $config['client_secret'] ) ? $config['client_secret'] : get_option( 'trackmage_client_secret', '' );
+            try {
+                $client_id = isset( $config['client_id'] ) ? $config['client_id'] : get_option( 'trackmage_client_id', '' );
+                $client_secret = isset( $config['client_secret'] ) ? $config['client_secret'] : get_option( 'trackmage_client_secret', '' );
 
-				self::$client = new TrackMageClient( $client_id, $client_secret );
-				self::$client->setHost( 'https://api.test.trackmage.com' );
-			} catch( ApiException $e ) {
-				return null;
-			}
-		}
+                self::$client = new TrackMageClient( $client_id, $client_secret );
+                self::$client->setHost( 'https://api.test.trackmage.com' );
+            } catch( ApiException $e ) {
+                return null;
+            }
+        }
 
-		return self::$client;
-	}
+        return self::$client;
+    }
 
     /**
      * @return Synchronizer
@@ -127,7 +127,7 @@ class Plugin {
         }
 
         return $this->synchronizer;
-	}
+    }
 
     /**
      * @return self
@@ -141,29 +141,29 @@ class Plugin {
     }
 
     /**
-	 * Launch the initialization process.
-	 *
-	 * @since 0.1.0
-	 */
-	public function init(ConfigInterface $config) {
+     * Launch the initialization process.
+     *
+     * @since 0.1.0
+     */
+    public function init(ConfigInterface $config) {
         $this->processConfig( $config );
 
-		// Initialize classes.
-		new Endpoint;
-		new Templates;
-		new Admin;
-		new Orders($this->getSynchronizer());
+        // Initialize classes.
+        new Endpoint;
+        new Admin;
+        new Orders($this->getSynchronizer());
 
-		$init_classes = [
-			'Ajax',
-			'Assets',
-			'Admin\Assets',
-		];
+        $initClasses = [
+            'Ajax',
+            'Assets',
+            'Templates',
+            'Admin\Assets',
+        ];
 
-		foreach ( $init_classes as $class ) {
-			call_user_func( [ __NAMESPACE__ . "\\{$class}", 'init' ] );
-		}
-	}
+        foreach ( $initClasses as $class ) {
+            call_user_func( [ __NAMESPACE__ . "\\{$class}", 'init' ] );
+        }
+    }
 
     /**
      * @return ShipmentRepository
