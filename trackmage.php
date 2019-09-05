@@ -116,14 +116,15 @@ register_deactivation_hook(__FILE__, 'trackMageDeactivate');
  * Plugin activate event
  */
 function trackMageActivate() {
-    Plugin::instance()->init(ConfigFactory::create( __DIR__ . '/config/defaults.php' )->getSubConfig( 'TrackMage\WordPress' ));
-
-    foreach(Plugin::instance()->getRepos() as $repository) {
+    $plugin = Plugin::instance();
+    $plugin->init(ConfigFactory::create( __DIR__ . '/config/defaults.php' )->getSubConfig( 'TrackMage\WordPress' ));
+    $plugin->getInstanceId();
+    foreach($plugin->getRepos() as $repository) {
         try {
             $repository->init();
-            Plugin::instance()->getLogger()->info("Successfully created table {$repository->getTable()}");
+            $plugin->getLogger()->info("Successfully created table {$repository->getTable()}");
         } catch(Exception $e) {
-            Plugin::instance()->getLogger()->critical("Unable to create table {$repository->getTable()}: {$e->getMessage()}");
+            $plugin->getLogger()->critical("Unable to create table {$repository->getTable()}: {$e->getMessage()}");
         }
     }
 }

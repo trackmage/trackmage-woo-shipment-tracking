@@ -34,8 +34,6 @@ class Plugin {
 
     use ConfigTrait;
 
-    const SOURCE = 'wp';
-
     /** @var ShipmentRepository|null */
     private $shipmentRepo;
 
@@ -61,6 +59,9 @@ class Plugin {
     private $shipmentItemSync;
 
     private $wpdb;
+
+    /** @var string|null */
+    private $instanceId;
 
     /**
      * Static instance of the plugin.
@@ -215,6 +216,20 @@ class Plugin {
         return [$this->getLogRepo(), $this->getShipmentRepo(), $this->getShipmentItemsRepo()];
     }
 
+    /**
+     * @return string
+     */
+    public function getInstanceId()
+    {
+        if ($this->instanceId === null) {
+            $instanceId = get_option('trackmage_instance_id');
+            if ($instanceId === false) {
+                add_option('trackmage_instance_id', $instanceId = uniqid('wp-'));
+            }
+            $this->instanceId = $instanceId;
+        }
+        return $this->instanceId;
+    }
 
     /**
      * @return OrderSync
@@ -222,7 +237,7 @@ class Plugin {
     public function getOrderSync()
     {
         if (null === $this->orderSync) {
-            $this->orderSync = new OrderSync(self::SOURCE);
+            $this->orderSync = new OrderSync($this->getInstanceId());
         }
         return $this->orderSync;
     }
@@ -233,7 +248,7 @@ class Plugin {
     public function getOrderItemSync()
     {
         if (null === $this->orderItemSync) {
-            $this->orderItemSync = new OrderItemSync(self::SOURCE);
+            $this->orderItemSync = new OrderItemSync($this->getInstanceId());
         }
         return $this->orderItemSync;
     }
@@ -244,7 +259,7 @@ class Plugin {
     public function getShipmentSync()
     {
         if (null === $this->shipmentSync) {
-            $this->shipmentSync = new ShipmentSync($this->getShipmentRepo(), self::SOURCE);
+            $this->shipmentSync = new ShipmentSync($this->getShipmentRepo(), $this->getInstanceId());
         }
         return $this->shipmentSync;
     }
@@ -255,9 +270,8 @@ class Plugin {
     public function getShipmentItemSync()
     {
         if (null === $this->shipmentItemSync) {
-            $this->shipmentItemSync = new ShipmentItemSync($this->getShipmentItemsRepo(), $this->getShipmentRepo(), self::SOURCE);
+            $this->shipmentItemSync = new ShipmentItemSync($this->getShipmentItemsRepo(), $this->getShipmentRepo(), $this->getInstanceId());
         }
         return $this->shipmentItemSync;
     }
-
 }
