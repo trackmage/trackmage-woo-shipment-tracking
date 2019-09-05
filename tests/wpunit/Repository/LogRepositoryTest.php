@@ -29,7 +29,7 @@ class LogRepositoryTest extends WPTestCase
         ]);
         self::assertNotNull($row);
         $id = $row['id'];
-        self::assertIsNumeric($id);
+        self::assertTrue(is_numeric($id), "{$id} is not numeric");
         //find
         self::assertArraySubset($submitted, $this->repo->find($id));
 
