@@ -117,7 +117,42 @@ class Helper {
         return [
             'delivered' => __( 'Delivered', 'trackmage' ),
             'shipped'   => __( 'Shipped', 'trackamge' ),
+            //'processing'=> __( 'Processing', 'trackamge' ),
         ];
+    }
+
+    /**
+     * Returns the available aliases after filtering.
+     *
+     * @since 0.1.0
+     * @return array List of aliases.
+     */
+    public static function get_filtered_aliases() {
+        // Get the registered statuses.
+        $statuses = Helper::getOrderStatuses();
+
+        $statuses_alias = wp_list_pluck($statuses, 'alias' );
+
+        foreach ($statuses_alias as $key => $value) {
+            # code...
+            if ( ! empty($value) ) {
+                $statuses_alias[] = $value;
+            }
+        }
+
+        // Get the aliases.
+        $aliases_select = $aliases = Helper::get_aliases();
+
+        foreach ( $aliases  as $key => $value) {
+            # code...
+            foreach ($statuses_alias as $key => $value) {
+                # code...
+                unset($aliases [$value]); 
+            }
+            
+        }
+        
+        return $aliases ;
     }
 
     /**

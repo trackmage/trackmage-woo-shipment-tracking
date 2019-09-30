@@ -20,6 +20,9 @@ $statuses = Helper::getOrderStatuses();
 
 // Get the aliases.
 $aliases = Helper::get_aliases();
+
+// Get the filtered aliases.
+$aliases_select = Helper::get_filtered_aliases();
 ?>
 <div class="wrap trackmage">
     <h1><?php _e( 'Status Manager', 'trackmage' ); ?></h1>
@@ -58,7 +61,7 @@ $aliases = Helper::get_aliases();
                     <td>
                         <select name="status_alias">
                             <option value=""><?php _e( '— Select —', 'trackmage' ); ?></option>
-                            <?php foreach ( $aliases as $id => $name ) : ?>
+                            <?php foreach ( $aliases_select as $id => $name ) : ?>
                                 <option value="<?php echo $id; ?>"><?php echo $name; ?></option>
                             <?php endforeach; ?>
                         </select>
