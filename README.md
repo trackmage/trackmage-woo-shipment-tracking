@@ -4,6 +4,18 @@
 TrackMage Wordpress Plugin
 
 
+## Local development
+```
+composer install
+npm install
+npm run build
+```
+In case of `npm run build` errors run
+```
+npm install -g gulp-cli
+npm rebuild node-sass
+```
+
 ## Testing:
 
 Local commands:
