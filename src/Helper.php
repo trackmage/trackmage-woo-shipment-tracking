@@ -127,16 +127,16 @@ class Helper {
                     'workspace' => $aliase->getWorkspace(),
                 ] );
             }
+
+            $aliases_temp = wp_list_pluck($aliases, 'name' );
+        
+            foreach ($aliases_temp as $key => $value) {
+                # code...
+                $aliases_name[$value] = __( ucfirst($value), 'trackmage' );
+            }
             
         } catch( ApiException $e ) {
             // Do nothing. We will return an empty array.
-        }
-
-        $aliases_temp = wp_list_pluck($aliases, 'name' );
-        
-        foreach ($aliases_temp as $key => $value) {
-            # code...
-            $aliases_name[$value] = __( ucfirst($value), 'trackmage' );
         }
         
 
