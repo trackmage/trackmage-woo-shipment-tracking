@@ -114,11 +114,39 @@ class Helper {
      * @return array List of aliases.
      */
     public static function get_aliases() {
-        return [
-            'delivered' => __( 'Delivered', 'trackmage' ),
-            'shipped'   => __( 'Shipped', 'trackamge' ),
-            //'processing'=> __( 'Processing', 'trackamge' ),
-        ];
+        $aliases = [];
+        $aliases_name = [];
+
+        try {
+            $client = Plugin::get_client();
+            $result = $client->getOrderStatusApi()->getOrderStatusCollection();
+            foreach ( $result as $aliase ) {
+                array_push( $aliases, [
+                    'id'    => $aliase->getId(),
+                    'name' => $aliase->getName(),
+                    'workspace' => $aliase->getWorkspace(),
+                ] );
+            }
+            
+        } catch( ApiException $e ) {
+            // Do nothing. We will return an empty array.
+        }
+
+        $aliases_temp = wp_list_pluck($aliases, 'name' );
+        
+        foreach ($aliases_temp as $key => $value) {
+            # code...
+            $aliases_name[$value] = __( ucfirst($value), 'trackmage' );
+        }
+        
+
+        return $aliases_name;
+
+        // return [
+        //     'delivered' => __( 'Delivered', 'trackmage' ),
+        //     'shipped'   => __( 'Shipped', 'trackamge' ),
+        //     'processing'=> __( 'Processing', 'trackamge' ),
+        // ];
     }
 
     /**
