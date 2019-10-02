@@ -89,6 +89,22 @@ class Plugin {
     public function __construct($wpdb)
     {
         $this->wpdb = $wpdb;
+
+        $this->bindEventDeleteShipment();
+    }
+
+    private function bindEventDeleteShipment()
+    {
+        add_action('before_delete_post', function ($postId) {
+            $type = get_post_type($postId);
+            if ($type === 'shop_order'){
+
+                foreach ($this->getShipmentRepo()->findBy(['order_id' => $postId]) as $shipment) {
+                    Helper::deleteShipment($shipment['id']);
+                }
+
+            }
+        }, 10, 1);
     }
 
     /**
@@ -124,7 +140,7 @@ class Plugin {
     {
         if ($this->synchronizer === null) {
             $this->synchronizer = new Synchronizer($this->getLogger(), $this->getOrderSync(), $this->getOrderItemSync(),
-                $this->getShipmentSync(), $this->getShipmentItemSync());
+                $this->getShipmentSync(), $this->getShipmentItemSync(), $this->getShipmentRepo(), $this->getShipmentItemsRepo());
         }
 
         return $this->synchronizer;

@@ -19,7 +19,7 @@
         </style>
     <head>
     <body>
-        <iframe src="https://app.stage.trackmage.com/tracking-page/mock?lvl=2"></iframe>
+        <iframe src="https://app.test.trackmage.com/tracking-page/mock?lvl=2"></iframe>
     </body>
 </html>
 

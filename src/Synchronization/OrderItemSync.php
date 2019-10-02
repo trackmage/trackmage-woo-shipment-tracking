@@ -72,7 +72,10 @@ class OrderItemSync implements EntitySyncInterface
         if ($item === null) {
             throw new InvalidArgumentException('Unable to find order item id: '. $orderItemId);
         }
-        if (!$this->canSyncOrder($order) || !$this->getChangesDetector()->isChanged($item)) {
+
+        $trackmage_order_item_id = wc_get_order_item_meta( $orderItemId, '_trackmage_order_item_id', true );
+
+        if (!($this->canSyncOrder($order) && (empty($trackmage_order_item_id) || $this->getChangesDetector()->isChanged($item)))) {
             return;
         }
 
@@ -80,7 +83,6 @@ class OrderItemSync implements EntitySyncInterface
         if (empty($trackmage_order_id)) {
             throw new SynchronizationException('Unable to sync order item because order is not yet synced');
         }
-        $trackmage_order_item_id = wc_get_order_item_meta( $orderItemId, '_trackmage_order_item_id', true );
 
         $client = Plugin::get_client();
         $guzzleClient = $client->getGuzzleClient();

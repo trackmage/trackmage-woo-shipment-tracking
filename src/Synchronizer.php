@@ -6,6 +6,8 @@ use GuzzleHttp\Exception\RequestException;
 use Psr\Log\LoggerInterface;
 use Throwable;
 use TrackMage\WordPress\Exception\RuntimeException;
+use TrackMage\WordPress\Repository\ShipmentItemRepository;
+use TrackMage\WordPress\Repository\ShipmentRepository;
 use TrackMage\WordPress\Synchronization\OrderItemSync;
 use TrackMage\WordPress\Synchronization\OrderSync;
 use TrackMage\WordPress\Synchronization\ShipmentItemSync;
@@ -22,17 +24,22 @@ class Synchronizer
     private $orderItemSync;
     private $shipmentSync;
     private $shipmentItemSync;
+    private $shipmentRepository;
+    private $shipmentItemRepository;
 
     private $logger;
 
     public function __construct(LoggerInterface $logger, OrderSync $orderSync, OrderItemSync $orderItemSync,
-                                ShipmentSync $shipmentSync, ShipmentItemSync $shipmentItemSync)
+                                ShipmentSync $shipmentSync, ShipmentItemSync $shipmentItemSync,
+                                ShipmentRepository $shipmentRepository, ShipmentItemRepository $shipmentItemRepository)
     {
         $this->logger = $logger;
         $this->orderSync = $orderSync;
         $this->orderItemSync = $orderItemSync;
         $this->shipmentSync = $shipmentSync;
         $this->shipmentItemSync = $shipmentItemSync;
+        $this->shipmentRepository = $shipmentRepository;
+        $this->shipmentItemRepository = $shipmentItemRepository;
         $this->bindEvents();
     }
 
@@ -87,6 +94,15 @@ class Synchronizer
         }
         try {
             $this->orderSync->sync($orderId);
+
+            foreach ($this->shipmentRepository->findBy(['order_id' => $orderId]) as $shipment) {
+                $this->syncShipment($shipment['id']);
+            }
+
+            $order = wc_get_order( $orderId );
+            foreach ($order->get_items() as $item) {
+                $this->syncOrderItem($item->get_id());
+            }
         } catch (RuntimeException $e) {
             $this->logger->warning(self::TAG.'Unable to sync remote order', array_merge([
                 'order_id' => $orderId,
@@ -105,6 +121,11 @@ class Synchronizer
         foreach ($order->get_items() as $item) { //woocommerce_delete_order_item is not fired on order delete
             $this->deleteOrderItem($item->get_id());
         }
+
+        foreach ($this->shipmentRepository->findBy(['order_id' => $orderId]) as $shipment) {
+            $this->deleteShipment($shipment['id']);
+        }
+
         try {
             $this->orderSync->delete($orderId);
         } catch (RuntimeException $e) {
@@ -123,6 +144,10 @@ class Synchronizer
         }
         try {
             $this->orderItemSync->sync($itemId);
+
+            foreach ($this->shipmentItemRepository->findBy(['order_item_id' => $itemId]) as $shipmentItem) {
+                $this->syncShipmentItem($shipmentItem['id']);
+            }
         } catch (RuntimeException $e) {
             $this->logger->warning(self::TAG.'Unable to sync remote order item', array_merge([
                 'item_id' => $itemId,
@@ -132,12 +157,16 @@ class Synchronizer
         }
     }
 
-    public function deleteOrderItem($itemId )
+    public function deleteOrderItem($itemId)
     {
         if ($this->disableEvents) {
             return;
         }
         try {
+            foreach ($this->shipmentItemRepository->findBy(['order_item_id' => $itemId]) as $shipmentItem) {
+                $this->deleteShipmentItem($shipmentItem['id']);
+            }
+
             $this->orderItemSync->delete($itemId);
         } catch (RuntimeException $e) {
             $this->logger->warning(self::TAG.'Unable to delete remote order item', array_merge([

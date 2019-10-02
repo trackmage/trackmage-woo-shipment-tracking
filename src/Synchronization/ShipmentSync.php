@@ -55,11 +55,11 @@ class ShipmentSync implements EntitySyncInterface
         }
         $orderId = $shipment['order_id'];
         $order = wc_get_order($orderId);
-        if (!$this->canSyncOrder($order) || !$this->getChangesDetector()->isChanged($shipment)) {
+        $trackmage_id = $shipment['trackmage_id'];
+        if (!($this->canSyncOrder($order) && (empty($trackmage_id) || $this->getChangesDetector()->isChanged($shipment)))) {
             return;
         }
         $workspace = get_option('trackmage_workspace');
-        $trackmage_id = $shipment['trackmage_id'];
         $client = Plugin::get_client();
         $guzzleClient = $client->getGuzzleClient();
 

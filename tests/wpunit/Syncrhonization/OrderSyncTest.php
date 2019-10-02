@@ -45,6 +45,9 @@ class OrderSyncTest extends WPTestCase {
 
         //programmatically create an order in WC
         $wcOrder = wc_create_order(['status' => 'completed']);
+        $wcOrder->set_shipping_address_1('address1');
+        $wcOrder->save();
+
         $wcId = $wcOrder->get_id();
 
         //WHEN
@@ -60,6 +63,7 @@ class OrderSyncTest extends WPTestCase {
             'externalSyncId' => (string) $wcId,
             'externalSource' => self::SOURCE,
             'orderNumber' => $wcOrder->get_order_number(),
+            'address' => 'address1',
             'status' => ['name' => 'completed'],
         ], $requests[0]['request']);
         //make sure that TM ID is saved to WC order meta

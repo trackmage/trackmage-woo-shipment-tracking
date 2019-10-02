@@ -33,7 +33,7 @@ class OrderSync implements EntitySyncInterface
     {
         if (null === $this->changesDetector) {
             $detector = new ChangesDetector([
-                '[order_number]', '[status]',
+                '[order_number]', '[status]', '[shipping_address_1]',
             ], function($order) {
                 return get_post_meta( $order['id'], '_trackmage_hash', true );
             }, function($order, $hash) {
@@ -67,6 +67,7 @@ class OrderSync implements EntitySyncInterface
                             'externalSyncId' => (string)$order_id,
                             'externalSource' => $this->source,
                             'orderNumber' => $order->get_order_number(),
+                            'address' => $order->get_shipping_address_1(),
                             'status' => ['name' => $order->get_status()],
                         ]
                     ]);

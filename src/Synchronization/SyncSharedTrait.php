@@ -17,6 +17,7 @@ trait SyncSharedTrait
             return true;
         }
         $sync_statuses = get_option('trackmage_sync_statuses', []);
-        return empty($sync_statuses) || in_array('wc-' . $order->get_status(), $sync_statuses, true);
+        $status = $order->get_status();
+        return empty($sync_statuses) || in_array('wc-' . $status, $sync_statuses, true);
     }
 }

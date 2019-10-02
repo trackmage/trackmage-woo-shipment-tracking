@@ -29,7 +29,7 @@ $credentials = Helper::check_credentials();
     <!-- Section: Credentials -->
     <div class="section">
         <h2 class="headline"><?php _e( 'Credentials', 'trackmage' ); ?></h2>
-        <p class="message"><?php echo sprintf( __( 'If you have not created API keys yet, please <a href="%1$s" target="_blank">login</a> to TrackMage account and generate a new key for this website.', 'trackmage' ), 'https://app.stage.trackmage.com/dashboard/user-profile/api-keys' ); ?></p>
+        <p class="message"><?php echo sprintf( __( 'If you have not created API keys yet, please <a href="%1$s" target="_blank">login</a> to TrackMage account and generate a new key for this website.', 'trackmage' ), 'https://app.test.trackmage.com/dashboard/user-profile/api-keys' ); ?></p>
         <table class="form-table">
             <tbody>
                 <tr>
@@ -64,7 +64,7 @@ $credentials = Helper::check_credentials();
                                 <option value="<?php echo $ws['id']; ?>" <?php selected( $ws['id'], $workspace ); ?>><?php echo $ws['title']; ?></option>
                             <?php endforeach; ?>
                         </select>
-                        <p class="description"><?php echo sprintf( __( 'Select a workspace or <a href="%1$s">create a new one</a> in TrackMage.', 'trackmage'), 'https://app.stage.trackmage.com/dashboard/workspaces' ); ?></p>
+                        <p class="description"><?php echo sprintf( __( 'Select a workspace or <a href="%1$s">create a new one</a> in TrackMage.', 'trackmage'), 'https://app.test.trackmage.com/dashboard/workspaces' ); ?></p>
                     </td>
                 </tr>
             </tbody>

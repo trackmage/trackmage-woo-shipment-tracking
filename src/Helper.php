@@ -223,7 +223,7 @@ class Helper {
     /**
      * @param int $shipmentId
      */
-    public function deleteShipment($shipmentId)
+    public static function deleteShipment($shipmentId)
     {
         $shipmentRepo = Plugin::instance()->getShipmentRepo();
         if (null === $shipmentRepo->find($shipmentId)) {
