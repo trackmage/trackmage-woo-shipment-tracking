@@ -33,7 +33,11 @@ class OrderSync implements EntitySyncInterface
     {
         if (null === $this->changesDetector) {
             $detector = new ChangesDetector([
-                '[order_number]', '[status]', '[shipping_address_1]',
+                '[order_number]', '[status]',
+                '[shipping_address_1]', '[shipping_address_2]', '[shipping_city]', '[shipping_company]', '[shipping_country]',
+                '[shipping_first_name]', '[shipping_last_name]',  '[shipping_postcode]',  '[shipping_state]', 
+                '[billing_address_1]', '[billing_address_2]', '[billing_city]', '[billing_company]', '[billing_country]',
+                '[billing_first_name]', '[billing_last_name]',  '[billing_postcode]',  '[billing_state]', 
             ], function($order) {
                 return get_post_meta( $order['id'], '_trackmage_hash', true );
             }, function($order, $hash) {
@@ -67,7 +71,8 @@ class OrderSync implements EntitySyncInterface
                             'externalSyncId' => (string)$order_id,
                             'externalSource' => $this->source,
                             'orderNumber' => $order->get_order_number(),
-                            'address' => $order->get_shipping_address_1(),
+                            'shippingAddress' => $this->getShippingAddress($order),
+                            'billingAddress' => $this->getBillingAddress($order),
                             'status' => ['name' => $order->get_status()],
                         ]
                     ]);
@@ -93,6 +98,8 @@ class OrderSync implements EntitySyncInterface
                     $guzzleClient->put("/orders/{$trackmage_order_id}", [
                         'json' => [
                             'status' => ['name' => $order->get_status()],
+                            'shippingAddress' => $this->getShippingAddress($order),
+                            'billingAddress' => $this->getBillingAddress($order),
                         ]
                     ]);
                 } catch (ClientException $e) {
@@ -111,9 +118,27 @@ class OrderSync implements EntitySyncInterface
         }
     }
 
+    public function delete($id)
+    {
+        $client = Plugin::get_client();
+        $guzzleClient = $client->getGuzzleClient();
+
+        $trackmage_order_id = get_post_meta( $id, '_trackmage_order_id', true );
+        if (empty($trackmage_order_id)) {
+            return;
+        }
+        try {
+            $guzzleClient->delete('/orders/'.$trackmage_order_id);
+        } catch ( ClientException $e ) {
+            throw new SynchronizationException('Unable to delete order: '.$e->getMessage(), $e->getCode(), $e);
+        } catch ( \Throwable $e ) {
+            throw new SynchronizationException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
+        } finally {
+            delete_post_meta($id, '_trackmage_order_id');
+        }
+    }
+
     /**
-     * @param WC_Order $order
-     * @param ResponseInterface $response
      * @return array|null
      */
     private function matchSearchCriteriaFromValidationError(WC_Order $order, ResponseInterface $response)
@@ -149,23 +174,67 @@ class OrderSync implements EntitySyncInterface
         return isset($data['hydra:member'][0]) ? $data['hydra:member'][0] : null;
     }
 
-    public function delete($id)
+    /**
+     * @return array
+     */
+    private function getShippingAddress(WC_Order $order)
     {
-        $client = Plugin::get_client();
-        $guzzleClient = $client->getGuzzleClient();
+        $countryIso2 = $order->get_shipping_country();
+        $stateCode = $order->get_billing_state();
+        $state = $this->getState($countryIso2, $stateCode);
 
-        $trackmage_order_id = get_post_meta( $id, '_trackmage_order_id', true );
-        if (empty($trackmage_order_id)) {
-            return;
+        return [
+            'addressLine1' => $order->get_shipping_address_1(),
+            'addressLine2' => $order->get_shipping_address_2(),
+            'city' => $order->get_shipping_city(),
+            'company' => $order->get_shipping_company(),
+            'countryIso2' => $countryIso2,
+            'firstName' => $order->get_shipping_first_name(),
+            'lastName' => $order->get_shipping_last_name(),
+            'postcode' => $order->get_shipping_postcode(),
+            'state' => $state,
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    private function getBillingAddress(WC_Order $order)
+    {
+        $countryIso2 = $order->get_billing_country();
+        $stateCode = $order->get_billing_state();
+        $state = $this->getState($countryIso2, $stateCode);
+
+        return [
+            'addressLine1' => $order->get_billing_address_1(),
+            'addressLine2' => $order->get_billing_address_2(),
+            'city' => $order->get_billing_city(),
+            'company' => $order->get_billing_company(),
+            'countryIso2' => $countryIso2,
+            'firstName' => $order->get_billing_first_name(),
+            'lastName' => $order->get_billing_last_name(),
+            'postcode' => $order->get_billing_postcode(),
+            'state' => $state,
+        ];
+    }
+
+    /**
+     * Converts the WC state code to name. Example: CN-1 to Beijing / 北京
+     * @param string|null $countryIso2
+     * @param string|null $stateCode
+     * @return string|null
+     */
+    private function getState($countryIso2, $stateCode)
+    {
+        if (empty($countryIso2) || empty($stateCode)) {
+            return null;
         }
-        try {
-            $guzzleClient->delete('/orders/'.$trackmage_order_id);
-        } catch ( ClientException $e ) {
-            throw new SynchronizationException('Unable to delete order: '.$e->getMessage(), $e->getCode(), $e);
-        } catch ( \Throwable $e ) {
-            throw new SynchronizationException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
-        } finally {
-            delete_post_meta($id, '_trackmage_order_id');
+        $states = WC()->countries->get_states($countryIso2);
+        if (!isset($states[$stateCode])) {
+            return null;
         }
+        $state = $states[$stateCode];
+        $state = html_entity_decode($state);
+        return $state;
     }
 }

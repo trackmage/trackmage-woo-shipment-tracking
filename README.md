@@ -25,6 +25,8 @@ make sync_hosts_entries
 make ci_local_prepare
 make ci_before_script
 make ci_script
+vendor/bin/codecept run wpunit,unit,functional,acceptance
+XDEBUG_CONFIG="idekey=PhpStorm1" vendor/bin/codecept run wpunit tests/wpunit/Syncrhonization/OrderSyncTest.php 
 make docker_down
 make down
 ```

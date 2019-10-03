@@ -10,6 +10,17 @@ class OrderSyncTest extends WPTestCase {
     const TM_ORDER_ID = 'tm-order-id';
     const TM_WS_ID = '1001';
     const SOURCE = 'wp';
+    const TEST_ADDRESS = [
+        'addressLine1' => 'addr1',
+        'addressLine2' => 'addr2',
+        'city' => 'TestCity',
+        'company' => 'Company LTD',
+        'countryIso2' => 'CN',
+        'firstName' => 'FN',
+        'lastName' => 'LN',
+        'postcode' => '123',
+        'state' => 'Beijing / 北京',
+    ];
 
     /** @var WpunitTester */
     protected $tester;
@@ -45,7 +56,24 @@ class OrderSyncTest extends WPTestCase {
 
         //programmatically create an order in WC
         $wcOrder = wc_create_order(['status' => 'completed']);
-        $wcOrder->set_shipping_address_1('address1');
+        $wcOrder->set_shipping_address_1(self::TEST_ADDRESS['addressLine1']);
+        $wcOrder->set_shipping_address_2(self::TEST_ADDRESS['addressLine2']);
+        $wcOrder->set_shipping_city(self::TEST_ADDRESS['city']);
+        $wcOrder->set_shipping_company(self::TEST_ADDRESS['company']);
+        $wcOrder->set_shipping_country(self::TEST_ADDRESS['countryIso2']);
+        $wcOrder->set_shipping_first_name(self::TEST_ADDRESS['firstName']);
+        $wcOrder->set_shipping_last_name(self::TEST_ADDRESS['lastName']);
+        $wcOrder->set_shipping_postcode(self::TEST_ADDRESS['postcode']);
+        $wcOrder->set_shipping_state('CN2'); //Beijing
+        $wcOrder->set_billing_address_1(self::TEST_ADDRESS['addressLine1']);
+        $wcOrder->set_billing_address_2(self::TEST_ADDRESS['addressLine2']);
+        $wcOrder->set_billing_city(self::TEST_ADDRESS['city']);
+        $wcOrder->set_billing_company(self::TEST_ADDRESS['company']);
+        $wcOrder->set_billing_country(self::TEST_ADDRESS['countryIso2']);
+        $wcOrder->set_billing_first_name(self::TEST_ADDRESS['firstName']);
+        $wcOrder->set_billing_last_name(self::TEST_ADDRESS['lastName']);
+        $wcOrder->set_billing_postcode(self::TEST_ADDRESS['postcode']);
+        $wcOrder->set_billing_state('CN2'); //Beijing
         $wcOrder->save();
 
         $wcId = $wcOrder->get_id();
@@ -58,13 +86,15 @@ class OrderSyncTest extends WPTestCase {
         $this->assertMethodsWereCalled($requests, [
             ['POST', '/orders'],
         ]);
+
         $this->assertSubmittedJsonIncludes([
             'workspace' => '/workspaces/'.self::TM_WS_ID,
             'externalSyncId' => (string) $wcId,
             'externalSource' => self::SOURCE,
             'orderNumber' => $wcOrder->get_order_number(),
-            'address' => 'address1',
             'status' => ['name' => 'completed'],
+            'shippingAddress' => self::TEST_ADDRESS,
+            'billingAddress' => self::TEST_ADDRESS,
         ], $requests[0]['request']);
         //make sure that TM ID is saved to WC order meta
         self::assertSame(self::TM_ORDER_ID, get_post_meta($wcId, '_trackmage_order_id', true));
@@ -83,6 +113,25 @@ class OrderSyncTest extends WPTestCase {
 
         // pre-create order in TM
         $wcOrder = wc_create_order();
+        $wcOrder->set_shipping_address_1(self::TEST_ADDRESS['addressLine1']);
+        $wcOrder->set_shipping_address_2(self::TEST_ADDRESS['addressLine2']);
+        $wcOrder->set_shipping_city(self::TEST_ADDRESS['city']);
+        $wcOrder->set_shipping_company(self::TEST_ADDRESS['company']);
+        $wcOrder->set_shipping_country(self::TEST_ADDRESS['countryIso2']);
+        $wcOrder->set_shipping_first_name(self::TEST_ADDRESS['firstName']);
+        $wcOrder->set_shipping_last_name(self::TEST_ADDRESS['lastName']);
+        $wcOrder->set_shipping_postcode(self::TEST_ADDRESS['postcode']);
+        $wcOrder->set_shipping_state('CN2'); //Beijing
+        $wcOrder->set_billing_address_1(self::TEST_ADDRESS['addressLine1']);
+        $wcOrder->set_billing_address_2(self::TEST_ADDRESS['addressLine2']);
+        $wcOrder->set_billing_city(self::TEST_ADDRESS['city']);
+        $wcOrder->set_billing_company(self::TEST_ADDRESS['company']);
+        $wcOrder->set_billing_country(self::TEST_ADDRESS['countryIso2']);
+        $wcOrder->set_billing_first_name(self::TEST_ADDRESS['firstName']);
+        $wcOrder->set_billing_last_name(self::TEST_ADDRESS['lastName']);
+        $wcOrder->set_billing_postcode(self::TEST_ADDRESS['postcode']);
+        $wcOrder->set_billing_state('CN2'); //Beijing
+        $wcOrder->save();
         $wcId = $wcOrder->get_id();
         add_post_meta( $wcId, '_trackmage_order_id', self::TM_ORDER_ID, true );
 
@@ -96,6 +145,8 @@ class OrderSyncTest extends WPTestCase {
         ]);
         $this->assertSubmittedJsonIncludes([
             'status' => ['name' => 'pending'],
+            'shippingAddress' => self::TEST_ADDRESS,
+            'billingAddress' => self::TEST_ADDRESS,
         ], $requests[0]['request']);
     }
 
