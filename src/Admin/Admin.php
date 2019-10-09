@@ -12,7 +12,6 @@ namespace TrackMage\WordPress\Admin;
 
 use TrackMage\WordPress\Plugin;
 use TrackMage\WordPress\Helper;
-use TrackMage\Client\Swagger\Model\WorkflowSetWorkflowSetIntegration;
 use TrackMage\Client\Swagger\ApiException;
 
 /**
@@ -171,35 +170,28 @@ class Admin {
         update_option('trackmage_webhook_username', $username);
         update_option('trackmage_webhook_password', $password);
 
-        $integration = [
-            'type' => 'webhook',
-            'credentials' => [
-                'url' => $url,
-                'authType' => 'basic',
-                'username' => $username,
-                'password' => $password,
-            ],
-        ];
-
         $workflow = [
-            'direction' => 'out',
+            'type' => 'webhook',
             'period' => 'immediately',
             'title' => get_bloginfo('name'),
             'workspace' => '/workspaces/' . $value,
-            'integration' => $integration,
+            'url' => $url,
+            'authType' => 'basic',
+            'username' => $username,
+            'password' => $password,
             'enabled' => true,
         ];
 
-        $workflow = new WorkflowSetWorkflowSetIntegration($workflow);
-
         try {
-            $result = $client->getWorkflowApi()->postWorkflowCollection($workflow);
+            $response = $client->getGuzzleClient()->post('/workflows', ['json' => $workflow]);
+            $contents = $response->getBody()->getContents();
+            $data = json_decode($contents, true);
         } catch (ApiException $e) {
             // Trigger error message and exit.
             return $old_value;
         }
 
-        update_option('trackmage_webhook', $result->getId());
+        update_option('trackmage_webhook', $data['id']);
         return $value;
     }
 }
