@@ -115,4 +115,39 @@
       input.attr("checked", false);
     }
   });
+
+  /**
+   * Select field for Statuses
+   */
+  $("select#trackmage_sync_statuses").selectWoo({
+    width: "350px",
+    ajax: {
+      url: params.main.urls.ajax,
+      method: "post",
+      dataType: "json",
+      delay: 250,
+      data: function(params) {
+        return {
+          term: params.term,
+          action: "trackmage_get_order_statuses"
+        };
+      },
+      processResults: function(data, params) {
+        return {
+          results: data.filter((s, index) => {
+            let term = typeof params.term === "undefined" ? "" : params.term;
+            if (
+              term === "" ||
+              (s.id.toLowerCase().includes(params.term.toLowerCase()) ||
+                s.text.toLowerCase().includes(params.term.toLowerCase()))
+            ) {
+              return true;
+            }
+
+            return false;
+          })
+        };
+      }
+    }
+  });
 })(jQuery, window, document);

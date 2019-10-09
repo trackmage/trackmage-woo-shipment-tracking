@@ -20,6 +20,8 @@ $workspace     = get_option( 'trackmage_workspace', 0 );
 
 $workspaces = Helper::get_workspaces();
 $credentials = Helper::check_credentials();
+$statuses = Helper::getOrderStatuses();
+$sync_statuses = get_option( 'trackmage_sync_statuses', [] );
 ?>
 
 <div class="intro">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu.</div>
@@ -71,6 +73,31 @@ $credentials = Helper::check_credentials();
         </table>
     </div>
     <!-- End Section: Workspace -->
+
+
+    <!-- Section: Sync With TrackMage -->
+    <div class="section<?php Helper::add_css_class( ! $credentials && !$workspace, 'disabled', true, true ); ?>">
+        <h2 class="headline"><?php _e( 'Sync With TrackMage', 'trackmage' ); ?></h2>
+        <p class="message"><?php echo sprintf( __( 'Please select orders statuses to sync with TrackMage.', 'trackmage' ) ); ?></p>
+        <table class="form-table">
+            <tbody>
+            <tr>
+                <th scope="row"><label for="trackmage_sync_statuses"><?php _e( 'Statuses', 'trackmage' ); ?></label></th>
+                <td>
+                    <select name="trackmage_sync_statuses[]" id="trackmage_sync_statuses" multiple>
+                        <?php foreach ( $sync_statuses as $slug ): ?>
+                            <?php if ( isset( $statuses[ $slug ] ) ) : ?>
+                                <option value="<?php echo $slug; ?>" selected><?php echo $statuses[ $slug ]['name']; ?></option>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </select>
+                    <p class="description"><?php _e( 'Create an order on TrackMage when the status changes to. If none is selected, all new orders will be synced with TrackMage upon creation.', 'trackmage' ); ?></p>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <!-- End Section: Sync With TrackMage -->
 
     <p class="actions"><?php submit_button( 'Save Changes', 'primary', 'submit', false ); ?></p>
 </form>
