@@ -115,24 +115,23 @@ class Helper {
      */
     public static function get_aliases() {
         $workspaceId = get_option( 'trackmage_workspace', 0 );
-        if(!$workspaceId)
-            return [];
-
         $aliases = [];
-        try {
-            $client = Plugin::get_client();
-            $guzzleClient = $client->getGuzzleClient();
-            $response = $guzzleClient->get("/workspaces/{$workspaceId}/order_statuses");
-            $content = $response->getBody()->getContents();
-            $data = json_decode($content, true);
-        } catch( ApiException $e ) {
-            // Do nothing. We will return an empty array.
-        }
-        foreach ($data['hydra:member'] as $status) {
-            $name = $status['name'];
-            $aliases[$name] = __(ucfirst($name),'trackmage');
-        }
 
+        if($workspaceId !== 0){
+            try {
+                $client = Plugin::get_client();
+                $guzzleClient = $client->getGuzzleClient();
+                $response = $guzzleClient->get("/workspaces/{$workspaceId}/order_statuses");
+                $content = $response->getBody()->getContents();
+                $data = json_decode($content, true);
+            } catch( ApiException $e ) {
+                // Do nothing. We will return an empty array.
+            }
+            foreach ($data['hydra:member'] as $status) {
+                $name = $status['name'];
+                $aliases[$name] = __(ucfirst($name),'trackmage');
+            }
+        }
         return $aliases;
     }
 
