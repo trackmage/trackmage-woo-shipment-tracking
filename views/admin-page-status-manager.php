@@ -67,28 +67,5 @@ $aliases = Helper::get_aliases();
                 </tr>
             </tfoot>
         </table>
-
-        <form method="post" action="options.php">
-            <?php settings_fields( 'trackmage_statuses' ); ?>
-            <table class="form-table">
-                <tbody>
-                    <tr>
-                        <th scope="row"><label for="trackmage_sync_statuses"><?php _e( 'Sync with TrackMage', 'trackmage' ); ?></label></th>
-                        <td>
-                            <select name="trackmage_sync_statuses[]" id="trackmage_sync_statuses" multiple>
-                                <?php foreach ( $sync_statuses as $slug ): ?>
-                                    <?php if ( isset( $statuses[ $slug ] ) ) : ?>
-                                        <option value="<?php echo $slug; ?>" selected><?php echo $statuses[ $slug ]['name']; ?></option>
-                                    <?php endif; ?>
-                                <?php endforeach; ?>
-                            </select>
-                            <p class="description"><?php _e( 'Create an order on TrackMage when the status changes to. If none is selected, all new orders will be synced with TrackMage upon creation.', 'trackmage' ); ?></p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <p class="actions"><?php submit_button( 'Save Changes', 'primary', 'submit', false ); ?></p>
-        </form>
     </div>
 </div>
