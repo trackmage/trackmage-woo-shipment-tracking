@@ -136,7 +136,7 @@ class Helper {
                 $cachedAliases[$workspaceId] = $aliases;
                 set_transient('trackmage_order_statuses', $cachedAliases, 3600);
             } catch( ApiException $e ) {
-                $aliases = [];
+
             }
 
         }
