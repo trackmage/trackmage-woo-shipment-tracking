@@ -109,11 +109,12 @@ class Helper {
 
     /**
      * Returns the available aliases.
+     * @param bool $used
      *
-     * @since 0.1.0
+     * s@since 0.1.0
      * @return array List of aliases.
      */
-    public static function get_aliases() {
+    public static function get_aliases($used = false) {
         $workspaceId = get_option( 'trackmage_workspace', 0 );
         $cachedAliases = get_transient('trackmage_order_statuses');
         $aliases = [];
@@ -138,6 +139,15 @@ class Helper {
                 $aliases = [];
             }
 
+        }
+        if($used){
+            $usedAliases = get_option( 'trackmage_order_status_aliases', [] );
+            $used_aliases = [];
+            foreach ($usedAliases as $key => $value){
+                if(isset($aliases[$value]))
+                    $used_aliases[] = $value;
+            }
+            $aliases = $used_aliases;
         }
         return $aliases;
     }
@@ -357,7 +367,7 @@ class Helper {
      * @return array|null Status details or null if not found.
      */
     public static function get_order_status_by_slug( $slug ) {
-        $statuses = self::get_order_statuses();
+        $statuses = self::getOrderStatuses();
         return isset( $statuses[ $slug ] ) ? $statuses[ $slug ] : null;
     }
 

@@ -45,7 +45,7 @@ class Assets {
         // Enqueue WooCommerce styles.
         wp_enqueue_style('select2', WC()->plugin_url() . '/assets/css/select2.css', array(), WC_VERSION);
         wp_enqueue_style('woocommerce_admin_styles');
-        
+
         // Enqueue admin styles.
         wp_enqueue_style('trackmage_admin');
     }
@@ -102,6 +102,7 @@ class Assets {
             wp_enqueue_script('trackmage-admin-status-manager');
             wp_localize_script('trackmage-admin-status-manager', 'trackmageAdminStatusManager', [
                 'aliases' => Helper::get_aliases(),
+                'used_aliases' => Helper::get_aliases(true),
                 'nonces' => [
                     'addStatus' => wp_create_nonce('add-status'),
                     'updateStatus' => wp_create_nonce('update-status'),

@@ -55,7 +55,7 @@
                       params.statusManager.i18n.alias
                     }</span>
                     <select name="status_alias">
-                      <option value="">${params.main.i18n.noSelect}</option>
+                      <option value="" selected="selected">${params.main.i18n.noSelect}</option>
                       ${Object.keys(params.statusManager.aliases)
                         .map(
                           key =>
@@ -84,6 +84,15 @@
         `);
 
     $(editRow).insertAfter(row);
+
+    $.each(params.statusManager.used_aliases, function(idx, key){
+       if(alias != key) {
+        $(editRow).find("select[name=status_alias] option[value=" + key + "]").eq(0).hide();
+      }else {
+        $(editRow).find("select[name=status_alias] option").removeAttr("selected");
+        $(editRow).find("select[name=status_alias] option[value="+key+"]").attr("selected","selected");
+      }
+    });
 
     // Current values.
     $(editRow)
@@ -141,11 +150,17 @@
           },
           success: function(response) {
             if (response.success) {
+              params.statusManager.used_aliases = response.data.result.used;
               updateRow(
                 response.data.result.name,
                 response.data.result.slug,
                 response.data.result.alias
               );
+              $(".add-status select.status_alias option").show();
+              $.each(params.statusManager.used_aliases, function(idx, value){
+                $(".add-status select[name=status_alias] option[value="+value+"]").hide();
+              });
+
               $(editRow).remove();
               $(row)
                 .removeClass("hidden")
@@ -253,6 +268,12 @@
             response.data.result.slug,
             response.data.result.alias
           );
+          params.statusManager.used_aliases = response.data.result.used;
+
+          $(".add-status select.status_alias option").show();
+          $.each(params.statusManager.used_aliases, function(idx, value){
+            $(".add-status select[name=status_alias] option[value="+value+"]").hide();
+          });
         }
 
         const alert = {
@@ -345,6 +366,13 @@
           success: function(response) {
             if (response.success) {
               deleteRow();
+
+              params.statusManager.used_aliases = response.data.result.used;
+
+              $(".add-status select.status_alias option").show();
+              $.each(params.statusManager.used_aliases, function(idx, value){
+                $(".add-status select[name=status_alias] option[value="+value+"]").hide();
+              });
             }
 
             const alert = {
