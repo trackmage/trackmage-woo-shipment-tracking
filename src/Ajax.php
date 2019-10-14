@@ -93,7 +93,7 @@ class Ajax {
         $order = wc_get_order($orderId);
 
         $results = [];
-        
+
         foreach ($order->get_items() as $id => $item) {
             array_push($results, [
                 'id' => $id,
@@ -347,6 +347,7 @@ class Ajax {
         $aliases = Helper::get_aliases();
         $get_statuses = Helper::getOrderStatuses();
 
+
         // Errors array.
         $errors = [];
 
@@ -365,7 +366,7 @@ class Ajax {
         if ($is_custom && $current_slug !== $slug) {
             unset($custom_statuses[$current_slug]);
         }
-        
+
         if (! $is_custom && $current_slug !== $slug) {
             array_push($errors, __('The slug of core statuses and statuses created by other plugins and themes cannot be changed.', 'trackmage'));
         }
@@ -396,12 +397,15 @@ class Ajax {
         update_option('trackmage_modified_order_statuses', $modified_statuses);
         update_option('trackmage_order_status_aliases', $status_aliases);
 
+        $used_aliases = Helper::get_used_aliases();
+
         wp_send_json_success([
             'message' => __('Status updated successfully!', 'trackmage'),
             'result' => [
                 'name'  => $name,
                 'slug'  => $slug,
                 'alias' => $alias,
+                'used'  => $used_aliases
             ]
         ]);
     }
@@ -427,7 +431,7 @@ class Ajax {
         $status_aliases = get_option('trackmage_order_status_aliases', []);
         $aliases = Helper::get_aliases();
         $get_statuses = Helper::getOrderStatuses();
-        
+
         // Errors array.
         $errors = [];
 
@@ -460,12 +464,15 @@ class Ajax {
         update_option('trackmage_custom_order_statuses', $custom_statuses);
         update_option('trackmage_order_status_aliases', $status_aliases);
 
+        $used_aliases = Helper::get_used_aliases();
+
         wp_send_json_success([
             'message' => __('Status added successfully!', 'trackmage'),
             'result' => [
                 'name'  => $name,
                 'slug'  => $slug,
                 'alias' => $alias,
+                'used'  => $used_aliases
             ]
         ]);
     }
@@ -486,7 +493,7 @@ class Ajax {
         $slug = $_POST['slug'];
         $custom_statuses = get_option('trackmage_custom_order_statuses', []);
         $status_aliases = get_option('trackmage_order_status_aliases', []);
-        
+
         // Errors array.
         $errors = [];
 
@@ -510,10 +517,13 @@ class Ajax {
         update_option('trackmage_custom_order_statuses', $custom_statuses);
         update_option('trackmage_order_status_aliases', $status_aliases);
 
+        $used_aliases = Helper::get_used_aliases();
+
         wp_send_json_success([
             'message' => __('Status deleted successfully', 'trackmage'),
             'result' => [
                 'name'  => $name,
+                'used'  => $used_aliases
             ]
         ]);
     }
