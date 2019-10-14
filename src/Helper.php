@@ -150,11 +150,7 @@ class Helper {
 
     public static function get_used_aliases() {
         $usedAliases = get_option( 'trackmage_order_status_aliases', [] );
-        $result = [];
-        foreach ($usedAliases as $key => $used_alias)
-            if(!empty($used_alias))
-                $result[] = $used_alias;
-        return $result;
+        return array_values(array_filter($usedAliases));
     }
 
     /**
