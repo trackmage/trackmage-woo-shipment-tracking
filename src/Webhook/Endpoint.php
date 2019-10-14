@@ -6,7 +6,7 @@
  * @author  TrackMage
  */
 
-namespace TrackMage\WordPress;
+namespace TrackMage\WordPress\Webhook;
 
 /**
  * Webhook callback URL.

@@ -12,6 +12,7 @@ namespace TrackMage\WordPress;
 
 use TrackMage\WordPress\Admin\Admin;
 use TrackMage\WordPress\Admin\Orders;
+use TrackMage\WordPress\Webhook\Endpoint;
 use BrightNucleus\Config\ConfigInterface;
 use BrightNucleus\Config\ConfigTrait;
 use TrackMage\Client\TrackMageClient;
