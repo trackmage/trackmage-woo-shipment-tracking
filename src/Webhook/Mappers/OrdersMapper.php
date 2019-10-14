@@ -4,6 +4,6 @@
 namespace TrackMage\WordPress\Webhook\Mappers;
 
 
-class ShipmentMapper extends AbstractMapper {
+class OrdersMapper extends AbstractMapper {
 
 }

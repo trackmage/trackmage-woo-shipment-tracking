@@ -193,6 +193,7 @@ class Admin {
             return $old_value;
         }
 
+        update_option( 'trackmage_order_status_aliases', [] );
         update_option('trackmage_webhook', $data['id']);
         return $value;
     }

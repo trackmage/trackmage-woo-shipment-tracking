@@ -8,6 +8,10 @@
 
 namespace TrackMage\WordPress\Webhook;
 
+use TrackMage\WordPress\Helper;
+use TrackMage\WordPress\Webhook\Mappers\OrdersMapper;
+use TrackMage\WordPress\Webhook\Mappers\ShipmentsMapper;
+
 /**
  * Webhook callback URL.
  *
@@ -15,6 +19,7 @@ namespace TrackMage\WordPress\Webhook;
  */
 class Endpoint {
 
+    private $mapper;
 	/**
 	 * The constructor.
 	 *
@@ -25,6 +30,7 @@ class Endpoint {
 		add_action( 'init', [ $this, 'endpoint' ] , 0);
 		add_action( 'parse_request', [ $this, 'handle_endpoint_requests' ], 0 );
 		add_action( 'trackmage_endpoint_callback', [ $this, 'authorize' ], 10, 2 );
+		add_action( 'process_request', [$this, 'process'], 10, 2);
 	}
 
 	public function add_query_vars( $vars ) {
@@ -76,6 +82,39 @@ class Endpoint {
 			header( 'WWW-Authenticate: Basic realm="Restricted area"' );
 			http_response_code( 401 );
 			die( 'Unauthorized ' . $_SERVER['REQUEST_URI'] . ' from ' . $_SERVER['REMOTE_ADDR'] );
-		}
+		}else{
+		    do_action('process_request', $headers, $response);
+        }
 	}
+
+	public function process($headers, $response){
+	    $responseData = json_decode($response, true);
+	    try{
+            $data = $responseData['data'];
+            foreach ($data as $key => $item){
+                $entity = $item['entity'];
+                $event = $item['event'];
+                $updatedFields = $item['updatedFields'];
+                $fields = $item['data'];
+
+                $this->initMapper($entity);
+            }
+        }catch (\Exception $e){
+            http_response_code( 400);
+            die( 'Error during processing data: ' . $e->getCode(). ' '.$e->getMessage() );
+        }
+    }
+
+    private function initMapper($entity){
+	    $mapper = false;
+        switch ($entity){
+            case 'shipments':
+                $mapper = new ShipmentsMapper();
+                break;
+            case 'orders':
+                $mapper = new OrdersMapper();
+                break;
+        }
+        $this->mapper = $mapper;
+    }
 }
