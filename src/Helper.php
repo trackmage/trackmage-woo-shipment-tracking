@@ -109,12 +109,11 @@ class Helper {
 
     /**
      * Returns the available aliases.
-     * @param bool $used
      *
-     * s@since 0.1.0
+     * @since 0.1.0
      * @return array List of aliases.
      */
-    public static function get_aliases($used = false) {
+    public static function get_aliases() {
         $workspaceId = get_option( 'trackmage_workspace', 0 );
         $cachedAliases = get_transient('trackmage_order_statuses');
         $aliases = [];
@@ -140,16 +139,22 @@ class Helper {
             }
 
         }
-        if($used){
-            $usedAliases = get_option( 'trackmage_order_status_aliases', [] );
-            $used_aliases = [];
-            foreach ($usedAliases as $key => $value){
-                if(isset($aliases[$value]))
-                    $used_aliases[] = $value;
-            }
-            $aliases = $used_aliases;
-        }
         return $aliases;
+    }
+
+    /**
+     * Returns the used aliases.
+     *
+     * @return array List of aliases.
+     */
+
+    public static function get_used_aliases() {
+        $usedAliases = get_option( 'trackmage_order_status_aliases', [] );
+        $result = [];
+        foreach ($usedAliases as $key => $used_alias)
+            if(!empty($used_alias))
+                $result[] = $used_alias;
+        return $result;
     }
 
     /**

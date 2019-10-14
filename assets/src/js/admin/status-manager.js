@@ -86,7 +86,7 @@
     $(editRow).insertAfter(row);
 
     $.each(params.statusManager.used_aliases, function(idx, key){
-       if(alias != key) {
+      if(alias != key) {
         $(editRow).find("select[name=status_alias] option[value=" + key + "]").eq(0).hide();
       }else {
         $(editRow).find("select[name=status_alias] option").removeAttr("selected");
@@ -156,7 +156,7 @@
                 response.data.result.slug,
                 response.data.result.alias
               );
-              $(".add-status select.status_alias option").show();
+              $(".add-status select[name=status_alias] option").show();
               $.each(params.statusManager.used_aliases, function(idx, value){
                 $(".add-status select[name=status_alias] option[value="+value+"]").hide();
               });

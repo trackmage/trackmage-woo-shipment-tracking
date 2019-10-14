@@ -102,7 +102,7 @@ class Assets {
             wp_enqueue_script('trackmage-admin-status-manager');
             wp_localize_script('trackmage-admin-status-manager', 'trackmageAdminStatusManager', [
                 'aliases' => Helper::get_aliases(),
-                'used_aliases' => Helper::get_aliases(true),
+                'used_aliases' => Helper::get_used_aliases(),
                 'nonces' => [
                     'addStatus' => wp_create_nonce('add-status'),
                     'updateStatus' => wp_create_nonce('update-status'),
