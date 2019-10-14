@@ -397,7 +397,7 @@ class Ajax {
         update_option('trackmage_modified_order_statuses', $modified_statuses);
         update_option('trackmage_order_status_aliases', $status_aliases);
 
-        $used_aliases = Helper::get_aliases(true);
+        $used_aliases = Helper::get_used_aliases();
 
         wp_send_json_success([
             'message' => __('Status updated successfully!', 'trackmage'),
@@ -464,7 +464,7 @@ class Ajax {
         update_option('trackmage_custom_order_statuses', $custom_statuses);
         update_option('trackmage_order_status_aliases', $status_aliases);
 
-        $used_aliases = Helper::get_aliases(true);
+        $used_aliases = Helper::get_used_aliases();
 
         wp_send_json_success([
             'message' => __('Status added successfully!', 'trackmage'),
@@ -517,7 +517,7 @@ class Ajax {
         update_option('trackmage_custom_order_statuses', $custom_statuses);
         update_option('trackmage_order_status_aliases', $status_aliases);
 
-        $used_aliases = Helper::get_aliases(true);
+        $used_aliases = Helper::get_used_aliases();
 
         wp_send_json_success([
             'message' => __('Status deleted successfully', 'trackmage'),
