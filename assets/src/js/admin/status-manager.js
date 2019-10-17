@@ -368,7 +368,7 @@
               deleteRow();
 
               params.statusManager.used_aliases = response.data.result.used;
-
+              
               $(".add-status select[name=status_alias] option").show();
               $.each(params.statusManager.used_aliases, function(idx, value){
                 $(".add-status select[name=status_alias] option[value="+value+"]").hide();
