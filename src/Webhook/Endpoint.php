@@ -11,6 +11,8 @@ namespace TrackMage\WordPress\Webhook;
 use TrackMage\WordPress\Helper;
 use TrackMage\WordPress\Webhook\Mappers\OrdersMapper;
 use TrackMage\WordPress\Webhook\Mappers\ShipmentsMapper;
+use Psr\Log\LoggerInterface;
+use Throwable;
 
 /**
  * Webhook callback URL.
@@ -19,19 +21,33 @@ use TrackMage\WordPress\Webhook\Mappers\ShipmentsMapper;
  */
 class Endpoint {
 
-    private $mapper;
+    const TAG = '[Endpoint]';
+
+    private $logger;
+    private $updaters = [];
+
 	/**
 	 * The constructor.
 	 *
 	 * @since 0.1.0
 	 */
-	public function __construct() {
-		add_filter( 'query_vars', [ $this, 'add_query_vars' ], 0 );
-		add_action( 'init', [ $this, 'endpoint' ] , 0);
-		add_action( 'parse_request', [ $this, 'handle_endpoint_requests' ], 0 );
-		add_action( 'trackmage_endpoint_callback', [ $this, 'authorize' ], 10, 2 );
-		add_action( 'process_request', [$this, 'process'], 10, 2);
+	public function __construct(LoggerInterface $logger, OrdersMapper $orders_mapper, ShipmentsMapper $shipments_mapper) {
+
+	    $this->logger = $logger;
+
+		$this->updaters[] = $orders_mapper;
+		$this->updaters[] = $shipments_mapper;
+
+		$this->bindEvents();
 	}
+
+	private function bindEvents(){
+        add_filter( 'query_vars', [ $this, 'add_query_vars' ], 0 );
+        add_action( 'init', [ $this, 'endpoint' ] , 0);
+        add_action( 'parse_request', [ $this, 'handle_endpoint_requests' ], 0 );
+        add_action( 'trackmage_endpoint_callback', [ $this, 'authorize' ], 10, 2 );
+        add_action( 'process_request', [$this, 'process'], 10, 2);
+    }
 
 	public function add_query_vars( $vars ) {
 		$vars[] = 'trackmage';
@@ -92,12 +108,13 @@ class Endpoint {
 	    try{
             $data = $responseData['data'];
             foreach ($data as $key => $item){
+                /*
                 $entity = $item['entity'];
                 $event = $item['event'];
                 $updatedFields = $item['updatedFields'];
                 $fields = $item['data'];
-
-                $this->initMapper($entity);
+                */
+                $this->resolveUpdater($item);
             }
         }catch (\Exception $e){
             http_response_code( 400);
@@ -105,16 +122,11 @@ class Endpoint {
         }
     }
 
-    private function initMapper($entity){
-	    $mapper = false;
-        switch ($entity){
-            case 'shipments':
-                $mapper = new ShipmentsMapper();
-                break;
-            case 'orders':
-                $mapper = new OrdersMapper();
-                break;
+    private function resolveUpdater(array $item){
+        foreach ($this->updaters as $updater) {
+            if ($updater->supports($item)) {
+                return $updater;
+            }
         }
-        $this->mapper = $mapper;
     }
 }
