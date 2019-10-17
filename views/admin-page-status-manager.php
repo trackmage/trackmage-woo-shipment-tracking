@@ -29,7 +29,7 @@ $used_aliases = [];
                 <tr>
                     <th><?php _e( 'Name', 'trackmage' ); ?></th>
                     <th><?php _e( 'Slug', 'trackmage' ); ?></th>
-                    <th colspan="2"><?php _e( 'Alias in TrackMage', 'trackmage' ); ?></th>
+                    <th colspan="2"><?php _e( 'Map to TrackMage Status', 'trackmage' ); ?></th>
                 </tr>
             </thead>
             <tbody id="the-list">
