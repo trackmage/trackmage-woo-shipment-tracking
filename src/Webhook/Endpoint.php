@@ -108,13 +108,8 @@ class Endpoint {
 	    try{
             $data = $responseData['data'];
             foreach ($data as $key => $item){
-                /*
-                $entity = $item['entity'];
-                $event = $item['event'];
-                $updatedFields = $item['updatedFields'];
-                $fields = $item['data'];
-                */
-                $this->resolveUpdater($item);
+                $updater = $this->resolveUpdater($item);
+                $updater->handle($item);
             }
         }catch (\Exception $e){
             http_response_code( 400);

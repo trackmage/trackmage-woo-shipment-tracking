@@ -19,7 +19,7 @@ class ShipmentsMapper implements EntityMapperInterface {
     }
 
     public function supports( array $item ) {
-        // TODO: Implement supports() method.
+        return isset($item['entity']) && $item['entity'] == 'shippments';
     }
 
     public function handle( array $item ) {
