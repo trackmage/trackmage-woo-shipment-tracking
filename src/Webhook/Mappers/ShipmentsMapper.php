@@ -4,26 +4,81 @@
 namespace TrackMage\WordPress\Webhook\Mappers;
 
 
-class ShipmentsMapper implements EntityMapperInterface {
+use TrackMage\WordPress\Exception\EndpointException;
+use TrackMage\WordPress\Repository\ShipmentRepository;
 
-    private $entity;
+class ShipmentsMapper extends AbstractMapper {
 
-    private $data;
+    protected $map = [
+        "id"                        =>  "trackmage_id",
+        "trackingNumber"            =>  "tracking_number",
+        "status"                    =>  "status",
+        "email"                     =>  "",
+        "daysInTransit"             =>  "",
+        "originCarrier"             =>  "carrier",
+        "destinationCarrier"        =>  "",
+        "originCountry"             =>  "",
+        "destinationCountry"        =>  "",
+        "originCountryIso2"         =>  "",
+        "destinationCountryIso2"    =>  "",
+        "shippedAt"                 =>  "",
+        "expectedDeliveryDate"      =>  "",
+        "createdAt"                 =>  "",
+        "updatedAt"                 =>  "",
+        "lastStatusUpdate"          =>  "",
+        "workspace"                 =>  "",
+        "review"                    =>  "",
+        "reviewTotalScore"          =>  "",
+        "externalSource"            =>  "",
+        "externalSyncId"            =>  "id",
+        "address"                   =>  ""
+    ];
 
-    private $updatedFields;
-
-    private $requestBody;
-
-
-    public function __construct() {
+    /**
+     * ShipmentsMapper constructor.
+     *
+     * @param ShipmentRepository $shipmentRepo
+     * @param null $source
+     */
+    public function __construct(ShipmentRepository $shipmentRepo, $source = null) {
+        $this->repo = $shipmentRepo;
+        $this->source = $source;
     }
 
+    /**
+     * @param array $item
+     *
+     * @return bool
+     */
     public function supports( array $item ) {
-        return isset($item['entity']) && $item['entity'] == 'shippments';
+        return isset($item['entity']) && $item['entity'] == 'shipments';
     }
 
+    /**
+     * Handle updates for shipment from TrackMage to local
+     *
+     * @param array $item
+     */
     public function handle( array $item ) {
-        // TODO: Implement handle() method.
+        try {
+            $this->data = $item['data'];
+            $this->updatedFields = $item['updatedFields'];
+            $shipmentId = $this->data['externalSyncId'];
+            $trackMageId = $this->data['id'];
+
+            $this->loadEntity($shipmentId, $trackMageId);
+
+            if(!$this->canHandle())
+                return null;
+
+            $data = $this->prepareData();
+
+            $this->entity = $this->repo->update($data, ['id' => $shipmentId]);
+
+            return $this->entity;
+        }catch (\Throwable $e){
+            throw new EndpointException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
+        }
     }
 
 }

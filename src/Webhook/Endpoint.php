@@ -8,6 +8,7 @@
 
 namespace TrackMage\WordPress\Webhook;
 
+use TrackMage\WordPress\Exception\RuntimeException;
 use TrackMage\WordPress\Helper;
 use TrackMage\WordPress\Webhook\Mappers\OrdersMapper;
 use TrackMage\WordPress\Webhook\Mappers\ShipmentsMapper;
@@ -111,9 +112,14 @@ class Endpoint {
                 $updater = $this->resolveUpdater($item);
                 $updater->handle($item);
             }
-        }catch (\Exception $e){
-            http_response_code( 400);
-            die( 'Error during processing data: ' . $e->getCode(). ' '.$e->getMessage() );
+        }catch (RuntimeException $e){
+            //http_response_code( 400);
+            //die( 'Error during processing data: ' . $e->getCode(). ' '.$e->getMessage() );
+            $this->logger->warning(self::TAG.'Unable to process mapper', [
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'responseData' => $responseData
+            ]);
         }
     }
 

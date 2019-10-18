@@ -25,6 +25,8 @@ use TrackMage\WordPress\Synchronization\OrderItemSync;
 use TrackMage\WordPress\Synchronization\OrderSync;
 use TrackMage\WordPress\Synchronization\ShipmentItemSync;
 use TrackMage\WordPress\Synchronization\ShipmentSync;
+use TrackMage\WordPress\Webhook\Mappers\OrdersMapper;
+use TrackMage\WordPress\Webhook\Mappers\ShipmentsMapper;
 
 /**
  * Main plugin class.
@@ -83,6 +85,15 @@ class Plugin {
 
     /** @var Synchronizer */
     private $synchronizer;
+
+    /** @var Endpoint */
+    private $endpoint;
+
+    /** @var OrdersMapper|null */
+    private $ordersMapper;
+
+    /** @var ShipmentsMapper|null */
+    private $shipmentsMapper;
 
     /**
      * @param \wpdb $wpdb
@@ -148,6 +159,18 @@ class Plugin {
     }
 
     /**
+     * @return Endpoint
+     */
+    public function getEndpoint()
+    {
+        if($this->endpoint === null){
+            $this->endpoint = new Endpoint($this->getLogger(), $this->getOrdersMapper(), $this->getShipmentsMapper());
+        }
+
+        return $this->endpoint;
+    }
+
+    /**
      * @return self
      */
     public static function instance() {
@@ -167,9 +190,10 @@ class Plugin {
         $this->processConfig( $config );
 
         // Initialize classes.
-        new Endpoint;
         new Admin;
         new Orders($this->getSynchronizer());
+
+        $this->getEndpoint();
 
         $initClasses = [
             'Ajax',
@@ -290,5 +314,28 @@ class Plugin {
             $this->shipmentItemSync = new ShipmentItemSync($this->getShipmentItemsRepo(), $this->getShipmentRepo(), $this->getInstanceId());
         }
         return $this->shipmentItemSync;
+    }
+
+    /**
+     * @return OrdersMapper
+     */
+    public function getOrdersMapper()
+    {
+        if (null === $this->ordersMapper) {
+            $this->ordersMapper = new OrdersMapper();
+        }
+
+        return $this->ordersMapper;
+    }
+
+    /**
+     * @return ShipmentsMapper
+     */
+    public function getShipmentsMapper() {
+        if (null === $this->shipmentsMapper) {
+            $this->shipmentsMapper = new ShipmentsMapper($this->getShipmentRepo(), $this->getInstanceId());
+        }
+
+        return $this->shipmentsMapper;
     }
 }

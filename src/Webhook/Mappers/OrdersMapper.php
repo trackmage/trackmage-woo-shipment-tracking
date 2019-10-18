@@ -4,12 +4,8 @@
 namespace TrackMage\WordPress\Webhook\Mappers;
 
 
-class OrdersMapper implements EntityMapperInterface {
+class OrdersMapper extends AbstractMapper {
 
-    private $entity;
-    private $data;
-    private $updatedFields;
-    private $requestBody;
 
     public function __construct() {
     }
