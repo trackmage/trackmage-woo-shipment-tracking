@@ -51,7 +51,7 @@ class AbstractMapper implements EntityMapperInterface {
             $result = false;
 
         // check if entity is exist
-        if($this->entity === null)
+        if(!$this->entity)
             $result = false;
 
         // check if workspace is correct

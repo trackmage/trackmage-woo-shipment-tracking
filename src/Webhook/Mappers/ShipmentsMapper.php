@@ -77,7 +77,7 @@ class ShipmentsMapper extends AbstractMapper {
 
             return $this->entity;
         }catch (\Throwable $e){
-            throw new EndpointException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
+            throw new EndpointException('An error happened during update shipment from TrackMage: '.$e->getMessage(), $e->getCode(), $e);
         }
     }
 
