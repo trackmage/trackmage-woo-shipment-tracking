@@ -46,7 +46,7 @@ class Helper {
 
             return 2;
         }
-        
+
         return 1;
     }
 
@@ -114,10 +114,43 @@ class Helper {
      * @return array List of aliases.
      */
     public static function get_aliases() {
-        return [
-            'delivered' => __( 'Delivered', 'trackmage' ),
-            'shipped'   => __( 'Shipped', 'trackamge' ),
-        ];
+        $workspaceId = get_option( 'trackmage_workspace', 0 );
+        $cachedAliases = get_transient('trackmage_order_statuses');
+        $aliases = [];
+        if($cachedAliases && isset($cachedAliases[$workspaceId])) {
+            $aliases = $cachedAliases[$workspaceId];
+        }elseif($workspaceId !== 0){
+            try {
+                $client = Plugin::get_client();
+                $guzzleClient = $client->getGuzzleClient();
+                $response = $guzzleClient->get("/workspaces/{$workspaceId}/order_statuses");
+                $content = $response->getBody()->getContents();
+                $data = json_decode($content, true);
+
+                foreach ($data['hydra:member'] as $status) {
+                    $name = $status['name'];
+                    $aliases[$name] = __(ucfirst($name),'trackmage');
+                }
+
+                $cachedAliases[$workspaceId] = $aliases;
+                set_transient('trackmage_order_statuses', $cachedAliases, 3600);
+            } catch( ApiException $e ) {
+
+            }
+
+        }
+        return $aliases;
+    }
+
+    /**
+     * Returns the used aliases.
+     *
+     * @return array List of aliases.
+     */
+
+    public static function get_used_aliases() {
+        $usedAliases = get_option( 'trackmage_order_status_aliases', [] );
+        return array_values(array_filter($usedAliases));
     }
 
     /**
@@ -335,7 +368,7 @@ class Helper {
      * @return array|null Status details or null if not found.
      */
     public static function get_order_status_by_slug( $slug ) {
-        $statuses = self::get_order_statuses();
+        $statuses = self::getOrderStatuses();
         return isset( $statuses[ $slug ] ) ? $statuses[ $slug ] : null;
     }
 
@@ -348,9 +381,9 @@ class Helper {
     public static function getallheaders() {
         $headers = array();
 
-        foreach ( $_SERVER as $name => $value ) { 
-            if ( substr( $name, 0, 5 ) == 'HTTP_' ) { 
-                $headers[ str_replace( ' ', '-', ucwords( strtolower( str_replace( '_', ' ', substr( $name, 5 ) ) ) ) ) ] = $value; 
+        foreach ( $_SERVER as $name => $value ) {
+            if ( substr( $name, 0, 5 ) == 'HTTP_' ) {
+                $headers[ str_replace( ' ', '-', ucwords( strtolower( str_replace( '_', ' ', substr( $name, 5 ) ) ) ) ) ] = $value;
             }
         }
 
@@ -380,7 +413,7 @@ class Helper {
     public static function add_css_class( $condition = false, $class = '', $leading_space = false, $echo = false ) {
         if ( $condition ) {
             $output = ( $leading_space ? ' ' : '' ) . $class;
-            
+
             if ( $echo ) {
                 echo $output;
             } else {
