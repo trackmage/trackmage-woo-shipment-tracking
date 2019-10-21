@@ -32,7 +32,7 @@ class ShipmentsMapper extends AbstractMapper {
      * ShipmentsMapper constructor.
      *
      * @param ShipmentRepository $shipmentRepo
-     * @param null $source
+     * @param string|null $source
      */
     public function __construct(ShipmentRepository $shipmentRepo, $source = null) {
         $this->repo = $shipmentRepo;

@@ -70,6 +70,7 @@ class AbstractMapper implements EntityMapperInterface {
         $data = [];
 
         foreach ($this->updatedFields as $key => $updatedField){
+
             if(isset($this->map[$updatedField]) && !empty($this->map[$updatedField])){
                 $data[$this->map[$updatedField]] = $this->data[$updatedField];
             }
