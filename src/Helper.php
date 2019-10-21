@@ -46,7 +46,7 @@ class Helper {
 
             return 2;
         }
-        
+
         return 1;
     }
 
@@ -61,12 +61,15 @@ class Helper {
 
         try {
             $client = Plugin::get_client();
-            $result = $client->getWorkspaceApi()->getWorkspaceCollection();
+            $response = $client->getGuzzleClient()->get('/workspaces');
+            $contents = $response->getBody()->getContents();
+            $data = json_decode($contents, true);
+            $result = isset($data['hydra:member'])? $data['hydra:member'] : [];
 
             foreach ( $result as $workspace ) {
                 array_push( $workspaces, [
-                    'id'    => $workspace->getId(),
-                    'title' => $workspace->getTitle(),
+                    'id'    => $workspace['id'],
+                    'title' => $workspace['title'],
                 ] );
             }
         } catch( ApiException $e ) {
@@ -348,9 +351,9 @@ class Helper {
     public static function getallheaders() {
         $headers = array();
 
-        foreach ( $_SERVER as $name => $value ) { 
-            if ( substr( $name, 0, 5 ) == 'HTTP_' ) { 
-                $headers[ str_replace( ' ', '-', ucwords( strtolower( str_replace( '_', ' ', substr( $name, 5 ) ) ) ) ) ] = $value; 
+        foreach ( $_SERVER as $name => $value ) {
+            if ( substr( $name, 0, 5 ) == 'HTTP_' ) {
+                $headers[ str_replace( ' ', '-', ucwords( strtolower( str_replace( '_', ' ', substr( $name, 5 ) ) ) ) ) ] = $value;
             }
         }
 
@@ -380,7 +383,7 @@ class Helper {
     public static function add_css_class( $condition = false, $class = '', $leading_space = false, $echo = false ) {
         if ( $condition ) {
             $output = ( $leading_space ? ' ' : '' ) . $class;
-            
+
             if ( $echo ) {
                 echo $output;
             } else {
