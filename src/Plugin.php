@@ -25,7 +25,9 @@ use TrackMage\WordPress\Synchronization\OrderItemSync;
 use TrackMage\WordPress\Synchronization\OrderSync;
 use TrackMage\WordPress\Synchronization\ShipmentItemSync;
 use TrackMage\WordPress\Synchronization\ShipmentSync;
+use TrackMage\WordPress\Webhook\Mappers\OrderItemsMapper;
 use TrackMage\WordPress\Webhook\Mappers\OrdersMapper;
+use TrackMage\WordPress\Webhook\Mappers\ShipmentItemsMapper;
 use TrackMage\WordPress\Webhook\Mappers\ShipmentsMapper;
 
 /**
@@ -92,8 +94,14 @@ class Plugin {
     /** @var OrdersMapper|null */
     private $ordersMapper;
 
+    /** @var OrderItemsMapper|null */
+    private $orderItemsMapper;
+
     /** @var ShipmentsMapper|null */
     private $shipmentsMapper;
+
+    /** @var ShipmentItemsMapper|null */
+    private $shipmentItemsMapper;
 
     /**
      * @param \wpdb $wpdb
@@ -164,7 +172,8 @@ class Plugin {
     public function getEndpoint()
     {
         if($this->endpoint === null){
-            $this->endpoint = new Endpoint($this->getLogger(), $this->getOrdersMapper(), $this->getShipmentsMapper());
+            $this->endpoint = new Endpoint($this->getLogger(), $this->getOrdersMapper(), $this->getShipmentsMapper(),
+                $this->getOrderItemsMapper(), $this->getShipmentItemsMapper());
         }
 
         return $this->endpoint;
@@ -317,15 +326,27 @@ class Plugin {
     }
 
     /**
-     * @return OrdersMapper
-     */
+ * @return OrdersMapper
+ */
     public function getOrdersMapper()
     {
         if (null === $this->ordersMapper) {
-            $this->ordersMapper = new OrdersMapper();
+            $this->ordersMapper = new OrdersMapper($this->getInstanceId());
         }
 
         return $this->ordersMapper;
+    }
+
+    /**
+     * @return OrderItemsMapper
+     */
+    public function getOrderItemsMapper()
+    {
+        if (null === $this->orderItemsMapper) {
+            $this->orderItemsMapper = new OrderItemsMapper($this->getInstanceId());
+        }
+
+        return $this->orderItemsMapper;
     }
 
     /**
@@ -335,7 +356,16 @@ class Plugin {
         if (null === $this->shipmentsMapper) {
             $this->shipmentsMapper = new ShipmentsMapper($this->getShipmentRepo(), $this->getInstanceId());
         }
-
         return $this->shipmentsMapper;
+    }
+
+    /**
+     * @return ShipmentItemsMapper
+     */
+    public function getShipmentItemsMapper() {
+        if (null === $this->shipmentItemsMapper) {
+            $this->shipmentItemsMapper = new ShipmentItemsMapper($this->getShipmentItemsRepo(), $this->getInstanceId());
+        }
+        return $this->shipmentItemsMapper;
     }
 }

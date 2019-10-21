@@ -22,15 +22,6 @@ class OrderItemsMapper extends AbstractMapper {
     ];
 
     /**
-     * OrderItemsMapper constructor.
-     *
-     * @param string|null $source
-     */
-    public function __construct($source = null) {
-        $this->source = $source;
-    }
-
-    /**
      * @param array $item
      *
      * @return bool

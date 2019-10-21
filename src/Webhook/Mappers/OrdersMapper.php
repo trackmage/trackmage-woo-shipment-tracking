@@ -51,15 +51,6 @@ class OrdersMapper extends AbstractMapper {
     ];
 
     /**
-     * OrdersMapper constructor.
-     *
-     * @param string|null $source
-     */
-    public function __construct($source = null) {
-        $this->source = $source;
-    }
-
-    /**
      * @param array $item
      *
      * @return bool

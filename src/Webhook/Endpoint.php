@@ -11,7 +11,9 @@ namespace TrackMage\WordPress\Webhook;
 use TrackMage\WordPress\Exception\RuntimeException;
 use TrackMage\WordPress\Helper;
 use TrackMage\WordPress\Webhook\Mappers\OrdersMapper;
+use TrackMage\WordPress\Webhook\Mappers\OrderItemsMapper;
 use TrackMage\WordPress\Webhook\Mappers\ShipmentsMapper;
+use TrackMage\WordPress\Webhook\Mappers\ShipmentItemsMapper;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -35,12 +37,16 @@ class Endpoint {
 	 *
 	 * @since 0.1.0
 	 */
-	public function __construct(LoggerInterface $logger, OrdersMapper $orders_mapper, ShipmentsMapper $shipments_mapper) {
+	public function __construct(LoggerInterface $logger, OrdersMapper $orders_mapper, ShipmentsMapper $shipments_mapper,
+                                OrderItemsMapper $order_items_mapper, ShipmentItemsMapper $shipment_items_mapper)
+    {
 
 	    $this->logger = $logger;
 
 		$this->updaters[] = $orders_mapper;
 		$this->updaters[] = $shipments_mapper;
+		$this->updaters[] = $order_items_mapper;
+		$this->updaters[] = $shipment_items_mapper;
 
 		$this->bindEvents();
 	}

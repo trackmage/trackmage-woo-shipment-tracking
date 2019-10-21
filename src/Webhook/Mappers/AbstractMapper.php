@@ -20,6 +20,13 @@ class AbstractMapper implements EntityMapperInterface {
 
     protected $map = [];
 
+    protected $workspace;
+
+    public function __construct($source = null) {
+        $this->workspace = get_option( 'trackmage_workspace' );
+        $this->source = $source;
+    }
+
     /**
      * @param array $item
      *
@@ -44,19 +51,18 @@ class AbstractMapper implements EntityMapperInterface {
      */
     protected function canHandle(){
         $result = true;
-        $workspace = get_option( 'trackmage_workspace' );
 
         // check source
         if(!isset($this->data['externalSource']) || $this->data['externalSource'] != $this->source)
-            $result = -10;
+            $result = false;
 
         // check if entity is exist
         if(!$this->entity)
-            $result = -11;
+            $result = false;
 
         // check if workspace is correct
-        if(!isset($this->data['workspace']) || "/workspaces/".$workspace != $this->data['workspace'])
-            $result = -12;
+        if(!isset($this->data['workspace']) || "/workspaces/".$this->workspace != $this->data['workspace'])
+            $result = false;
 
         return $result;
     }
