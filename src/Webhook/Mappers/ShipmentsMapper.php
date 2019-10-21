@@ -10,11 +10,8 @@ use TrackMage\WordPress\Repository\ShipmentRepository;
 class ShipmentsMapper extends AbstractMapper {
 
     protected $map = [
-        "id"                        =>  "trackmage_id",
         "trackingNumber"            =>  "tracking_number",
         "status"                    =>  "status",
-        "email"                     =>  "",
-        "daysInTransit"             =>  "",
         "originCarrier"             =>  "carrier",
         "destinationCarrier"        =>  "",
         "originCountry"             =>  "",
@@ -29,9 +26,6 @@ class ShipmentsMapper extends AbstractMapper {
         "workspace"                 =>  "",
         "review"                    =>  "",
         "reviewTotalScore"          =>  "",
-        "externalSource"            =>  "",
-        "externalSyncId"            =>  "id",
-        "address"                   =>  ""
     ];
 
     /**
@@ -68,8 +62,8 @@ class ShipmentsMapper extends AbstractMapper {
 
             $this->loadEntity($shipmentId, $trackMageId);
 
-            if(!$this->canHandle())
-                return null;
+            if(($res = $this->canHandle()) < 0)
+                return $res;
 
             $data = $this->prepareData();
 

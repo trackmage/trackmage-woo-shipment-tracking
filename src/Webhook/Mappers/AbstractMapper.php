@@ -48,15 +48,15 @@ class AbstractMapper implements EntityMapperInterface {
 
         // check source
         if(!isset($this->data['externalSource']) || $this->data['externalSource'] != $this->source)
-            $result = false;
+            $result = -10;
 
         // check if entity is exist
         if(!$this->entity)
-            $result = false;
+            $result = -11;
 
         // check if workspace is correct
         if(!isset($this->data['workspace']) || "/workspaces/".$workspace != $this->data['workspace'])
-            $result = false;
+            $result = -12;
 
         return $result;
     }

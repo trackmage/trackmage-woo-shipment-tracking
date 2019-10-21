@@ -24,6 +24,9 @@ class Endpoint {
 
     const TAG = '[Endpoint]';
 
+    /** @var bool ignore events */
+    private $disableEvents = false;
+
     private $logger;
     private $updaters = [];
 
@@ -41,6 +44,14 @@ class Endpoint {
 
 		$this->bindEvents();
 	}
+
+    /**
+     * @param bool $disableEvents
+     */
+    public function setDisableEvents($disableEvents)
+    {
+        $this->disableEvents = $disableEvents;
+    }
 
 	private function bindEvents(){
         add_filter( 'query_vars', [ $this, 'add_query_vars' ], 0 );
@@ -60,6 +71,9 @@ class Endpoint {
 	}
 
 	public function handle_endpoint_requests() {
+        if ($this->disableEvents) {
+            return;
+        }
 		global $wp;
 
 		if ( ! empty( $_GET['trackmage'] ) ) {
@@ -89,6 +103,10 @@ class Endpoint {
 	}
 
 	public function authorize( $headers, $response ) {
+        if ($this->disableEvents) {
+            return;
+        }
+
 		$username = get_option( 'trackmage_webhook_username', '' );
 		$password = get_option( 'trackmage_webhook_password', '' );
 
@@ -105,6 +123,9 @@ class Endpoint {
 	}
 
 	public function process($headers, $response){
+        if ($this->disableEvents) {
+            return;
+        }
 	    $responseData = json_decode($response, true);
 	    try{
             $data = $responseData['data'];
