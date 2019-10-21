@@ -67,7 +67,7 @@ class Functional extends Module
         $client->setHost($this->config['trackmageApi']);
         $response = $client->getGuzzleClient()->get('/oauth/v2/token', [
             'query' => [
-                'client_id' => '1_trackmage-public-client',
+                'client_id' => '18165608-5a8c-4535-803f-9704792cbbd9_trackmage-public-client',
                 'grant_type' => 'password',
                 'username' => $this->getFlavorSlug().'@wp-plugin.tld',
                 'password' => '123454',
