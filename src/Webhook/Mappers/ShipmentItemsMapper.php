@@ -7,16 +7,14 @@ namespace TrackMage\WordPress\Webhook\Mappers;
 use TrackMage\WordPress\Exception\EndpointException;
 use TrackMage\WordPress\Repository\ShipmentRepository;
 use TrackMage\WordPress\Repository\ShipmentItemRepository;
+use WC_Order_Item;
+use WC_Data_Store;
 
 class ShipmentItemsMapper extends AbstractMapper {
 
     protected $map = [
-        //"shipment"          => "/shipments/26a5b79a-d8c2-4830-b872-9248e1f6b954",
-        //"orderItem"         => "/order_items/dd314342-d9af-4431-a3fe-66916663e748",
+        "orderItem"         => "order_item_id",
         "qty"               => "qty",
-        //"externalSyncId"    => "1",
-        //"externalSource"    => "wp-5d9da5faf010c",
-        //"id"                => "trackmage_id",
     ];
 
     /**
@@ -53,17 +51,31 @@ class ShipmentItemsMapper extends AbstractMapper {
 
             $this->loadEntity($shipmentItemId, $trackMageId);
 
-            if(($res = $this->canHandle()) < 0)
-                return $res;
+            if($this->canHandle())
+                return false;
 
             $data = $this->prepareData();
 
             $this->entity = $this->repo->update($data, ['id' => $shipmentItemId]);
 
-            return $this->entity;
         }catch (\Throwable $e){
             throw new EndpointException('An error happened during update shipment from TrackMage: '.$e->getMessage(), $e->getCode(), $e);
         }
+    }
+
+    protected function prepareData() {
+        $data = parent::prepareData();
+
+        if(isset($data["orderItem"])){
+            $trackmageOrderItemId = str_replace('/order_items/','', $data["orderItem"]);
+            global $wpdb;
+            $row = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix . 'woocommerce_order_itemmeta'." WHERE meta_key = '_trackmage_order_item_id' AND meta_value = '".$trackmageOrderItemId."'", ARRAY_A);
+            if(is_array($row) && isset($row['order_item_id']))
+                $data["orderItem"] = $row['order_item_id'];
+            else
+                throw new EndpointException('Order item was not found.',400);
+        }
+        return $data;
     }
 
 }
