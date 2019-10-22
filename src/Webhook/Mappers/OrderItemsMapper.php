@@ -11,14 +11,8 @@ use WC_Order_Item;
 class OrderItemsMapper extends AbstractMapper {
 
     protected $map = [
-        //"order" => "/orders/232ce7eb-64a9-476d-bf75-3a1803ed1ea9",
-        //"productName" => "Test Product 1",
         "qty" => "_qty",
-        //"price" => "_",
         "rowTotal" => "_line_total",
-        //"externalSyncId" => "id",
-        //"externalSource" => "wp-5d9da5faf010c",
-        //"id" => "_trackmage_order_item_id"
     ];
 
     /**
@@ -44,16 +38,17 @@ class OrderItemsMapper extends AbstractMapper {
 
             $this->loadEntity($shipmentId, $trackMageId);
 
-            if(($res = $this->canHandle()) < 0)
-                return $res;
+            if(!$this->canHandle())
+                return false;
 
-            $data = $this->prepareData();
 
-            $this->entity = $this->repo->update($data, ['id' => $shipmentId]);
 
-            return $this->entity;
+            //$data = $this->prepareData();
+
+            //$this->entity = $this->repo->update($data, ['id' => $shipmentId]);
+
         }catch (\Throwable $e){
-            throw new EndpointException('An error happened during update shipment from TrackMage: '.$e->getMessage(), $e->getCode(), $e);
+            throw new EndpointException('An error happened during update order items from TrackMage: '.$e->getMessage(), $e->getCode(), $e);
         }
     }
 

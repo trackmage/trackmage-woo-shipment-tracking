@@ -92,4 +92,11 @@ class AbstractMapper implements EntityMapperInterface {
             'id'           => $entityId
         ] );
     }
+
+    /**
+     * @return mixed
+     */
+    public function getEntity(){
+        return $this->entity;
+    }
 }

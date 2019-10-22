@@ -61,8 +61,4 @@ class ShipmentsMapper extends AbstractMapper {
         }
     }
 
-    public function getEntity(){
-        return $this->entity;
-    }
-
 }
