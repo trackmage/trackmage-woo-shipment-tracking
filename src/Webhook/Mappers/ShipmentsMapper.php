@@ -13,19 +13,6 @@ class ShipmentsMapper extends AbstractMapper {
         "trackingNumber"            =>  "tracking_number",
         "status"                    =>  "status",
         "originCarrier"             =>  "carrier",
-        "destinationCarrier"        =>  "",
-        "originCountry"             =>  "",
-        "destinationCountry"        =>  "",
-        "originCountryIso2"         =>  "",
-        "destinationCountryIso2"    =>  "",
-        "shippedAt"                 =>  "",
-        "expectedDeliveryDate"      =>  "",
-        "createdAt"                 =>  "",
-        "updatedAt"                 =>  "",
-        "lastStatusUpdate"          =>  "",
-        "workspace"                 =>  "",
-        "review"                    =>  "",
-        "reviewTotalScore"          =>  "",
     ];
 
     /**
@@ -62,17 +49,20 @@ class ShipmentsMapper extends AbstractMapper {
 
             $this->loadEntity($shipmentId, $trackMageId);
 
-            if(($res = $this->canHandle()) < 0)
-                return $res;
+            if( ! $this->canHandle() )
+                return false;
 
             $data = $this->prepareData();
 
             $this->entity = $this->repo->update($data, ['id' => $shipmentId]);
 
-            return $this->entity;
         }catch (\Throwable $e){
             throw new EndpointException('An error happened during update shipment from TrackMage: '.$e->getMessage(), $e->getCode(), $e);
         }
+    }
+
+    public function getEntity(){
+        return $this->entity;
     }
 
 }

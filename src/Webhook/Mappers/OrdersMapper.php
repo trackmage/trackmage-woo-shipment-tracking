@@ -11,19 +11,10 @@ class OrdersMapper extends AbstractMapper {
 
 
     protected $map = [
-        //"id"                =>  "trackmage_order_id",
-        "orderNumber"       =>  "order_number",
-        //"externalSource"    =>  "wp-5d9da5faf010c",
-        //"externalSyncId"    =>  "id",
         "status"            =>  [
             "id"                => "",
             "name"              => "status"
         ],
-        //"subtotal"          =>  "",
-        //"total"             =>  "",
-        //"orderType"         =>  "customer",
-        //"fulfillmentSource" =>  "",
-        //"shipments"         => [],
         "shippingAddress"   =>  [
             "addressLine1"      =>  "Valchenko 19/12",
             "addressLine2"      =>  "",

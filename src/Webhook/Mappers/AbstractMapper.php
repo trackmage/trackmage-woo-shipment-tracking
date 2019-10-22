@@ -61,8 +61,8 @@ class AbstractMapper implements EntityMapperInterface {
             $result = false;
 
         // check if workspace is correct
-        if(!isset($this->data['workspace']) || "/workspaces/".$this->workspace != $this->data['workspace'])
-            $result = false;
+        if(!isset($this->data['workspace']) || "/workspaces/".$this->workspace !== $this->data['workspace'])
+            $result = false ;
 
         return $result;
     }

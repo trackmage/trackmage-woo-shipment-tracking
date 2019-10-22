@@ -18,8 +18,9 @@ class ShipmentsMapperTest extends WPTestCase
     const SOURCE = 'wp';
     const TM_SHIPMENT_ID = '1010';
     const TM_WS_ID = '1001';
-    const TEST_TRACKING_NUMBER = 'TN-ABC';
+    const TEST_TRACKING_NUMBER = 'UPS-ABCDEFG012345';
     const TEST_CARRIER = 'UPS';
+    const TEST_STATUS = 'in_transit';
 
     /** @var \WpunitTester */
     protected $tester;
@@ -41,24 +42,29 @@ class ShipmentsMapperTest extends WPTestCase
 
     protected function _before()
     {
+        add_option('trackmage_workspace', self::TM_WS_ID);
+
         $this->shipmentRepo = Plugin::instance()->getShipmentRepo();
         $this->shipmentsMapper = new ShipmentsMapper($this->shipmentRepo, self::SOURCE);
     }
 
 
-    public function testShipmentIsUpdated() {
+    public function testShipmentIsFullyUpdated() {
         //GIVEN
-        add_option('trackmage_workspace', self::TM_WS_ID);
+
         $trackMageId = rand(10000,99999);
         //programmatically create a shipment in WC
         $wcOrder = wc_create_order(['status' => 'completed']);
         $wcOrderId = $wcOrder->get_id();
-        $wcShipment = $this->shipmentRepo->insert([
-            'order_id' => $wcOrderId,
+        $dataBefore = [
             'tracking_number' => self::TEST_TRACKING_NUMBER,
             'carrier' => self::TEST_CARRIER,
-            'trackmage_id' => $trackMageId
-        ]);
+            'status' => self::TEST_STATUS
+        ];
+        $wcShipment = $this->shipmentRepo->insert(array_merge([
+            'order_id' => $wcOrderId,
+            'trackmage_id' => $trackMageId,
+        ],$dataBefore));
         $wcShipmentId = $wcShipment['id'];
 
         $item = [
@@ -68,7 +74,7 @@ class ShipmentsMapperTest extends WPTestCase
                     'id'                     => $trackMageId,
                     'trackingNumber'         => 'DHL0123456789',
                     'status'                 => 'returned',
-                    'originCarrier'          => 'ups',
+                    'originCarrier'          => 'DHL',
                     'workspace'              => '/workspaces/'.self::TM_WS_ID,
                     'externalSource'         => self::SOURCE,
                     'externalSyncId'         => $wcShipmentId
@@ -78,16 +84,24 @@ class ShipmentsMapperTest extends WPTestCase
                 [
                     0 => 'status',
                     1 => 'originCarrier',
+                    2 => 'trackingNumber'
                 ],
         ];
 
         //WHEN everything is OK
-        $result = $this->shipmentsMapper->handle($item);
+        $this->shipmentsMapper->handle($item);
 
+        //THEN
         $shipmentAfter = $this->shipmentRepo->find($wcShipmentId);
-        self::assertNotSame($shipmentAfter, $wcShipment);
-    }
+        $dataAfter = [
+            'tracking_number' => $shipmentAfter['tracking_number'],
+            'carrier' => $shipmentAfter['carrier'],
+            'status' => $shipmentAfter['status']
+        ];
+        $differences = array_intersect_assoc($dataBefore, $dataAfter);
 
+        self::assertEquals(count($differences),0);
+    }
 
     public function testShipmentCanBeHandled() {
         //GIVEN
@@ -111,7 +125,6 @@ class ShipmentsMapperTest extends WPTestCase
                     'id'                     => $trackMageId,
                     'trackingNumber'         => 'DHL0123456789',
                     'status'                 => 'delivered',
-                    'daysInTransit'          => 6,
                     'originCarrier'          => 'dhl',
                     'workspace'              => '/workspaces/'.self::TM_WS_ID,
                     'externalSource'         => self::SOURCE,
@@ -129,28 +142,20 @@ class ShipmentsMapperTest extends WPTestCase
         $wrongItem = $item;
         $wrongItem['data']['workspace'] = '/workspaces/999999';
         $result = $this->shipmentsMapper->handle($wrongItem);
-        self::assertEquals($result, -12);
+        self::assertFalse($result);
 
         //WHEN external source is wrong
         $wrongItem = $item;
         $wrongItem['data']['externalSource'] = 'wp-test0001';
         $result = $this->shipmentsMapper->handle($wrongItem);
-        self::assertEquals($result, -10);
+        self::assertFalse($result);
 
         //WHEN unknown shipment
         $wrongItem = $item;
         $wrongItem['data']['externalSyncId'] = '99999';
         $wrongItem['data']['id'] = rand(1000,9999);
         $result = $this->shipmentsMapper->handle($wrongItem);
-        self::assertEquals($result, -11);
+        self::assertFalse($result);
 
-    }
-
-    private function initPlugin(ClientInterface $guzzleClient = null)
-    {
-        $client = Plugin::get_client();
-        if ($guzzleClient !== null) {
-            $client->setGuzzleClient($guzzleClient);
-        }
     }
 }
