@@ -66,12 +66,12 @@ class ShipmentItemsMapper extends AbstractMapper {
     protected function prepareData() {
         $data = parent::prepareData();
 
-        if(isset($data["orderItem"])){
-            $trackmageOrderItemId = str_replace('/order_items/','', $data["orderItem"]);
+        if(isset($data["order_item_id"])){
+            $trackmageOrderItemId = str_replace('/order_items/','', $data["order_item_id"]);
             global $wpdb;
             $row = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix . 'woocommerce_order_itemmeta'." WHERE meta_key = '_trackmage_order_item_id' AND meta_value = '".$trackmageOrderItemId."'", ARRAY_A);
             if(is_array($row) && isset($row['order_item_id']))
-                $data["orderItem"] = $row['order_item_id'];
+                $data["order_item_id"] = $row['order_item_id'];
             else
                 throw new EndpointException('Order item was not found.',400);
         }

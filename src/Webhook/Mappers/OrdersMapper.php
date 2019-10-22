@@ -16,28 +16,26 @@ class OrdersMapper extends AbstractMapper {
             "name"              => "status"
         ],
         "shippingAddress"   =>  [
-            "addressLine1"      =>  "Valchenko 19/12",
-            "addressLine2"      =>  "",
-            "city"              =>  "Tampa",
-            "company"           =>  "",
-            "country"           =>  "United States",
-            "countryIso2"       =>  "US",
-            "firstName"         =>  "Yev",
-            "lastName"          =>  "Harb",
-            "postcode"          =>  "32156",
-            "state"             =>  "Florida"
+            "addressLine1"      =>  "_shipping_address_1",
+            "addressLine2"      =>  "_shipping_address_2",
+            "company"           =>  "_shipping_company",
+            "city"              =>  "_shipping_city",
+            "countryIso2"       =>  "_shipping_country",
+            "firstName"         =>  "_shipping_first_name",
+            "lastName"          =>  "_shipping_last_name",
+            "postcode"          =>  "_shipping_postcode",
+            "state"             =>  "_shipping_state" // full name to code
         ],
         "billingAddress"    => [
-            "addressLine1"      =>  "Valchenko 19/12",
-            "addressLine2"      =>  "",
-            "city"              =>  "Tampa",
-            "company"           =>  "",
-            "country"           =>  "United States",
-            "countryIso2"       =>  "US",
-            "firstName"         =>  "Yev",
-            "lastName"          =>  "Harb",
-            "postcode"          =>  "32156",
-            "state"             =>  "Florida"
+            "addressLine1"      =>  "_billing_address_1",
+            "addressLine2"      =>  "_billing_address_2",
+            "city"              =>  "_billing_city",
+            "company"           =>  "_billing_company",
+            "countryIso2"       =>  "_billing_country",
+            "firstName"         =>  "_billing_first_name",
+            "lastName"          =>  "_billing_last_name",
+            "postcode"          =>  "_billing_postcode",
+            "state"             =>  "_billing_state" // full name to code
         ]
     ];
 
@@ -70,11 +68,21 @@ class OrdersMapper extends AbstractMapper {
             if(!$this->canHandle() || $trackMageId !== $trackmage_order_id)
                 return null;
 
-            $data = $this->prepareData();
+            //$data = $this->prepareData();
 
             //$this->entity = $this->repo->update($data, ['id' => $shipmentId]);
+            foreach ($this->updatedFields as $field){
+                if($field == 'status'){
+                    $this->entity->update_status($this->data['status']['name']);
+                }else{
+                    $parts = explode('.', $field);
+                    if(isset($this->map[$parts[0]])){
+                        update_post_meta($orderId, $this->map[$parts[0]][$parts[1]], $this->data[$parts[0]][$parts[1]]);
+                    }
+                }
+            }
 
-            return $this->entity;
+            //return $this->entity;
         }catch (\Throwable $e){
             throw new EndpointException('An error happened during update order from TrackMage: '.$e->getMessage(), $e->getCode(), $e);
         }
@@ -83,7 +91,7 @@ class OrdersMapper extends AbstractMapper {
     /**
      * @return array
      */
-    private function getShippingAddress(WC_Order $order)
+    private function updateShippingAddress(WC_Order $order)
     {
         $countryIso2 = $order->get_shipping_country();
         $stateCode = $order->get_billing_state();
@@ -105,7 +113,7 @@ class OrdersMapper extends AbstractMapper {
     /**
      * @return array
      */
-    private function getBillingAddress(WC_Order $order)
+    private function updateBillingAddress(WC_Order $order)
     {
         $countryIso2 = $order->get_billing_country();
         $stateCode = $order->get_billing_state();
