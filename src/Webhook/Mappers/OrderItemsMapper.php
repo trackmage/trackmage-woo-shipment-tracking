@@ -4,9 +4,9 @@
 namespace TrackMage\WordPress\Webhook\Mappers;
 
 
-use TrackMage\WordPress\Exception\EndpointException;
 use WC_Order;
 use WC_Order_Item;
+use WC_Data_Store;
 
 class OrderItemsMapper extends AbstractMapper {
 
@@ -33,13 +33,16 @@ class OrderItemsMapper extends AbstractMapper {
         try {
             $this->data = $item['data'];
             $this->updatedFields = $item['updatedFields'];
-            $shipmentId = $this->data['externalSyncId'];
-            $trackMageId = $this->data['id'];
+            $orderItemId = $this->data['externalSyncId'];
+            $trackMageOrderId = str_replace('/orders/','', $this->data['order']);
+            $trackMageOrderItemId = $this->data['id'];
 
-            $this->loadEntity($shipmentId, $trackMageId);
+            //$this->loadEntity($shipmentId, $trackMageId);
+
+            $this->entity = null;
 
             if(!$this->canHandle())
-                return false;
+                throw new InvalidArgumentException('Order Item cannot be updated: '. $trackMageOrderItemId);
 
 
 
@@ -52,4 +55,17 @@ class OrderItemsMapper extends AbstractMapper {
         }
     }
 
+    /**
+     * @param string $trackMageOrderItemId
+     * @return WC_Order_Item|\WC_Order_Item_Product
+     */
+    private function getOrderItem($trackMageOrderItemId)
+    {
+        global $wpdb;
+        $row = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix . 'woocommerce_order_itemmeta'." WHERE meta_key = '_trackmage_order_item_id' AND meta_value = '".$trackMageOrderItemId."'", ARRAY_A);
+        if(is_array($row) && isset($row['order_item_id']))
+            return $data["order_item_id"] = $row['order_item_id'];
+        else
+            throw new EndpointException('Order item was not found.',400);
+    }
 }

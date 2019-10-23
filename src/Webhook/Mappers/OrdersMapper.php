@@ -4,7 +4,6 @@
 namespace TrackMage\WordPress\Webhook\Mappers;
 
 
-use TrackMage\WordPress\Exception\EndpointException;
 use WC_Order;
 
 class OrdersMapper extends AbstractMapper {
@@ -66,7 +65,7 @@ class OrdersMapper extends AbstractMapper {
             $trackmage_order_id = get_post_meta( $orderId, '_trackmage_order_id', true );
 
             if(!$this->canHandle() || $trackMageId !== $trackmage_order_id)
-                return null;
+                throw new InvalidArgumentException('Order cannot be updated: '. $orderId);
 
             //$data = $this->prepareData();
 
@@ -82,7 +81,6 @@ class OrdersMapper extends AbstractMapper {
                 }
             }
 
-            //return $this->entity;
         }catch (\Throwable $e){
             throw new EndpointException('An error happened during update order from TrackMage: '.$e->getMessage(), $e->getCode(), $e);
         }

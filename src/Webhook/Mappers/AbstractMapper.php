@@ -3,7 +3,7 @@
 
 namespace TrackMage\WordPress\Webhook\Mappers;
 
-
+use TrackMage\WordPress\Exception\InvalidArgumentException;
 use TrackMage\WordPress\Exception\EndpointException;
 use TrackMage\WordPress\Repository\ShipmentRepository;
 
@@ -50,8 +50,6 @@ class AbstractMapper implements EntityMapperInterface {
      * @return bool
      */
     protected function canHandle(){
-        $result = true;
-
         // check source
         if(!isset($this->data['externalSource']) || $this->data['externalSource'] != $this->source)
             $result = false;
@@ -62,9 +60,9 @@ class AbstractMapper implements EntityMapperInterface {
 
         // check if workspace is correct
         if(!isset($this->data['workspace']) || "/workspaces/".$this->workspace !== $this->data['workspace'])
-            $result = false ;
+            $result = false;
 
-        return $result;
+        return true;
     }
 
     /**

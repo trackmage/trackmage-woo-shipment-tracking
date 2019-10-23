@@ -3,8 +3,6 @@
 
 namespace TrackMage\WordPress\Webhook\Mappers;
 
-
-use TrackMage\WordPress\Exception\EndpointException;
 use TrackMage\WordPress\Repository\ShipmentRepository;
 
 class ShipmentsMapper extends AbstractMapper {
@@ -50,7 +48,7 @@ class ShipmentsMapper extends AbstractMapper {
             $this->loadEntity($shipmentId, $trackMageId);
 
             if( ! $this->canHandle() )
-                return false;
+                throw new InvalidArgumentException('Shipment cannot be updated: '. $shipmentId);
 
             $data = $this->prepareData();
 
