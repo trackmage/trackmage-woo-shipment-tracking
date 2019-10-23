@@ -44,8 +44,10 @@ https://codeception.com/for/wordpress
 https://wpbrowser.wptestkit.dev/summary/levels-of-testing
 ```
 
-Travis artifacts bug in Download URL:
-Incorrect url:
-https://s3.amazonaws.com/travis-uploaded-artifacts/trackmage/trackmage-wordpress-plugin/56/56.1/CriticalPathCest.test.fail.html
-Correct url:
-https://travis-uploaded-artifacts.s3-us-west-2.amazonaws.com/trackmage/trackmage-wordpress-plugin/56/56.1/tests/_output/CriticalPathCest.test.fail.html
+How to download the build:
+
+1. Go to [Travis](https://travis-ci.org/trackmage/trackmage-wordpress-plugin) and find the build you need.
+2. Find the job where BUILD_ZIP=true and open it
+3. In the log find "Uploading Artifacts" section and find the url containing "wordpress-plugin.zip".
+4. The url is a bit incorrect. Replace `https://travis-uploaded-artifacts.s3-us-west-2.amazonaws.com` with `https://s3.amazonaws.com/travis-uploaded-artifacts`, so it'll look like `https://s3.amazonaws.com/travis-uploaded-artifacts/trackmage/trackmage-wordpress-plugin/220/220.1/build/trackmage-wordpress-plugin.zip`
+5. Download the plugin and manuall install on stage.

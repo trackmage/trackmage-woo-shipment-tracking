@@ -110,7 +110,7 @@ class Admin {
     public function test_credentials() {
         $credentials = Helper::check_credentials($_POST['clientId'], $_POST['clientSecret']);
 
-        if (0 === $credentials) {
+        if (Helper::CREDENTIALS_INVALID === $credentials) {
             wp_send_json_error([
                 'status' => 'error',
                 'errors' => [
@@ -119,13 +119,13 @@ class Admin {
             ]);
         }
 
-        if (1 === $credentials) {
+        if (Helper::CREDENTIALS_VALID === $credentials) {
             wp_send_json_success([
                 'status' => 'success',
             ]);
         }
 
-        if (2 === $credentials) {
+        if (Helper::CREDENTIALS_ERROR === $credentials) {
             wp_send_json_error([
                 'status' => 'error',
                 'errors' => [
