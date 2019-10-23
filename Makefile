@@ -3,6 +3,7 @@ SHELL := /bin/bash
 TEST_PLUGIN_NAME ?= "trackmage-wordpress-plugin"
 TRAVIS_WP_FOLDER ?= "wordpress"
 BUILD_FOLDER ?= "build"
+BUILD_PLUGIN_FOLDER ?= "${BUILD_FOLDER}/${TEST_PLUGIN_NAME}"
 TRAVIS_WP_URL ?= "http://wp.test"
 TRAVIS_WP_DOMAIN ?= "wp.test"
 TRAVIS_DB_NAME ?= "wp_site"
@@ -74,10 +75,14 @@ ci_before_install: ci_setup_db ci_setup_wp
 
 build:
 	rm -rf ${BUILD_FOLDER} || true
-	mkdir ${BUILD_FOLDER}
-	rsync -a --include-from=.rsync --exclude="*" . ${BUILD_FOLDER}
-	(cd ${BUILD_FOLDER} && COMPOSER_MEMORY_LIMIT=-1 composer update --no-dev --prefer-dist \
+	mkdir -p ${BUILD_PLUGIN_FOLDER}
+	rsync -a --include-from=.rsync --exclude="*" . ${BUILD_PLUGIN_FOLDER}
+	(cd ${BUILD_PLUGIN_FOLDER} && COMPOSER_MEMORY_LIMIT=-1 composer update --no-dev --prefer-dist \
 		&& npm ci && npm run build && rm -rf node_modules/)
+	if [ "${ZIP_BUILD}" = true ]; then \
+		(cd ${BUILD_FOLDER} && rm -rf ${TEST_PLUGIN_NAME}.zip && zip -qq -r ${TEST_PLUGIN_NAME}.zip ${TEST_PLUGIN_NAME}); \
+		echo The uploaded path will be /${TRAVIS_REPO_SLUG}/${TRAVIS_BUILD_NUMBER}/${TRAVIS_JOB_NUMBER}/${TEST_PLUGIN_NAME}.zip; \
+	fi
 
 ci_install: build
 ci_install:
@@ -113,7 +118,7 @@ ci_install:
 
 	# setup the plugin
 	rm -rf ${TRAVIS_WP_FOLDER}/wp-content/plugins/${TEST_PLUGIN_NAME} || true
-	cp -r ${BUILD_FOLDER} ${TRAVIS_WP_FOLDER}/wp-content/plugins/${TEST_PLUGIN_NAME}/
+	cp -r ${BUILD_PLUGIN_FOLDER} ${TRAVIS_WP_FOLDER}/wp-content/plugins/${TEST_PLUGIN_NAME}/
 	docker run -it --rm --volumes-from wpbrowser_wp --network container:wpbrowser_wp wordpress:cli-php${PHP_VERSION} wp plugin activate ${TEST_PLUGIN_NAME}
 
 	# Make sure everyone can write to the tests/_data folder.
@@ -182,5 +187,5 @@ wp_dump:
 deploy: export SSHPASS = ${STAGE_SSH_PASS}
 deploy: export DEPLOY_DIR = /var/www/html/wp-content/plugins/trackmage
 deploy:
-	cd ${BUILD_FOLDER} && tar zcf - . | sshpass -e ssh -oStrictHostKeyChecking=no www-data@51.15.103.205 -p 48022 "\
+	cd ${BUILD_PLUGIN_FOLDER} && tar zcf - . | sshpass -e ssh -oStrictHostKeyChecking=no www-data@51.15.103.205 -p 48022 "\
 		rm -rf ${DEPLOY_DIR} && mkdir ${DEPLOY_DIR} && cd ${DEPLOY_DIR} && cat | tar zx"
