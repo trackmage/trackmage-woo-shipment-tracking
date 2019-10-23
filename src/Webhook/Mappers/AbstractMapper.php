@@ -52,15 +52,15 @@ class AbstractMapper implements EntityMapperInterface {
     protected function canHandle(){
         // check source
         if(!isset($this->data['externalSource']) || $this->data['externalSource'] != $this->source)
-            $result = false;
+            return false;
 
         // check if entity is exist
         if(!$this->entity)
-            $result = false;
+            return false;
 
         // check if workspace is correct
         if(!isset($this->data['workspace']) || "/workspaces/".$this->workspace !== $this->data['workspace'])
-            $result = false;
+            return false;
 
         return true;
     }

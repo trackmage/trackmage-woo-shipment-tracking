@@ -39,16 +39,17 @@ class OrderItemsMapper extends AbstractMapper {
 
             //$this->loadEntity($shipmentId, $trackMageId);
 
-            $this->entity = null;
+            $this->entity = $this->getOrderItem($orderItemId);
 
-            if(!$this->canHandle())
-                throw new InvalidArgumentException('Order Item cannot be updated: '. $trackMageOrderItemId);
+            if(!($this->canHandle() && $trackMageOrderItemId === wc_get_order_item_meta($orderItemId, '_trackmage_order_item_id', true)
+                && $trackMageOrderId === get_post_meta($this->entity->get_order_id(),'_trackmage_order_id', 'true')))
+                    throw new InvalidArgumentException('Order Item cannot be updated: '. $trackMageOrderItemId);
 
-
-
-            //$data = $this->prepareData();
-
-            //$this->entity = $this->repo->update($data, ['id' => $shipmentId]);
+            foreach ($this->updatedFields as $field) {
+                if ( isset( $this->map[ $field ] ) ) {
+                    wc_update_order_item_meta($orderItemId, $this->map[ $field ], $this->data[ $field ]);
+                }
+            }
 
         }catch (\Throwable $e){
             throw new EndpointException('An error happened during update order items from TrackMage: '.$e->getMessage(), $e->getCode(), $e);
@@ -56,16 +57,28 @@ class OrderItemsMapper extends AbstractMapper {
     }
 
     /**
-     * @param string $trackMageOrderItemId
+     * @param int $orderItemId
+     * @param WC_Order $order
      * @return WC_Order_Item|\WC_Order_Item_Product
      */
-    private function getOrderItem($trackMageOrderItemId)
+    private function findOrderItemInOrder($orderItemId, WC_Order $order)
     {
-        global $wpdb;
-        $row = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix . 'woocommerce_order_itemmeta'." WHERE meta_key = '_trackmage_order_item_id' AND meta_value = '".$trackMageOrderItemId."'", ARRAY_A);
-        if(is_array($row) && isset($row['order_item_id']))
-            return $data["order_item_id"] = $row['order_item_id'];
-        else
-            throw new EndpointException('Order item was not found.',400);
+        foreach( $order->get_items() as $id => $item ) {
+            if ($id === $orderItemId) {
+                return $item;
+            }
+        }
+        return null;
+    }
+
+    public function getOrderItem($orderItemId)
+    {
+        $orderId = wc_get_order_id_by_order_item_id($orderItemId);
+        $order = wc_get_order($orderId);
+        $item = $this->findOrderItemInOrder($orderItemId, $order);
+        if ($item === null) {
+            throw new InvalidArgumentException('Unable to find order item id: '. $orderItemId);
+        }
+        return $item;
     }
 }
