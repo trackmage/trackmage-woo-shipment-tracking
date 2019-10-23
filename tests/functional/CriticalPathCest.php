@@ -41,7 +41,7 @@ class CriticalPathCest
         //test empty credentials
         $I->sendAjaxPostRequest('/wp-admin/admin-ajax.php', ['action' => 'trackmage_test_credentials', 'clientId' => '', 'clientSecret' => '']);
         $I->canSeeResponseCodeIs(200);
-        $I->canSeeResponseContains('We could not peform the check. Please try again');
+        $I->canSeeResponseContains('Invalid credentials');
     }
 
     private function testAndSaveWorkingCredentials(\FunctionalTester $I)
