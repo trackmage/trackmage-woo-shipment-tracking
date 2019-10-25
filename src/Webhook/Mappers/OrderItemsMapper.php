@@ -36,11 +36,11 @@ class OrderItemsMapper extends AbstractMapper {
 
         $this->data = isset( $item['data'] ) ? $item['data'] : [];
         if ( empty( $this->data ) ) {
-            throw new InvalidArgumentException( 'Unable to handle order because data is empty' );
+            throw new InvalidArgumentException( 'Unable to handle order item because data is empty' );
         }
         $this->updatedFields = isset( $item['updatedFields'] ) ? $item['updatedFields'] : [];
         if ( empty( $this->updatedFields ) ) {
-            throw new InvalidArgumentException( 'Unable to handle order because there are no updated fields' );
+            throw new InvalidArgumentException( 'Unable to handle order item because there are no updated fields' );
         }
 
         $trackMageOrderItemId = isset($this->data['id'])?$this->data['id']:'';
@@ -50,26 +50,26 @@ class OrderItemsMapper extends AbstractMapper {
 
         $trackMageOrderId = str_replace('/orders/','', $this->data['order']);
         if ( empty( $trackMageOrderId ) ) {
-            throw new InvalidArgumentException( 'Unable to handle order because there is no TrackMage Order Id' );
+            throw new InvalidArgumentException( 'Unable to handle order item because there is no TrackMage Order Id' );
         }
 
         $orderItemId = isset( $this->data['externalSyncId'] ) ? $this->data['externalSyncId'] : '';
-        if ( empty( $orderId ) ) {
-            throw new InvalidArgumentException( 'Unable to handle order because there is no externalSyncId' );
+        if ( empty( $orderItemId ) ) {
+            throw new InvalidArgumentException( 'Unable to handle order item because there is no externalSyncId' );
         }
+
 
         if($trackMageOrderItemId !== wc_get_order_item_meta($orderItemId, '_trackmage_order_item_id', true)) {
-            throw new EndpointException( 'Unable to handle order item because TrackMage Order Item Id does not match' );
+            throw new EndpointException( 'Unable to handle order item because TrackMage Order Item Id not found or does not match' );
         }
-
 
         $this->entity = $this->getOrderItem($orderItemId);
 
-        if($trackMageOrderId === get_post_meta($this->entity->get_order_id(),'_trackmage_order_id', 'true')) {
+        $this->canHandle();
+
+        if($trackMageOrderId !== get_post_meta($this->entity->get_order_id(),'_trackmage_order_id', 'true')) {
             throw new EndpointException('Unable to handle order item because TrackMage Order Id does not match');
         }
-
-        $this->canHandle();
 
         try {
             foreach ($this->updatedFields as $field) {
@@ -101,6 +101,9 @@ class OrderItemsMapper extends AbstractMapper {
     {
         $orderId = wc_get_order_id_by_order_item_id($orderItemId);
         $order = wc_get_order($orderId);
+        if($order === false) {
+            throw new InvalidArgumentException('Unable to find order');
+        }
         $item = $this->findOrderItemInOrder($orderItemId, $order);
         if ($item === null) {
             throw new InvalidArgumentException('Unable to find order item id: '. $orderItemId);

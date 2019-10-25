@@ -260,7 +260,7 @@ class OrdersMapperTest extends WPTestCase
 
     }
 
-    public function testShipmentCanBeHandledBecauseUnknownShipment() {
+    public function testOrderCanNotBeHandledBecauseUnknownOrder() {
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Unable to handle because entity was not found');
