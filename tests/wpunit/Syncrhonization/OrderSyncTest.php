@@ -46,6 +46,7 @@ class OrderSyncTest extends WPTestCase {
     {
         //GIVEN
         update_option('trackmage_sync_statuses', ['wc-completed']);
+        update_option('trackmage_order_status_aliases', ['wc-completed' => 'completed']);
         add_option('trackmage_workspace', self::TM_WS_ID);
 
         $requests = [];
@@ -92,7 +93,7 @@ class OrderSyncTest extends WPTestCase {
             'externalSyncId' => (string) $wcId,
             'externalSource' => self::SOURCE,
             'orderNumber' => $wcOrder->get_order_number(),
-            'status' => ['name' => 'completed'],
+            'orderStatus' => ['code' => 'completed'],
             'shippingAddress' => self::TEST_ADDRESS,
             'billingAddress' => self::TEST_ADDRESS,
         ], $requests[0]['request']);
@@ -104,6 +105,7 @@ class OrderSyncTest extends WPTestCase {
     {
         //GIVEN
         add_option('trackmage_workspace', self::TM_WS_ID);
+        update_option('trackmage_order_status_aliases', ['wc-pending' => 'pending']);
 
         $requests = [];
         $guzzleClient = $this->createClient([
@@ -144,7 +146,7 @@ class OrderSyncTest extends WPTestCase {
             ['PUT', '/orders/'.self::TM_ORDER_ID],
         ]);
         $this->assertSubmittedJsonIncludes([
-            'status' => ['name' => 'pending'],
+            'orderStatus' => ['code' => 'pending'],
             'shippingAddress' => self::TEST_ADDRESS,
             'billingAddress' => self::TEST_ADDRESS,
         ], $requests[0]['request']);
@@ -154,6 +156,7 @@ class OrderSyncTest extends WPTestCase {
     {
         //GIVEN
         add_option('trackmage_workspace', self::TM_WS_ID);
+        update_option('trackmage_order_status_aliases', ['wc-completed' => 'completed']);
 
         $requests = [];
         $guzzleClient = $this->createClient([
@@ -243,6 +246,7 @@ class OrderSyncTest extends WPTestCase {
     {
         //GIVEN
         update_option('trackmage_sync_statuses', ['wc-completed']);
+        update_option('trackmage_order_status_aliases', ['wc-completed' => 'completed']);
         $requests = [];
         $guzzleClient = $this->createClient([], $requests);
         $this->initPlugin($guzzleClient);
@@ -261,6 +265,7 @@ class OrderSyncTest extends WPTestCase {
     {
         //GIVEN
         update_option('trackmage_sync_statuses', ['wc-completed']);
+        update_option('trackmage_order_status_aliases', ['wc-completed' => 'completed']);
         add_option('trackmage_workspace', self::TM_WS_ID);
 
         $requests = [];

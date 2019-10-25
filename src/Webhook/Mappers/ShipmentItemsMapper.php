@@ -4,10 +4,12 @@
 namespace TrackMage\WordPress\Webhook\Mappers;
 
 
+use TrackMage\WordPress\Exception\InvalidArgumentException;
 use TrackMage\WordPress\Repository\ShipmentRepository;
 use TrackMage\WordPress\Repository\ShipmentItemRepository;
 use WC_Order_Item;
 use WC_Data_Store;
+use TrackMage\WordPress\Exception\EndpointException;
 
 class ShipmentItemsMapper extends AbstractMapper {
 
@@ -42,23 +44,33 @@ class ShipmentItemsMapper extends AbstractMapper {
      * @param array $item
      */
     public function handle( array $item ) {
-        try {
-            $this->data = $item['data'];
-            $this->updatedFields = $item['updatedFields'];
-            $shipmentItemId = $this->data['externalSyncId'];
-            $trackMageId = $this->data['id'];
+        $this->data = isset( $item['data'] ) ? $item['data'] : [];
+        if ( empty( $this->data ) ) {
+            throw new InvalidArgumentException( 'Unable to handle shipment item because data is empty' );
+        }
+        $this->updatedFields = isset( $item['updatedFields'] ) ? $item['updatedFields'] : [];
+        if ( empty( $this->updatedFields ) ) {
+            throw new InvalidArgumentException( 'Unable to handle shipment item because there are no updated fields' );
+        }
+        $shipmentItemId = isset( $this->data['externalSyncId'] ) ? $this->data['externalSyncId'] : '';
+        if ( empty( $shipmentItemId ) ) {
+            throw new InvalidArgumentException( 'Unable to handle shipment item because there is no externalSyncId' );
+        }
+        $trackMageId = $this->data['id'];
+        if ( empty( $trackMageId ) ) {
+            throw new InvalidArgumentException( 'Unable to handle shipment item because there is no TrackMage Id' );
+        }
 
-            $this->loadEntity($shipmentItemId, $trackMageId);
+        $this->loadEntity( $shipmentItemId, $trackMageId );
 
-            if($this->canHandle())
-                throw new InvalidArgumentException('Shipment Item cannot be updated: '. $shipmentItemId);
+        $this->canHandle();
 
-            $data = $this->prepareData();
+        $data = $this->prepareData();
 
-            $this->entity = $this->repo->update($data, ['id' => $shipmentItemId]);
-
+        try{
+            $this->entity = $this->repo->update( $data, [ 'id' => $shipmentItemId ] );
         }catch (\Throwable $e){
-            throw new EndpointException('An error happened during update shipment from TrackMage: '.$e->getMessage(), $e->getCode(), $e);
+            throw new EndpointException('An error happened during handle: '.$e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -70,9 +82,9 @@ class ShipmentItemsMapper extends AbstractMapper {
             global $wpdb;
             $row = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix . 'woocommerce_order_itemmeta'." WHERE meta_key = '_trackmage_order_item_id' AND meta_value = '".$trackmageOrderItemId."'", ARRAY_A);
             if(is_array($row) && isset($row['order_item_id']))
-                $data["order_item_id"] = $row['order_item_id'];
+                $data["order_item_id"] = (int) $row['order_item_id'];
             else
-                throw new EndpointException('Order item was not found.',400);
+                throw new EndpointException('Order item was not found.');
         }
         return $data;
     }

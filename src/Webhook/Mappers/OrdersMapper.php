@@ -5,14 +5,16 @@ namespace TrackMage\WordPress\Webhook\Mappers;
 
 
 use WC_Order;
+use TrackMage\WordPress\Exception\EndpointException;
+use TrackMage\WordPress\Exception\InvalidArgumentException;
 
 class OrdersMapper extends AbstractMapper {
 
 
     protected $map = [
-        "status"            =>  [
-            "id"                => "",
-            "name"              => "status"
+        "orderStatus"            =>  [
+            "title"                => "",
+            "code"              => "status"
         ],
         "shippingAddress"   =>  [
             "addressLine1"      =>  "_shipping_address_1",
@@ -53,100 +55,63 @@ class OrdersMapper extends AbstractMapper {
      * @param array $item
      */
     public function handle( array $item ) {
+        $this->data = isset( $item['data'] ) ? $item['data'] : [];
+        if ( empty( $this->data ) ) {
+            throw new InvalidArgumentException( 'Unable to handle order because data is empty' );
+        }
+        $this->updatedFields = isset( $item['updatedFields'] ) ? $item['updatedFields'] : [];
+        if ( empty( $this->updatedFields ) ) {
+            throw new InvalidArgumentException( 'Unable to handle order because there are no updated fields' );
+        }
+
+        $trackMageId = $this->data['id'];
+        if ( empty( $trackMageId ) ) {
+            throw new InvalidArgumentException( 'Unable to handle order because there is no TrackMage Id' );
+        }
+
+        $orderId = isset( $this->data['externalSyncId'] ) ? $this->data['externalSyncId'] : '';
+        if ( empty( $orderId ) ) {
+            throw new InvalidArgumentException( 'Unable to handle order because there is no externalSyncId' );
+        }
+
+        $this->entity = wc_get_order( $orderId );
+        $trackmage_order_id = get_post_meta( $orderId, '_trackmage_order_id', true );
+
+        $this->canHandle();
+
+        if($trackMageId !== $trackmage_order_id)
+            throw new EndpointException('Unable to handle order because TrackMageId is different');
+
         try {
-            $this->data = $item['data'];
-            $this->updatedFields = $item['updatedFields'];
-            $orderId = $this->data['externalSyncId'];
-            $trackMageId = $this->data['id'];
-
-            //$this->loadEntity($shipmentId, $trackMageId);
-
-            $this->entity = wc_get_order( $orderId );
-            $trackmage_order_id = get_post_meta( $orderId, '_trackmage_order_id', true );
-
-            if(!$this->canHandle() || $trackMageId !== $trackmage_order_id)
-                throw new InvalidArgumentException('Order cannot be updated: '. $orderId);
-
-            //$data = $this->prepareData();
-
-            //$this->entity = $this->repo->update($data, ['id' => $shipmentId]);
             foreach ($this->updatedFields as $field){
-                if($field == 'status'){
-                    $this->entity->update_status($this->data['status']['name']);
+                if($field == 'orderStatus'){
+                    $this->entity->update_status($this->getWpStatus($this->data['orderStatus']['code']));
                 }else{
                     $parts = explode('.', $field);
-                    if(isset($this->map[$parts[0]])){
+                    if(isset($parts[0]) && isset($this->map[$parts[0]]) && isset($parts[1]) && isset($this->map[$parts[0]][$parts[1]])){
                         update_post_meta($orderId, $this->map[$parts[0]][$parts[1]], $this->data[$parts[0]][$parts[1]]);
                     }
                 }
             }
-
         }catch (\Throwable $e){
-            throw new EndpointException('An error happened during update order from TrackMage: '.$e->getMessage(), $e->getCode(), $e);
+            throw new EndpointException('An error happened during updating order from TrackMage: '.$e->getMessage(), $e->getCode(), $e);
         }
     }
 
-    /**
-     * @return array
-     */
-    private function updateShippingAddress(WC_Order $order)
-    {
-        $countryIso2 = $order->get_shipping_country();
-        $stateCode = $order->get_billing_state();
-        $state = $this->getState($countryIso2, $stateCode);
+    protected function canHandle() {
+        // check if workspace is correct
+        if(!isset($this->data['workspace']) || "/workspaces/".$this->workspace !== $this->data['workspace'])
+            throw new InvalidArgumentException('Unable to handle because workspace is not correct');
 
-        return [
-            'addressLine1' => $order->get_shipping_address_1(),
-            'addressLine2' => $order->get_shipping_address_2(),
-            'city' => $order->get_shipping_city(),
-            'company' => $order->get_shipping_company(),
-            'countryIso2' => $countryIso2,
-            'firstName' => $order->get_shipping_first_name(),
-            'lastName' => $order->get_shipping_last_name(),
-            'postcode' => $order->get_shipping_postcode(),
-            'state' => $state,
-        ];
+        return parent::canHandle();
     }
 
     /**
-     * @return array
-     */
-    private function updateBillingAddress(WC_Order $order)
-    {
-        $countryIso2 = $order->get_billing_country();
-        $stateCode = $order->get_billing_state();
-        $state = $this->getState($countryIso2, $stateCode);
-
-        return [
-            'addressLine1' => $order->get_billing_address_1(),
-            'addressLine2' => $order->get_billing_address_2(),
-            'city' => $order->get_billing_city(),
-            'company' => $order->get_billing_company(),
-            'countryIso2' => $countryIso2,
-            'firstName' => $order->get_billing_first_name(),
-            'lastName' => $order->get_billing_last_name(),
-            'postcode' => $order->get_billing_postcode(),
-            'state' => $state,
-        ];
-    }
-
-    /**
-     * Converts the WC state code to name. Example: CN-1 to Beijing / 北京
-     * @param string|null $countryIso2
-     * @param string|null $stateCode
      * @return string|null
      */
-    private function getState($countryIso2, $stateCode)
+    private function getWpStatus($tmStatus)
     {
-        if (empty($countryIso2) || empty($stateCode)) {
-            return null;
-        }
-        $states = WC()->countries->get_states($countryIso2);
-        if (!isset($states[$stateCode])) {
-            return null;
-        }
-        $state = $states[$stateCode];
-        $state = html_entity_decode($state);
-        return $state;
+        $usedAliases = get_option( 'trackmage_order_status_aliases', [] );
+        return ($res = array_search($tmStatus, $usedAliases))?str_replace('wp-','',$res):null;
     }
 }

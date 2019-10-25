@@ -5,6 +5,7 @@ namespace TrackMage\WordPress\Synchronization;
 use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\ResponseInterface;
 use TrackMage\WordPress\Exception\SynchronizationException;
+use TrackMage\WordPress\Helper;
 use TrackMage\WordPress\Plugin;
 use WC_Order;
 
@@ -35,9 +36,9 @@ class OrderSync implements EntitySyncInterface
             $detector = new ChangesDetector([
                 '[order_number]', '[status]',
                 '[shipping_address_1]', '[shipping_address_2]', '[shipping_city]', '[shipping_company]', '[shipping_country]',
-                '[shipping_first_name]', '[shipping_last_name]',  '[shipping_postcode]',  '[shipping_state]', 
+                '[shipping_first_name]', '[shipping_last_name]',  '[shipping_postcode]',  '[shipping_state]',
                 '[billing_address_1]', '[billing_address_2]', '[billing_city]', '[billing_company]', '[billing_country]',
-                '[billing_first_name]', '[billing_last_name]',  '[billing_postcode]',  '[billing_state]', 
+                '[billing_first_name]', '[billing_last_name]',  '[billing_postcode]',  '[billing_state]',
             ], function($order) {
                 return get_post_meta( $order['id'], '_trackmage_hash', true );
             }, function($order, $hash) {
@@ -73,7 +74,7 @@ class OrderSync implements EntitySyncInterface
                             'orderNumber' => $order->get_order_number(),
                             'shippingAddress' => $this->getShippingAddress($order),
                             'billingAddress' => $this->getBillingAddress($order),
-                            'status' => ['name' => $order->get_status()],
+                            'orderStatus' => ['code' => $this->getTrackMageStatus($order)],
                         ]
                     ]);
                     $result = json_decode( $response->getBody()->getContents(), true );
@@ -97,7 +98,7 @@ class OrderSync implements EntitySyncInterface
                 try {
                     $guzzleClient->put("/orders/{$trackmage_order_id}", [
                         'json' => [
-                            'status' => ['name' => $order->get_status()],
+                            'orderStatus' => ['code' => $this->getTrackMageStatus($order)],
                             'shippingAddress' => $this->getShippingAddress($order),
                             'billingAddress' => $this->getBillingAddress($order),
                         ]
@@ -236,5 +237,15 @@ class OrderSync implements EntitySyncInterface
         $state = $states[$stateCode];
         $state = html_entity_decode($state);
         return $state;
+    }
+
+    /**
+     * @return string|null
+     */
+    private function getTrackMageStatus(WC_Order $order)
+    {
+        $status = $order->get_status();
+        $usedAliases = get_option( 'trackmage_order_status_aliases', [] );
+        return isset($usedAliases[$status])?$usedAliases['wc-'.$status]:$status;
     }
 }

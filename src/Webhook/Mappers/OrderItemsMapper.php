@@ -4,9 +4,10 @@
 namespace TrackMage\WordPress\Webhook\Mappers;
 
 
+use TrackMage\WordPress\Exception\EndpointException;
+use TrackMage\WordPress\Exception\InvalidArgumentException;
 use WC_Order;
 use WC_Order_Item;
-use WC_Data_Store;
 
 class OrderItemsMapper extends AbstractMapper {
 
@@ -28,29 +29,54 @@ class OrderItemsMapper extends AbstractMapper {
      * Handle updates for order items from TrackMage to local
      *
      * @param array $item
+     *
+     * @throws InvalidArgumentException|EndpointException
      */
     public function handle( array $item ) {
+
+        $this->data = isset( $item['data'] ) ? $item['data'] : [];
+        if ( empty( $this->data ) ) {
+            throw new InvalidArgumentException( 'Unable to handle order because data is empty' );
+        }
+        $this->updatedFields = isset( $item['updatedFields'] ) ? $item['updatedFields'] : [];
+        if ( empty( $this->updatedFields ) ) {
+            throw new InvalidArgumentException( 'Unable to handle order because there are no updated fields' );
+        }
+
+        $trackMageOrderItemId = isset($this->data['id'])?$this->data['id']:'';
+        if ( empty( $trackMageOrderItemId ) ) {
+            throw new InvalidArgumentException( 'Unable to handle order because there is no TrackMage Order Item Id' );
+        }
+
+        $trackMageOrderId = str_replace('/orders/','', $this->data['order']);
+        if ( empty( $trackMageOrderId ) ) {
+            throw new InvalidArgumentException( 'Unable to handle order because there is no TrackMage Order Id' );
+        }
+
+        $orderItemId = isset( $this->data['externalSyncId'] ) ? $this->data['externalSyncId'] : '';
+        if ( empty( $orderId ) ) {
+            throw new InvalidArgumentException( 'Unable to handle order because there is no externalSyncId' );
+        }
+
+        if($trackMageOrderItemId !== wc_get_order_item_meta($orderItemId, '_trackmage_order_item_id', true)) {
+            throw new EndpointException( 'Unable to handle order item because TrackMage Order Item Id does not match' );
+        }
+
+
+        $this->entity = $this->getOrderItem($orderItemId);
+
+        if($trackMageOrderId === get_post_meta($this->entity->get_order_id(),'_trackmage_order_id', 'true')) {
+            throw new EndpointException('Unable to handle order item because TrackMage Order Id does not match');
+        }
+
+        $this->canHandle();
+
         try {
-            $this->data = $item['data'];
-            $this->updatedFields = $item['updatedFields'];
-            $orderItemId = $this->data['externalSyncId'];
-            $trackMageOrderId = str_replace('/orders/','', $this->data['order']);
-            $trackMageOrderItemId = $this->data['id'];
-
-            //$this->loadEntity($shipmentId, $trackMageId);
-
-            $this->entity = $this->getOrderItem($orderItemId);
-
-            if(!($this->canHandle() && $trackMageOrderItemId === wc_get_order_item_meta($orderItemId, '_trackmage_order_item_id', true)
-                && $trackMageOrderId === get_post_meta($this->entity->get_order_id(),'_trackmage_order_id', 'true')))
-                    throw new InvalidArgumentException('Order Item cannot be updated: '. $trackMageOrderItemId);
-
             foreach ($this->updatedFields as $field) {
                 if ( isset( $this->map[ $field ] ) ) {
                     wc_update_order_item_meta($orderItemId, $this->map[ $field ], $this->data[ $field ]);
                 }
             }
-
         }catch (\Throwable $e){
             throw new EndpointException('An error happened during update order items from TrackMage: '.$e->getMessage(), $e->getCode(), $e);
         }
