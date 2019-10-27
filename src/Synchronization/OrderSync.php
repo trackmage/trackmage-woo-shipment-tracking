@@ -66,6 +66,7 @@ class OrderSync implements EntitySyncInterface
             if (empty($trackmage_order_id)) {
                 try {
                     $response = $guzzleClient->post('/orders', [
+                        'query' => ['ignoreWebhookId' => $workspace],
                         'json' => [
                             'workspace' => '/workspaces/' . $workspace,
                             'externalSyncId' => (string)$order_id,
@@ -96,6 +97,7 @@ class OrderSync implements EntitySyncInterface
             } else {
                 try {
                     $guzzleClient->put("/orders/{$trackmage_order_id}", [
+                        'query' => ['ignoreWebhookId' => $workspace],
                         'json' => [
                             'status' => ['name' => $order->get_status()],
                             'shippingAddress' => $this->getShippingAddress($order),
@@ -127,8 +129,10 @@ class OrderSync implements EntitySyncInterface
         if (empty($trackmage_order_id)) {
             return;
         }
+        $workspace = get_option( 'trackmage_workspace' );
+
         try {
-            $guzzleClient->delete('/orders/'.$trackmage_order_id);
+            $guzzleClient->delete('/orders/'.$trackmage_order_id, ['query' => ['ignoreWebhookId' => $workspace]]);
         } catch ( ClientException $e ) {
             throw new SynchronizationException('Unable to delete order: '.$e->getMessage(), $e->getCode(), $e);
         } catch ( \Throwable $e ) {

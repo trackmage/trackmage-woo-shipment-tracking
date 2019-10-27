@@ -56,6 +56,8 @@ class ShipmentItemSyncTest extends WPTestCase
         $product->set_price(self::PRICE);
         $product->save();
         self::$product = $product;
+
+        add_option('trackmage_workspace', self::TM_WS_ID);
     }
 
     protected function _before()
@@ -136,7 +138,6 @@ class ShipmentItemSyncTest extends WPTestCase
     {
         //GIVEN
         update_option('trackmage_sync_statuses', ['wc-pending']);
-        add_option('trackmage_workspace', self::TM_WS_ID);
 
         $requests = [];
         $guzzleClient = $this->createClient([
@@ -170,7 +171,7 @@ class ShipmentItemSyncTest extends WPTestCase
         //THEN
         //check this shipment item is sent to TM
         $this->assertMethodsWereCalled($requests, [
-            ['POST', '/shipment_items'],
+            ['POST', '/shipment_items', ['ignoreWebhookId' => self::TM_WS_ID]],
         ]);
         $this->assertSubmittedJsonIncludes([
             'shipment' => '/shipments/'.self::TM_SHIPMENT_ID,
@@ -187,7 +188,6 @@ class ShipmentItemSyncTest extends WPTestCase
     {
         //GIVEN
         update_option('trackmage_sync_statuses', ['wc-pending']);
-        add_option('trackmage_workspace', self::TM_WS_ID);
 
         $requests = [];
         $guzzleClient = $this->createClient([
@@ -222,7 +222,7 @@ class ShipmentItemSyncTest extends WPTestCase
         //THEN
         // make sure it updates the linked shipment in TM
         $this->assertMethodsWereCalled($requests, [
-            ['PUT', '/shipment_items/'.self::TM_SHIPMENT_ITEM_ID],
+            ['PUT', '/shipment_items/'.self::TM_SHIPMENT_ITEM_ID, ['ignoreWebhookId' => self::TM_WS_ID]],
         ]);
         $this->assertSubmittedJsonIncludes([
             'orderItem' => '/order_items/'.self::TM_ORDER_ITEM_ID,
@@ -235,7 +235,6 @@ class ShipmentItemSyncTest extends WPTestCase
     {
         //GIVEN
         update_option('trackmage_sync_statuses', ['wc-pending']);
-        add_option('trackmage_workspace', self::TM_WS_ID);
 
         $requests = [];
         $guzzleClient = $this->createClient([
@@ -278,8 +277,6 @@ class ShipmentItemSyncTest extends WPTestCase
     public function testIfSameExistsItLookUpIdByExternalSyncId()
     {
         //GIVEN
-        add_option('trackmage_workspace', self::TM_WS_ID);
-
         $requests = [];
         $guzzleClient = $this->createClient([
             $this->createJsonResponse(400, ['hydra:description' => 'externalSyncId: This value is already used.']),
@@ -324,8 +321,6 @@ class ShipmentItemSyncTest extends WPTestCase
     public function testAlreadySyncedButDeletedShipmentGetsPostedOnceAgain()
     {
         //GIVEN
-        add_option('trackmage_workspace', self::TM_WS_ID);
-
         $requests = [];
         $guzzleClient = $this->createClient([
             $this->createJsonResponse(404),
@@ -439,7 +434,7 @@ class ShipmentItemSyncTest extends WPTestCase
 
         //THEN
         $this->assertMethodsWereCalled($requests, [
-            ['DELETE', '/shipment_items/'.self::TM_SHIPMENT_ITEM_ID],
+            ['DELETE', '/shipment_items/'.self::TM_SHIPMENT_ITEM_ID, ['ignoreWebhookId' => self::TM_WS_ID]],
         ]);
         self::assertNull($this->shipmentItemRepo->find($wcShipmentItemId)['trackmage_id']);
     }
