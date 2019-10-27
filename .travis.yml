@@ -65,5 +65,5 @@ deploy:
   script: make deploy
   skip_cleanup: true
   on:
-    branch: master
+    all_branches: true
     condition: $DEPLOY_STAGE = "true"
