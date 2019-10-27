@@ -80,7 +80,7 @@ class ShipmentSyncTest extends WPTestCase
             'externalSyncId' => (string) $wcShipmentId,
             'externalSource' => self::SOURCE,
             'trackingNumber' => self::TEST_TRACKING_NUMBER,
-            'carrier' => self::TEST_CARRIER,
+            'originCarrier' => self::TEST_CARRIER,
             'orders' => ['/orders/'.self::TM_ORDER_ID],
         ], $requests[0]['request']);
         //make sure that TM ID is saved to WC shipment meta

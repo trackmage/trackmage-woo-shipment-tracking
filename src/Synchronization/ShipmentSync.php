@@ -73,7 +73,7 @@ class ShipmentSync implements EntitySyncInterface
                         'json' => [
                             'workspace' => '/workspaces/' . $workspace,
                             'trackingNumber' => $shipment['tracking_number'],
-                            'carrier' => $shipment['carrier'],
+                            'originCarrier' => $shipment['carrier'],
                             'externalSyncId' => (string)$shipmentId,
                             'externalSource' => $this->source,
                             'orders' => ['/orders/'.$trackmage_order_id],
