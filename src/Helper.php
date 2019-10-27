@@ -78,8 +78,8 @@ class Helper {
                     'title' => $workspace['title'],
                 ];
             }
+        } catch( ApiException $e ) {
         } catch( ClientException $e ) {
-            // Do nothing. We will return an empty array.
         }
 
         return $workspaces;
@@ -99,12 +99,14 @@ class Helper {
                 $client = Plugin::get_client();
                 $result = $client->getCarrierApi()->getCarrierCollection();
 
-                $carriers = [];
+                $carriers = [
+                    ['code' => 'auto', 'name' => 'Detect automatically'],
+                ];
                 foreach ( $result as $carrier ) {
-                    array_push( $carriers, [
+                    $carriers[] = [
                         'code' => $carrier->getCode(),
                         'name' => $carrier->getName(),
-                    ] );
+                    ];
                 }
 
                 set_transient( 'trackmage_carriers', $carriers, 0 );

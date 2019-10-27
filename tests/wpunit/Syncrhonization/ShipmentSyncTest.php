@@ -87,6 +87,43 @@ class ShipmentSyncTest extends WPTestCase
         self::assertSame(self::TM_SHIPMENT_ID, $this->shipmentRepo->find($wcShipmentId)['trackmage_id']);
     }
 
+    public function testNewShipmentWithAutoCarrierSubmitsNull()
+    {
+        //GIVEN
+        update_option('trackmage_sync_statuses', ['wc-completed']);
+        add_option('trackmage_workspace', self::TM_WS_ID);
+
+        $requests = [];
+        $guzzleClient = $this->createClient([
+            $this->createJsonResponse(201, ['id' => self::TM_SHIPMENT_ID]),
+        ], $requests);
+        $this->initPlugin($guzzleClient);
+
+        //programmatically create a shipment in WC
+        $wcOrder = wc_create_order(['status' => 'completed']);
+        $wcOrderId = $wcOrder->get_id();
+        add_post_meta( $wcOrderId, '_trackmage_order_id', self::TM_ORDER_ID );
+
+        $wcShipment = $this->shipmentRepo->insert([
+            'order_id' => $wcOrderId,
+            'tracking_number' => self::TEST_TRACKING_NUMBER,
+            'carrier' => 'auto',
+        ]);
+        $wcShipmentId = $wcShipment['id'];
+
+        //WHEN
+        $this->shipmentSync->sync($wcShipmentId);
+
+        //THEN
+        //check this shipment is sent to TM
+        $this->assertMethodsWereCalled($requests, [
+            ['POST', '/shipments'],
+        ]);
+        $this->assertSubmittedJsonIncludes([
+            'originCarrier' => null,
+        ], $requests[0]['request']);
+    }
+
     public function testAlreadySyncedShipmentSendsUpdateToTrackMage()
     {
         //GIVEN
