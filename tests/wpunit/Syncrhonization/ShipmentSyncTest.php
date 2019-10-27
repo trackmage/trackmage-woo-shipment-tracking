@@ -14,6 +14,7 @@ class ShipmentSyncTest extends WPTestCase
     use GuzzleMockTrait;
     const SOURCE = 'wp';
     const TM_SHIPMENT_ID = '1010';
+    const TM_ORDER_ID = '1110';
     const TM_WS_ID = '1001';
     const TEST_TRACKING_NUMBER = 'TN-ABC';
     const TEST_CARRIER = 'UPS';
@@ -57,6 +58,8 @@ class ShipmentSyncTest extends WPTestCase
         //programmatically create a shipment in WC
         $wcOrder = wc_create_order(['status' => 'completed']);
         $wcOrderId = $wcOrder->get_id();
+        add_post_meta( $wcOrderId, '_trackmage_order_id', self::TM_ORDER_ID );
+
         $wcShipment = $this->shipmentRepo->insert([
             'order_id' => $wcOrderId,
             'tracking_number' => self::TEST_TRACKING_NUMBER,
@@ -78,6 +81,7 @@ class ShipmentSyncTest extends WPTestCase
             'externalSource' => self::SOURCE,
             'trackingNumber' => self::TEST_TRACKING_NUMBER,
             'carrier' => self::TEST_CARRIER,
+            'orders' => ['/orders/'.self::TM_ORDER_ID],
         ], $requests[0]['request']);
         //make sure that TM ID is saved to WC shipment meta
         self::assertSame(self::TM_SHIPMENT_ID, $this->shipmentRepo->find($wcShipmentId)['trackmage_id']);
@@ -97,6 +101,7 @@ class ShipmentSyncTest extends WPTestCase
         // pre-create shipment in TM
         $wcOrder = wc_create_order(['status' => 'completed']);
         $wcOrderId = $wcOrder->get_id();
+        add_post_meta( $wcOrderId, '_trackmage_order_id', self::TM_ORDER_ID );
         $wcShipment = $this->shipmentRepo->insert([
             'order_id' => $wcOrderId,
             'tracking_number' => self::TEST_TRACKING_NUMBER,
@@ -115,6 +120,7 @@ class ShipmentSyncTest extends WPTestCase
         ]);
         $this->assertSubmittedJsonIncludes([
             'trackingNumber' => self::TEST_TRACKING_NUMBER,
+            'orders' => ['/orders/'.self::TM_ORDER_ID],
         ], $requests[0]['request']);
     }
 
