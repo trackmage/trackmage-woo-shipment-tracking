@@ -184,7 +184,10 @@ wp_dump:
 		/project/tests/_data/dump.sql
 
 deploy: export SSHPASS = ${STAGE_SSH_PASS}
-deploy: export DEPLOY_DIR = /var/www/html/wp-content/plugins/trackmage
+deploy: export TRAVIS_BRANCH ?= master
+deploy: export BRANCH_SLUG = $${TRAVIS_BRANCH//\//-}
+deploy: export DEPLOY_DIR = "/var/www/html/wp-content/plugins/${TEST_PLUGIN_NAME}-${BRANCH_SLUG}"
 deploy:
+	echo "Deploying to ${DEPLOY_DIR}"
 	cd ${BUILD_PLUGIN_FOLDER} && tar zcf - . | sshpass -e ssh -oStrictHostKeyChecking=no www-data@51.15.103.205 -p 48022 "\
 		rm -rf ${DEPLOY_DIR} && mkdir ${DEPLOY_DIR} && cd ${DEPLOY_DIR} && cat | tar zx"
