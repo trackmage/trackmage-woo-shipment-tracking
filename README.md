@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/trackmage/trackmage-wordpress-plugin.svg?branch=master)](https://travis-ci.org/trackmage/trackmage-wordpress-plugin)
 
-# trackmage-wordpress-plugin
+# trackmage-wordpress-plugin-test
 TrackMage Wordpress Plugin
 
 
