@@ -245,7 +245,8 @@ class OrderSync implements EntitySyncInterface
     private function getTrackMageStatus(WC_Order $order)
     {
         $status = $order->get_status();
+        $aliases = Helper::get_aliases();
         $usedAliases = get_option( 'trackmage_order_status_aliases', [] );
-        return isset($usedAliases[$status])?$usedAliases['wc-'.$status]:$status;
+        return isset($usedAliases['wc-'.$status])?$usedAliases['wc-'.$status]:$status;
     }
 }

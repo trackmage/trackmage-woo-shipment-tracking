@@ -30,7 +30,6 @@ class Admin {
         add_action('admin_menu', [$this, 'add_page']);
         add_action('admin_init', [$this, 'settings']);
         add_action('wp_ajax_trackmage_test_credentials', [$this, 'test_credentials']);
-        //add_filter('pre_update_option_trackmage_workspace', [$this, 'select_workspace'], 10, 3);
         add_action('update_option_trackmage_workspace', [$this, 'select_workspace'], 10, 3);
     }
 

@@ -32,7 +32,7 @@ class ShipmentsMapper extends AbstractMapper {
      * @return bool
      */
     public function supports( array $item ) {
-        return isset($item['entity']) && $item['entity'] == 'shipments';
+        return isset($item['entity']) && $item['entity'] === 'shipments';
     }
 
     /**
@@ -62,7 +62,7 @@ class ShipmentsMapper extends AbstractMapper {
 
         $this->loadEntity( $shipmentId, $trackMageId );
 
-        $this->canHandle();
+        $this->validateData();
 
         $data = $this->prepareData();
 
@@ -73,12 +73,12 @@ class ShipmentsMapper extends AbstractMapper {
         }
     }
 
-    protected function canHandle() {
+    protected function validateData() {
         // check if workspace is correct
         if(!isset($this->data['workspace']) || "/workspaces/".$this->workspace !== $this->data['workspace'])
             throw new InvalidArgumentException('Unable to handle because workspace is not correct');
 
-        parent::canHandle();
+        parent::validateData();
     }
 
 }

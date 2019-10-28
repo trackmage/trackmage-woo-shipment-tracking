@@ -49,7 +49,7 @@ class AbstractMapper implements EntityMapperInterface {
      *
      * @return bool
      */
-    protected function canHandle(){
+    protected function validateData(){
         // check source
         if(!isset($this->data['externalSource']) || $this->data['externalSource'] != $this->source)
             throw new InvalidArgumentException('Unable to handle because external source does not match');

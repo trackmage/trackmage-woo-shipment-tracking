@@ -22,7 +22,7 @@ class OrderItemsMapper extends AbstractMapper {
      * @return bool
      */
     public function supports( array $item ) {
-        return isset($item['entity']) && $item['entity'] == 'order_items';
+        return isset($item['entity']) && $item['entity'] === 'order_items';
     }
 
     /**
@@ -65,7 +65,7 @@ class OrderItemsMapper extends AbstractMapper {
 
         $this->entity = $this->getOrderItem($orderItemId);
 
-        $this->canHandle();
+        $this->validateData();
 
         if($trackMageOrderId !== get_post_meta($this->entity->get_order_id(),'_trackmage_order_id', 'true')) {
             throw new EndpointException('Unable to handle order item because TrackMage Order Id does not match');

@@ -46,7 +46,7 @@ class OrdersMapper extends AbstractMapper {
      * @return bool
      */
     public function supports( array $item ) {
-        return isset($item['entity']) && $item['entity'] == 'orders';
+        return isset($item['entity']) && $item['entity'] === 'orders';
     }
 
     /**
@@ -77,7 +77,7 @@ class OrdersMapper extends AbstractMapper {
         $this->entity = wc_get_order( $orderId );
         $trackmage_order_id = get_post_meta( $orderId, '_trackmage_order_id', true );
 
-        $this->canHandle();
+        $this->validateData();
 
         if($trackMageId !== $trackmage_order_id)
             throw new EndpointException('Unable to handle order because TrackMageId is different');
@@ -98,12 +98,12 @@ class OrdersMapper extends AbstractMapper {
         }
     }
 
-    protected function canHandle() {
+    protected function validateData() {
         // check if workspace is correct
         if(!isset($this->data['workspace']) || "/workspaces/".$this->workspace !== $this->data['workspace'])
             throw new InvalidArgumentException('Unable to handle because workspace is not correct');
 
-        return parent::canHandle();
+        return parent::validateData();
     }
 
     /**
