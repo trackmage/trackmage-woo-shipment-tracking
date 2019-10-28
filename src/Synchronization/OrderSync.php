@@ -75,7 +75,7 @@ class OrderSync implements EntitySyncInterface
                             'orderNumber' => $order->get_order_number(),
                             'shippingAddress' => $this->getShippingAddress($order),
                             'billingAddress' => $this->getBillingAddress($order),
-                            'orderStatus' => ['code' => $this->getTrackMageStatus($order)],
+                            'orderStatus' => $this->getTrackMageStatus($order),
                         ]
                     ]);
                     $result = json_decode( $response->getBody()->getContents(), true );
@@ -100,7 +100,7 @@ class OrderSync implements EntitySyncInterface
                     $guzzleClient->put("/orders/{$trackmage_order_id}", [
                         'query' => ['ignoreWebhookId' => $workspace],
                         'json' => [
-                            'orderStatus' => ['code' => $this->getTrackMageStatus($order)],
+                            'orderStatus' => $this->getTrackMageStatus($order),
                             'shippingAddress' => $this->getShippingAddress($order),
                             'billingAddress' => $this->getBillingAddress($order),
                         ]
@@ -244,13 +244,13 @@ class OrderSync implements EntitySyncInterface
     }
 
     /**
-     * @return string|null
+     * @return array|null
      */
     private function getTrackMageStatus(WC_Order $order)
     {
         $status = $order->get_status();
         $aliases = Helper::get_aliases();
         $usedAliases = get_option( 'trackmage_order_status_aliases', [] );
-        return isset($usedAliases['wc-'.$status])?$usedAliases['wc-'.$status]:$status;
+        return isset($usedAliases['wc-'.$status])?['code'=>$usedAliases['wc-'.$status], 'title' => $aliases[$usedAliases['wc-'.$status]]]:['code'=>$status,'title'=>ucfirst($status)];
     }
 }
