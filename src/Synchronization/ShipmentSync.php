@@ -63,17 +63,20 @@ class ShipmentSync implements EntitySyncInterface
         $client = Plugin::get_client();
         $guzzleClient = $client->getGuzzleClient();
 
+        $trackmage_order_id = get_post_meta( $orderId, '_trackmage_order_id', true );
 
         try {
             if (empty($trackmage_id)) {
                 try {
                     $response = $guzzleClient->post('/shipments', [
+                        'query' => ['ignoreWebhookId' => $workspace],
                         'json' => [
                             'workspace' => '/workspaces/' . $workspace,
                             'trackingNumber' => $shipment['tracking_number'],
-                            'carrier' => $shipment['carrier'],
+                            'originCarrier' => $shipment['carrier'] === 'auto' ? null : $shipment['carrier'],
                             'externalSyncId' => (string)$shipmentId,
                             'externalSource' => $this->source,
+                            'orders' => ['/orders/'.$trackmage_order_id],
                         ]
                     ]);
                     $result = json_decode( $response->getBody()->getContents(), true );
@@ -93,8 +96,10 @@ class ShipmentSync implements EntitySyncInterface
             } else {
                 try {
                     $guzzleClient->put('/shipments/'.$trackmage_id, [
+                        'query' => ['ignoreWebhookId' => $workspace],
                         'json' => [
                             'trackingNumber' => $shipment['tracking_number'],
+                            'orders' => ['/orders/'.$trackmage_order_id],
                         ]
                     ]);
                 } catch (ClientException $e) {
@@ -164,8 +169,10 @@ class ShipmentSync implements EntitySyncInterface
         if (empty($trackmage_id)) {
             return;
         }
+        $workspace = get_option('trackmage_workspace');
+
         try {
-            $guzzleClient->delete('/shipments/'.$trackmage_id);
+            $guzzleClient->delete('/shipments/'.$trackmage_id, ['query' => ['ignoreWebhookId' => $workspace]]);
         } catch ( ClientException $e ) {
             throw new SynchronizationException('Unable to delete shipment: '.$e->getMessage(), $e->getCode(), $e);
         } catch ( \Throwable $e ) {

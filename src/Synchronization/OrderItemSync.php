@@ -84,6 +84,8 @@ class OrderItemSync implements EntitySyncInterface
             throw new SynchronizationException('Unable to sync order item because order is not yet synced');
         }
 
+        $workspace = get_option( 'trackmage_workspace' );
+
         $client = Plugin::get_client();
         $guzzleClient = $client->getGuzzleClient();
 
@@ -93,6 +95,7 @@ class OrderItemSync implements EntitySyncInterface
             if (empty($trackmage_order_item_id)) {
                 try {
                     $response = $guzzleClient->post('/order_items', [
+                        'query' => ['ignoreWebhookId' => $workspace],
                         'json' => [
                             'order' => '/orders/' . $trackmage_order_id,
                             'productName' => $item['name'],
@@ -123,6 +126,7 @@ class OrderItemSync implements EntitySyncInterface
             } else {
                 try {
                     $guzzleClient->put('/order_items/'.$trackmage_order_item_id, [
+                        'query' => ['ignoreWebhookId' => $workspace],
                         'json' => [
                             'productName' => $item['name'],
                             'qty' => $item['quantity'],
@@ -193,8 +197,10 @@ class OrderItemSync implements EntitySyncInterface
         if (empty($trackmage_order_item_id)) {
             return;
         }
+        $workspace = get_option( 'trackmage_workspace' );
+
         try {
-            $guzzleClient->delete('/order_items/'.$trackmage_order_item_id);
+            $guzzleClient->delete('/order_items/'.$trackmage_order_item_id, ['query' => ['ignoreWebhookId' => $workspace]]);
         } catch ( ClientException $e ) {
             throw new SynchronizationException('Unable to delete order item: '.$e->getMessage(), $e->getCode(), $e);
         } catch ( \Throwable $e ) {
