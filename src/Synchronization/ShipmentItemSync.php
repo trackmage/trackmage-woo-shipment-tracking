@@ -85,6 +85,7 @@ class ShipmentItemSync implements EntitySyncInterface
             if (empty($trackmage_id)) {
                 try {
                     $response = $guzzleClient->post('/shipment_items', [
+                        'query' => ['ignoreWebhookId' => $workspace],
                         'json' => [
                             'shipment' => '/shipments/' . $trackmageShipmentId,
                             'orderItem' => '/order_items/'.$trackmageOrderItemId,
@@ -110,6 +111,7 @@ class ShipmentItemSync implements EntitySyncInterface
             } else {
                 try {
                     $guzzleClient->put('/shipment_items/'.$trackmage_id, [
+                        'query' => ['ignoreWebhookId' => $workspace],
                         'json' => [
                             'orderItem' => '/order_items/'.$trackmageOrderItemId,
                             'qty' => (int)$shipmentItem['qty'],
@@ -183,8 +185,10 @@ class ShipmentItemSync implements EntitySyncInterface
         if (empty($trackmage_id)) {
             return;
         }
+        $workspace = get_option('trackmage_workspace');
+
         try {
-            $guzzleClient->delete('/shipment_items/'.$trackmage_id);
+            $guzzleClient->delete('/shipment_items/'.$trackmage_id, ['query' => ['ignoreWebhookId' => $workspace]]);
         } catch ( ClientException $e ) {
             throw new SynchronizationException('Unable to delete shipmentItem: '.$e->getMessage(), $e->getCode(), $e);
         } catch ( \Throwable $e ) {

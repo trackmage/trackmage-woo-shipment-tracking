@@ -85,7 +85,7 @@ class OrderSyncTest extends WPTestCase {
         //THEN
         //check this order is sent to TM
         $this->assertMethodsWereCalled($requests, [
-            ['POST', '/orders'],
+            ['POST', '/orders', ['ignoreWebhookId' => self::TM_WS_ID]],
         ]);
 
         $this->assertSubmittedJsonIncludes([
@@ -143,7 +143,7 @@ class OrderSyncTest extends WPTestCase {
         //THEN
         // make sure it updates the linked order in TM
         $this->assertMethodsWereCalled($requests, [
-            ['PUT', '/orders/'.self::TM_ORDER_ID],
+            ['PUT', '/orders/'.self::TM_ORDER_ID, ['ignoreWebhookId' => self::TM_WS_ID]],
         ]);
         $this->assertSubmittedJsonIncludes([
             'orderStatus' => ['code' => 'pending'],
@@ -293,6 +293,8 @@ class OrderSyncTest extends WPTestCase {
     public function testAlreadySyncedOrderSendsDelete()
     {
         //GIVEN
+        add_option('trackmage_workspace', self::TM_WS_ID);
+
         $requests = [];
         $guzzleClient = $this->createClient([
             $this->createJsonResponse(204),
@@ -309,7 +311,7 @@ class OrderSyncTest extends WPTestCase {
 
         //THEN
         $this->assertMethodsWereCalled($requests, [
-            ['DELETE', '/orders/'.self::TM_ORDER_ID],
+            ['DELETE', '/orders/'.self::TM_ORDER_ID, ['ignoreWebhookId' => self::TM_WS_ID]],
         ]);
         self::assertSame('', get_post_meta( $wcId, '_trackmage_order_id', true ));
     }
