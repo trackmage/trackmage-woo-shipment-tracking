@@ -94,7 +94,7 @@ class OrderSyncTest extends WPTestCase {
             'externalSyncId' => (string) $wcId,
             'externalSource' => self::SOURCE,
             'orderNumber' => $wcOrder->get_order_number(),
-            'orderStatus' => ['code' => 'completed'],
+            'orderStatus' => ['code' => 'completed', 'title' => 'Completed'],
             'shippingAddress' => self::TEST_ADDRESS,
             'billingAddress' => self::TEST_ADDRESS,
         ], $requests[0]['request']);
@@ -169,7 +169,7 @@ class OrderSyncTest extends WPTestCase {
 
         // pre-create order in TM
         /** @var WC_Order $wcOrder */
-        $wcOrder = wc_create_order(['status' => 'completed']);
+        $wcOrder = wc_create_order(['status' => 'completed', 'title' => 'Completed']);
         $wcId = $wcOrder->get_id();
         add_post_meta( $wcId, '_trackmage_order_id', self::TM_ORDER_ID, true );
 
