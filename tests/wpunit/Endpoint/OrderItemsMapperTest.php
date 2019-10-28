@@ -88,11 +88,7 @@ class OrderItemsMapperTest extends WPTestCase
                 "id" => self::TM_ORDER_ITEM_ID,
             ],
             "event" => "update",
-            "updatedFields" => [
-                0 => "qty",
-                1 => "price",
-                2 => "rowTotal"
-            ]
+            "updatedFields" => ["qty", "price", "rowTotal"]
         ];
 
         //WHEN everything is OK
@@ -130,11 +126,7 @@ class OrderItemsMapperTest extends WPTestCase
                 "id" => self::TM_ORDER_ITEM_ID,
             ],
             "event" => "update",
-            "updatedFields" => [
-                0 => "qty",
-                1 => "price",
-                2 => "rowTotal"
-            ]
+            "updatedFields" => ["qty", "price", "rowTotal"]
         ];
 
         //WHEN external source is wrong
@@ -168,11 +160,7 @@ class OrderItemsMapperTest extends WPTestCase
                 "id" => self::TM_ORDER_ITEM_ID,
             ],
             "event" => "update",
-            "updatedFields" => [
-                0 => "qty",
-                1 => "price",
-                2 => "rowTotal"
-            ]
+            "updatedFields" => ["qty", "price", "rowTotal"]
         ];
 
         //WHEN unknown shipment item
@@ -206,11 +194,7 @@ class OrderItemsMapperTest extends WPTestCase
                 "id" => self::TM_ORDER_ITEM_ID,
             ],
             "event" => "update",
-            "updatedFields" => [
-                0 => "qty",
-                1 => "price",
-                2 => "rowTotal"
-            ]
+            "updatedFields" => ["qty", "price", "rowTotal"]
         ];
         //WHEN wrong order
         $wrongItem = $item;

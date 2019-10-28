@@ -76,12 +76,7 @@ class ShipmentsMapperTest extends WPTestCase
                     'externalSyncId'         => $wcShipmentId
                 ],
             'event'         => 'update',
-            'updatedFields' =>
-                [
-                    0 => 'status',
-                    1 => 'originCarrier',
-                    2 => 'trackingNumber'
-                ],
+            'updatedFields' => [ 'status', 'originCarrier', 'trackingNumber' ]
         ];
 
         //WHEN everything is OK
@@ -99,7 +94,7 @@ class ShipmentsMapperTest extends WPTestCase
         self::assertEquals(count($differences),0);
     }
 
-    public function testShipmentCanBeHandledBecauseWorkspaceIsWrong() {
+    public function testShipmentCanNotBeHandledBecauseWorkspaceIsWrong() {
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Unable to handle because workspace is not correct');
@@ -131,11 +126,7 @@ class ShipmentsMapperTest extends WPTestCase
                     'externalSyncId'         => $wcShipmentId
                 ],
             'event'         => 'update',
-            'updatedFields' =>
-                [
-                    0 => 'status',
-                    1 => 'originCarrier'
-                ],
+            'updatedFields' => ['status', 'originCarrier' ]
         ];
 
         //WHEN workspace is wrong
@@ -145,7 +136,7 @@ class ShipmentsMapperTest extends WPTestCase
 
     }
 
-    public function testShipmentCanBeHandledBecauseExternalSourceIsWrong() {
+    public function testShipmentCanNotBeHandledBecauseExternalSourceIsWrong() {
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Unable to handle because external source does not match');
@@ -177,11 +168,7 @@ class ShipmentsMapperTest extends WPTestCase
                     'externalSyncId'         => $wcShipmentId
                 ],
             'event'         => 'update',
-            'updatedFields' =>
-                [
-                    0 => 'status',
-                    1 => 'originCarrier'
-                ],
+            'updatedFields' => [ 'status', 'originCarrier' ],
         ];
 
         //WHEN external source is wrong
@@ -191,7 +178,7 @@ class ShipmentsMapperTest extends WPTestCase
 
     }
 
-    public function testShipmentCanBeHandledBecauseUnknownShipment() {
+    public function testShipmentCanNotBeHandledBecauseUnknownShipment() {
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Unable to handle because entity was not found');
@@ -223,11 +210,7 @@ class ShipmentsMapperTest extends WPTestCase
                     'externalSyncId'         => $wcShipmentId
                 ],
             'event'         => 'update',
-            'updatedFields' =>
-                [
-                    0 => 'status',
-                    1 => 'originCarrier'
-                ],
+            'updatedFields' => [ 'status', 'originCarrier' ]
         ];
 
         //WHEN unknown shipment

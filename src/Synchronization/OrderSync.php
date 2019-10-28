@@ -251,6 +251,10 @@ class OrderSync implements EntitySyncInterface
         $status = $order->get_status();
         $aliases = Helper::get_aliases();
         $usedAliases = get_option( 'trackmage_order_status_aliases', [] );
-        return isset($usedAliases['wc-'.$status])?['code'=>$usedAliases['wc-'.$status], 'title' => $aliases[$usedAliases['wc-'.$status]]]:['code'=>$status,'title'=>ucfirst($status)];
+        $wcstatus = 'wc-'.$status;
+        if (isset($usedAliases[$wcstatus])) {
+            return ['code' => $usedAliases[$wcstatus], 'title' => $aliases[$usedAliases[$wcstatus]]];
+        }
+        return ['code' => $status,'title' => ucfirst($status)];
     }
 }

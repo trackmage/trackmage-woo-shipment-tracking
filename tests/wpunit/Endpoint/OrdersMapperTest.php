@@ -137,27 +137,27 @@ class OrdersMapperTest extends WPTestCase
             ],
             "event" => "update",
             "updatedFields" => [
-                0 => "shippingAddress.addressLine1",
-                1 => "shippingAddress.addressLine2",
-                2 => "shippingAddress.city",
-                3 => "shippingAddress.company",
-                4 => "shippingAddress.country",
-                5 => "shippingAddress.countryIso2",
-                6 => "shippingAddress.firstName",
-                7 => "shippingAddress.lastName",
-                8 => "shippingAddress.postcode",
-                9 => "shippingAddress.state",
-                10 => "billingAddress.addressLine1",
-                11 => "billingAddress.addressLine2",
-                12 => "billingAddress.city",
-                13 => "billingAddress.company",
-                14 => "billingAddress.country",
-                15 => "billingAddress.countryIso2",
-                16 => "billingAddress.firstName",
-                17 => "billingAddress.lastName",
-                18 => "billingAddress.postcode",
-                19 => "billingAddress.state",
-                20 => "orderStatus"
+                "shippingAddress.addressLine1",
+                "shippingAddress.addressLine2",
+                "shippingAddress.city",
+                "shippingAddress.company",
+                "shippingAddress.country",
+                "shippingAddress.countryIso2",
+                "shippingAddress.firstName",
+                "shippingAddress.lastName",
+                "shippingAddress.postcode",
+                "shippingAddress.state",
+                "billingAddress.addressLine1",
+                "billingAddress.addressLine2",
+                "billingAddress.city",
+                "billingAddress.company",
+                "billingAddress.country",
+                "billingAddress.countryIso2",
+                "billingAddress.firstName",
+                "billingAddress.lastName",
+                "billingAddress.postcode",
+                "billingAddress.state",
+                "orderStatus"
             ]
         ];
 
@@ -210,9 +210,7 @@ class OrdersMapperTest extends WPTestCase
                 "id" => self::TM_ORDER_ID
             ],
             "event" => "update",
-            "updatedFields" => [
-                0 => "orderStatus"
-            ]
+            "updatedFields" => ["orderStatus"]
         ];
 
         //WHEN workspace is wrong
@@ -252,9 +250,7 @@ class OrdersMapperTest extends WPTestCase
                 "id" => self::TM_ORDER_ID
             ],
             "event" => "update",
-            "updatedFields" => [
-                0 => "orderStatus"
-            ]
+            "updatedFields" => [ "orderStatus" ]
         ];
 
         //WHEN external source is wrong
@@ -294,9 +290,7 @@ class OrdersMapperTest extends WPTestCase
                 "id" => self::TM_ORDER_ID
             ],
             "event" => "update",
-            "updatedFields" => [
-                0 => "orderStatus"
-            ]
+            "updatedFields" => [ "orderStatus" ]
         ];
 
         //WHEN unknown shipment

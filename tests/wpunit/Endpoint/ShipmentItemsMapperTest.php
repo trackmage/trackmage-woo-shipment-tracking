@@ -113,10 +113,7 @@ class ShipmentItemsMapperTest extends WPTestCase
                 "workspace" => "/workspaces/".self::TM_WS_ID
             ],
             "event" => "update",
-            "updatedFields" => [
-                0 => "qty",
-                1 => "orderItem"
-            ]
+            "updatedFields" => [ "qty", "orderItem" ]
         ];
 
         $dataBefore = [
@@ -176,9 +173,7 @@ class ShipmentItemsMapperTest extends WPTestCase
                 "workspace" => "/workspaces/".self::TM_WS_ID
             ],
             "event" => "update",
-            "updatedFields" => [
-                0 => "qty"
-            ]
+            "updatedFields" => [ "qty" ]
         ];
 
         //WHEN external source is wrong
@@ -226,9 +221,7 @@ class ShipmentItemsMapperTest extends WPTestCase
                 "workspace" => "/workspaces/".self::TM_WS_ID
             ],
             "event" => "update",
-            "updatedFields" => [
-                0 => "qty"
-            ]
+            "updatedFields" => [ "qty" ]
         ];
 
         //WHEN unknown shipment item
@@ -277,10 +270,7 @@ class ShipmentItemsMapperTest extends WPTestCase
                 "id" => self::TM_SHIPMENT_ITEM_ID
             ],
             "event" => "update",
-            "updatedFields" => [
-                0 => "qty",
-                1 => "orderItem"
-            ]
+            "updatedFields" => [ "qty", "orderItem" ]
         ];
         //WHEN wrong order item
         $wrongItem = $item;

@@ -148,7 +148,7 @@ class OrderSyncTest extends WPTestCase {
             ['PUT', '/orders/'.self::TM_ORDER_ID, ['ignoreWebhookId' => self::TM_WS_ID]],
         ]);
         $this->assertSubmittedJsonIncludes([
-            'orderStatus' => ['code' => 'pending'],
+            'orderStatus' => ['code' => 'pending', 'title' => 'Pending'],
             'shippingAddress' => self::TEST_ADDRESS,
             'billingAddress' => self::TEST_ADDRESS,
         ], $requests[0]['request']);
