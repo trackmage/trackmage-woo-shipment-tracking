@@ -66,8 +66,10 @@ class OrdersMapperTest extends WPTestCase
 
 
     public function testOrderIsFullyUpdated() {
-        //GIVEN
+        add_option('trackmage_workspace', self::TM_WS_ID);
         update_option('trackmage_order_status_aliases', ['wc-completed' => 'completed', 'wc-pending' => 'pending']);
+        //GIVEN
+
         //programmatically create an order in WC
         $wcOrder = wc_create_order(['status' => self::STATUS]);
         $wcOrder->set_shipping_address_1(self::ADDRESS['addressLine1']);
@@ -184,6 +186,7 @@ class OrdersMapperTest extends WPTestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Unable to handle because workspace is not correct');
 
+        add_option('trackmage_workspace', self::TM_WS_ID);
         update_option('trackmage_order_status_aliases', ['wc-completed' => 'completed', 'wc-pending' => 'pending']);
         //programmatically create an order in WC
         $wcOrder = wc_create_order(['status' => self::STATUS]);
@@ -225,6 +228,7 @@ class OrdersMapperTest extends WPTestCase
         $this->expectExceptionMessage('Unable to handle because external source does not match');
 
         //GIVEN
+        add_option('trackmage_workspace', self::TM_WS_ID);
         update_option('trackmage_order_status_aliases', ['wc-completed' => 'completed', 'wc-pending' => 'pending']);
         //programmatically create an order in WC
         $wcOrder = wc_create_order(['status' => self::STATUS]);
@@ -266,6 +270,7 @@ class OrdersMapperTest extends WPTestCase
         $this->expectExceptionMessage('Unable to handle because entity was not found');
 
         //GIVEN
+        add_option('trackmage_workspace', self::TM_WS_ID);
         update_option('trackmage_order_status_aliases', ['wc-completed' => 'completed', 'wc-pending' => 'pending']);
         //programmatically create an order in WC
         $wcOrder = wc_create_order(['status' => self::STATUS]);
