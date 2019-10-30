@@ -30,7 +30,7 @@ class Admin {
         add_action('admin_menu', [$this, 'add_page']);
         add_action('admin_init', [$this, 'settings']);
         add_action('wp_ajax_trackmage_test_credentials', [$this, 'test_credentials']);
-        add_filter('pre_update_option_trackmage_workspace', [$this, 'select_workspace'], 10, 3);
+        add_action('update_option_trackmage_workspace', [$this, 'select_workspace'], 10, 3);
     }
 
     /**
@@ -139,7 +139,7 @@ class Admin {
      *
      * @since 0.1.0
      */
-    public function select_workspace($value, $old_value, $option) {
+    public function select_workspace($old_value, $value) {
         // Exit if value has not changed.
         if ($value === $old_value) {
             return $old_value;
@@ -173,6 +173,7 @@ class Admin {
         $workflow = [
             'type' => 'webhook',
             'period' => 'immediately',
+            'event' => 'update',
             'title' => get_bloginfo('name'),
             'workspace' => '/workspaces/' . $value,
             'url' => $url,

@@ -18,7 +18,6 @@ $statuses = Helper::getOrderStatuses();
 
 // Get the aliases.
 $aliases = Helper::get_aliases();
-
 $used_aliases = [];
 ?>
 <div class="wrap trackmage">
