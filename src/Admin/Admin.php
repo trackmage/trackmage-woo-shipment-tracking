@@ -10,6 +10,7 @@
 
 namespace TrackMage\WordPress\Admin;
 
+use GuzzleHttp\Exception\ClientException;
 use TrackMage\WordPress\Plugin;
 use TrackMage\WordPress\Helper;
 use TrackMage\Client\Swagger\ApiException;
@@ -187,8 +188,9 @@ class Admin {
             $response = $client->getGuzzleClient()->post('/workflows', ['json' => $workflow]);
             $contents = $response->getBody()->getContents();
             $data = json_decode($contents, true);
+        } catch( ClientException $e ) {
+            return $old_value;
         } catch (ApiException $e) {
-            // Trigger error message and exit.
             return $old_value;
         }
 
