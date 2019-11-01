@@ -18,15 +18,22 @@ $client_id     = get_option( 'trackmage_client_id', '' );
 $client_secret = get_option( 'trackmage_client_secret', '' );
 $workspace     = get_option( 'trackmage_workspace', 0 );
 
+$isInSync      = get_option( 'trackmage_trigger_sync', 0);
+
 $workspaces = Helper::get_workspaces();
 $credentials = Helper::check_credentials();
 $statuses = Helper::getOrderStatuses();
-$sync_statuses = get_option( 'trackmage_sync_statuses', [] );
+$sync_statuses = (array) get_option( 'trackmage_sync_statuses', [] );
 ?>
 
-<div class="intro">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu.</div>
 
-<form method="post" action="options.php">
+<div class="intro">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu.</div>
+<?php if($isInSync): ?>
+    <div class="notice-large notice-warning">
+        <span class="spinner is-active"></span> <span>Synchronisation process is in progress. Please wait.</span>
+    </div>
+<?php endif;?>
+<form method="post" action="options.php" id="general-settings-form">
     <?php settings_fields( 'trackmage_general' ); ?>
     <!-- Section: Credentials -->
     <div class="section">
@@ -99,5 +106,16 @@ $sync_statuses = get_option( 'trackmage_sync_statuses', [] );
     </div>
     <!-- End Section: Sync With TrackMage -->
 
-    <p class="actions"><?php submit_button( 'Save Changes', 'primary', 'submit', false ); ?></p>
+    <input type="hidden" name="trackmage_trigger_sync" value="0" id="trigger-sync">
+
+    <input type="hidden" name="agree_change_workspace" value="0" id="agree-change-workspace">
+    <input type="hidden" name="delete_data" value="0" id="delete-data">
+
+    <p class="actions" >
+        <?php //submit_button( 'Save Changes', 'primary', 'submit', false, ['disabled'=>'disabled'] ); ?>
+        <button class="button button-primary disabled" id="btn-save-form" disabled="disabled" type="submit" title="<?php _e('Save Changes', 'trackmage');?>"><?php _e('Save Changes', 'trackmage');?></button>
+        <button class="button button-secondary <?php echo empty($workspace)?'disabled':''?>" type="button" id="btn-trigger-sync" title="<?php _e('Trigger Sync', 'trackmage');?>"><?php _e('Trigger Sync', 'trackmage');?></button>
+    </p>
 </form>
+<?php include( TRACKMAGE_VIEWS_DIR . "modals/admin-page-settings-general-trigger-sync.php" ); ?>
+<?php include( TRACKMAGE_VIEWS_DIR . "modals/admin-page-settings-general-change-workspace.php" ); ?>

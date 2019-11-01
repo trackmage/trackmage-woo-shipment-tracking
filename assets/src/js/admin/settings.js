@@ -4,6 +4,63 @@
     settings: trackmageAdminSettings
   };
 
+  let somethingChanged = false;
+
+  let confirmDialog = function(container, okBtnCallback = null, dialogTitle = 'Confirm Changes', okBtnTitle = 'OK'){
+      let defer = $.Deferred();
+      let buttons = {};
+      buttons[okBtnTitle] = function() {
+        let canClose = (okBtnCallback !== null)? okBtnCallback() : true;
+        if(canClose){
+          defer.resolve("yes");
+          $(this).attr('yesno', true);
+          $(this).dialog("close");
+        }
+      };
+      buttons["Cancel"] = function() {
+        $(this).dialog('close');
+      };
+      $(container).dialog({
+        title: dialogTitle,
+        dialogClass: 'wp-dialog',
+        autoOpen: true,
+        draggable: false,
+        width: $(window).width() > 600 ? 600 : $(window).width(),
+        height: 'auto',
+        modal: true,
+        resizable: false,
+        closeOnEscape: true,
+        position: {
+          my: "center",
+          at: "center",
+          of: window
+        },
+        buttons: buttons,
+        open: function () {
+          $('.ui-widget-overlay').bind('click', function () {
+            $(container).dialog('close');
+          })
+        },
+        create: function () {
+          $('.ui-dialog-titlebar-close').addClass('ui-button');
+        },
+        close: function () {
+          if ($(this).attr('yesno') === undefined) {
+            defer.resolve("no");
+          }
+          $(this).dialog('destroy');
+        },
+      });
+      return defer.promise();
+  };
+
+  $(document).ready(function() {
+    $('#general-settings-form input,  #general-settings-form select').on('change',function() {
+      somethingChanged = true;
+      $('#btn-save-form').removeClass('disabled').removeAttr('disabled');
+    });
+  });
+
   // Test credentials.
   $("#trackmage-settings-general #testCredentials").on("click", function (e) {
     let testCredentials = $(this);
@@ -32,7 +89,6 @@
         trackmageToggleFormElement(testCredentials, "disable");
       },
       success: function (response) {
-        console.log(response);
         trackmageToggleSpinner(testCredentials, "deactivate");
         trackmageToggleFormElement(testCredentials, "enable");
 
@@ -150,4 +206,59 @@
       }
     }
   });
+
+  /**
+   * On form submit
+   */
+  $("form#general-settings-form").on('submit', function(e){
+
+    let canSubmit = $(this).attr('cansubmit');
+    if(canSubmit === 'true')
+      return true;
+    let form = $(this);
+    let workspace = $("#trackmage_workspace").val();
+    let sync_statuses = $('#trackmage_sync_statuses').val();
+    let differences = sync_statuses.filter(value => -1 === params.settings.sync_statuses.indexOf(value));
+    if(params.settings.workspace !== "0" && params.settings.workspace != workspace){ // check if workspace is changed
+      confirmDialog(
+        '#change-workspace-dialog',
+        function(){
+                      if(!$('#agree_to_change_cb').is(':checked')) {
+                        $('#agree_to_change_cb').parent().addClass('error').find('p.description').show();
+                        return false;
+                      }
+                      return true;
+                    },
+        'Confirm Workspace Change',
+        'Apply')
+        .then(function(yesno) {
+          if(yesno === 'yes' ){
+            form.attr('cansubmit',true).submit();
+          } else {
+            form.attr('cansubmit',false);
+          }
+        });
+      return false;
+    }else if(params.settings.workspace === "0" && workspace !== 0 || differences.length > 0 && params.settings.workspace !== "0"){ // check if workspace is set first time || sync statuses were changed and workspace is set
+      confirmDialog(
+        '#trigger-sync-dialog',
+        function(){
+          return true;
+        },
+        'Settings Save Confirmation',
+        'Yes'
+      ).then(function(yesno) {
+        $('#trigger-sync').val((yesno === 'yes')?1:0);
+        form.attr('cansubmit',true).submit();
+      });
+      return false;
+    }
+    return true;
+  });
+
+  $('#change-workspace-dialog input[type=checkbox]').on('change', function(){
+    let target = $(this).attr('rel');
+    $(target).val($(this).is(':checked')?1:0);
+  });
+
 })(jQuery, window, document);

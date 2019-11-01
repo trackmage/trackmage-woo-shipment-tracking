@@ -79,6 +79,8 @@ class Admin {
         register_setting('trackmage_general', 'trackmage_client_secret');
         register_setting('trackmage_general', 'trackmage_workspace');
 
+        register_setting('trackmage_general', 'trackmage_trigger_sync');
+
         // Statuses settings.
         register_setting('trackmage_general', 'trackmage_sync_statuses');
     }
