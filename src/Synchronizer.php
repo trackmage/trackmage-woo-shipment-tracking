@@ -116,7 +116,7 @@ class Synchronizer
     }
 
     public function syncOrder($orderId ) {
-        if ($this->disableEvents) {
+        if ($this->disableEvents || Helper::isBulkSynchronizationInProcess()) {
             return;
         }
         try {
@@ -141,7 +141,7 @@ class Synchronizer
 
     public function deleteOrder($orderId)
     {
-        if ($this->disableEvents) {
+        if ($this->disableEvents || Helper::isBulkSynchronizationInProcess()) {
             return;
         }
         $order = wc_get_order( $orderId );
@@ -166,7 +166,7 @@ class Synchronizer
 
     public function syncOrderItem($itemId )
     {
-        if ($this->disableEvents) {
+        if ( $this->disableEvents || Helper::isBulkSynchronizationInProcess()) {
             return;
         }
         try {
@@ -186,7 +186,7 @@ class Synchronizer
 
     public function deleteOrderItem($itemId)
     {
-        if ($this->disableEvents) {
+        if ($this->disableEvents || Helper::isBulkSynchronizationInProcess()) {
             return;
         }
         try {
@@ -206,7 +206,7 @@ class Synchronizer
 
     public function syncShipment($shipment_id)
     {
-        if ($this->disableEvents) {
+        if ($this->disableEvents || Helper::isBulkSynchronizationInProcess()) {
             return;
         }
         try {
@@ -222,7 +222,7 @@ class Synchronizer
 
     public function deleteShipment($shipment_id)
     {
-        if ($this->disableEvents) {
+        if ($this->disableEvents || Helper::isBulkSynchronizationInProcess()) {
             return;
         }
         try {
@@ -238,7 +238,7 @@ class Synchronizer
 
     public function syncShipmentItem($shipment_item_id)
     {
-        if ($this->disableEvents) {
+        if ($this->disableEvents || Helper::isBulkSynchronizationInProcess()) {
             return;
         }
         try {
@@ -254,7 +254,7 @@ class Synchronizer
 
     public function deleteShipmentItem($shipment_item_id)
     {
-        if ($this->disableEvents) {
+        if ($this->disableEvents || Helper::isBulkSynchronizationInProcess()) {
             return;
         }
         try {
