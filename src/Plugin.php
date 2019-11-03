@@ -20,6 +20,7 @@ use TrackMage\WordPress\Repository\EntityRepositoryInterface;
 use TrackMage\WordPress\Repository\LogRepository;
 use TrackMage\WordPress\Repository\ShipmentItemRepository;
 use TrackMage\WordPress\Repository\ShipmentRepository;
+use TrackMage\WordPress\Repository\BackgroundTaskRepository;
 use TrackMage\WordPress\Synchronization\OrderItemSync;
 use TrackMage\WordPress\Synchronization\OrderSync;
 use TrackMage\WordPress\Synchronization\ShipmentItemSync;
@@ -42,6 +43,9 @@ class Plugin {
 
     /** @var LogRepository|null */
     private $logRepo;
+
+    /** @var BackgroundTaskRepository|null */
+    private $backgroundTaskRepo;
 
     /** @var Logger|null */
     private $logger;
@@ -140,7 +144,7 @@ class Plugin {
     {
         if ($this->synchronizer === null) {
             $this->synchronizer = new Synchronizer($this->getLogger(), $this->getOrderSync(), $this->getOrderItemSync(),
-                $this->getShipmentSync(), $this->getShipmentItemSync(), $this->getShipmentRepo(), $this->getShipmentItemsRepo());
+                $this->getShipmentSync(), $this->getShipmentItemSync(), $this->getShipmentRepo(), $this->getShipmentItemsRepo(), $this->getBackgroundTaskRepo());
         }
 
         return $this->synchronizer;
@@ -216,6 +220,17 @@ class Plugin {
     }
 
     /**
+     * @return BackgroundTaskRepository
+     */
+    public function getBackgroundTaskRepo() {
+        if($this->backgroundTaskRepo === null) {
+            $dropOnDeactivate = $this->getConfigKey('dropOnDeactivate');
+            $this->backgroundTaskRepo = new BackgroundTaskRepository($this->wpdb, $dropOnDeactivate);
+        }
+        return $this->backgroundTaskRepo;
+    }
+
+    /**
      * @return Logger
      */
     public function getLogger() {
@@ -229,7 +244,7 @@ class Plugin {
      * @return EntityRepositoryInterface[]
      */
     public function getRepos() {
-        return [$this->getLogRepo(), $this->getShipmentRepo(), $this->getShipmentItemsRepo()];
+        return [$this->getLogRepo(), $this->getShipmentRepo(), $this->getShipmentItemsRepo(), $this->getBackgroundTaskRepo()];
     }
 
     /**
