@@ -28,7 +28,7 @@ $sync_statuses = (array) get_option( 'trackmage_sync_statuses', [] );
 
 
 <div class="intro">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu.</div>
-<?php if($isInSync): ?>
+<?php if($isInSync || true): ?>
     <div class="notice-large notice-warning">
         <span class="spinner is-active"></span> <span>Synchronisation process is in progress. Please wait.</span>
     </div>

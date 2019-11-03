@@ -8,6 +8,7 @@ use Throwable;
 use TrackMage\WordPress\Exception\RuntimeException;
 use TrackMage\WordPress\Repository\ShipmentItemRepository;
 use TrackMage\WordPress\Repository\ShipmentRepository;
+use TrackMage\WordPress\Repository\BackgroundTaskRepository;
 use TrackMage\WordPress\Synchronization\OrderItemSync;
 use TrackMage\WordPress\Synchronization\OrderSync;
 use TrackMage\WordPress\Synchronization\ShipmentItemSync;
@@ -26,12 +27,13 @@ class Synchronizer
     private $shipmentItemSync;
     private $shipmentRepository;
     private $shipmentItemRepository;
+    private $backgroundTaskRepository;
 
     private $logger;
 
     public function __construct(LoggerInterface $logger, OrderSync $orderSync, OrderItemSync $orderItemSync,
                                 ShipmentSync $shipmentSync, ShipmentItemSync $shipmentItemSync,
-                                ShipmentRepository $shipmentRepository, ShipmentItemRepository $shipmentItemRepository)
+                                ShipmentRepository $shipmentRepository, ShipmentItemRepository $shipmentItemRepository, BackgroundTaskRepository $backgroundTaskRepository)
     {
         $this->logger = $logger;
         $this->orderSync = $orderSync;
@@ -40,6 +42,7 @@ class Synchronizer
         $this->shipmentItemSync = $shipmentItemSync;
         $this->shipmentRepository = $shipmentRepository;
         $this->shipmentItemRepository = $shipmentItemRepository;
+        $this->backgroundTaskRepository = $backgroundTaskRepository;
         $this->bindEvents();
     }
 
@@ -86,6 +89,24 @@ class Synchronizer
         add_action( 'trackmage_new_shipment_item', [ $this, 'syncShipmentItem' ], 10, 1 );
         add_action( 'trackmage_update_shipment_item', [ $this, 'syncShipmentItem' ], 10, 1 );
         add_action( 'trackmage_delete_shipment_item', [ $this, 'deleteShipmentItem' ], 10, 1 );
+
+        add_action( 'trackmage_bulk_orders_sync', [$this, 'bulkOrdersSync'], 10, 1 );
+
+    }
+
+    public function bulkOrdersSync($orderIds = [], $taskId = null){
+        $sync_statuses = get_option('trackmage_sync_statuses');
+        try{
+            foreach ($orderIds as $orderId){
+                $this->syncOrder($orderId);
+            }
+
+        }catch (RuntimeException $e){
+            $this->logger->warning(self::TAG.'Unable to bulk sync orders', array_merge([
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], $this->grabGuzzleData($e)));
+        }
     }
 
     public function syncOrder($orderId ) {

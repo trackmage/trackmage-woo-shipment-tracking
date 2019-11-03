@@ -31,6 +31,8 @@ class Admin {
         add_action('admin_init', [$this, 'settings']);
         add_action('wp_ajax_trackmage_test_credentials', [$this, 'test_credentials']);
         add_filter('pre_update_option_trackmage_workspace', [$this, 'select_workspace'], 10, 3);
+
+        add_action('update_option_trackmage_trigger_sync', [$this, 'trigger_sync'], 10, 3);
     }
 
     /**
@@ -197,4 +199,30 @@ class Admin {
         update_option('trackmage_webhook', $data['id']);
         return $value;
     }
+
+    public function trigger_sync($value, $old_value, $option) {
+        // Exit if value has not changed.
+        if ($value === $old_value) {
+            return $old_value;
+        }
+
+        if($value === 1) {
+            $orderIds = [];
+            //$orders = wc_get_orders([]);
+            $allOrdersIds = get_posts( array(
+                'numberposts' => -1,
+                'fields'      => 'ids',
+                'post_type'   => wc_get_order_types(),
+                'post_status' => array_keys( wc_get_order_statuses() ),
+                'orderby' => 'date',
+                'order' => 'ASC'
+            ));
+
+            foreach(array_chunk($allOrdersIds, 100) as $ordersIds) {
+                wp_schedule_single_event( time() + 1, 'trackmage_bulk_orders_sync', [ $ordersIds ] );
+            }
+        }
+        return $value;
+    }
+
 }
