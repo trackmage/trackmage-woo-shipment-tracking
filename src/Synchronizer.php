@@ -90,17 +90,24 @@ class Synchronizer
         add_action( 'trackmage_update_shipment_item', [ $this, 'syncShipmentItem' ], 10, 1 );
         add_action( 'trackmage_delete_shipment_item', [ $this, 'deleteShipmentItem' ], 10, 1 );
 
-        add_action( 'trackmage_bulk_orders_sync', [$this, 'bulkOrdersSync'], 10, 1 );
+        add_action( 'trackmage_bulk_orders_sync', [$this, 'bulkOrdersSync'], 10, 2);
 
     }
 
     public function bulkOrdersSync($orderIds = [], $taskId = null){
-        $sync_statuses = get_option('trackmage_sync_statuses');
+        $this->logger->info(self::TAG.'Try to processing orders', ['orderIds'=>$orderIds,'taskId'=>$taskId]);
         try{
+            $this->logger->info(self::TAG.'Start to processing orders', ['orderIds'=>$orderIds,'taskId'=>$taskId]);
+            if($taskId !== null)
+                $this->backgroundTaskRepository->update(['status'=>'processing'],['id'=>$taskId]);
+
             foreach ($orderIds as $orderId){
                 $this->syncOrder($orderId);
             }
 
+            $this->logger->info(self::TAG.'Processing orders is completed', ['orderIds'=>$orderIds]);
+            if($taskId !== null)
+                $this->backgroundTaskRepository->update(['status'=>'processed'],['id'=>$taskId]);
         }catch (RuntimeException $e){
             $this->logger->warning(self::TAG.'Unable to bulk sync orders', array_merge([
                 'exception' => $e->getMessage(),

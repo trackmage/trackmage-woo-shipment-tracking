@@ -190,6 +190,14 @@ class Helper {
         return $shipment;
     }
 
+
+    public static function isBulkSynchronizationInProcess()
+    {
+        global $wpdb;
+        $activeTasks = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM ".($wpdb->prefix.'trackmage_background_task')." WHERE action = %s AND (status = %s OR status = %s)","trackmage_bulk_orders_sync", "processing", "new" ) , ARRAY_A );
+        return is_array($activeTasks) && count($activeTasks) > 0;
+    }
+
     /**
      * @param array $shipment
      * @return array

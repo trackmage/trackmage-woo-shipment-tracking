@@ -32,7 +32,7 @@ class Admin {
         add_action('wp_ajax_trackmage_test_credentials', [$this, 'test_credentials']);
         add_filter('pre_update_option_trackmage_workspace', [$this, 'select_workspace'], 10, 3);
 
-        add_action('update_option_trackmage_trigger_sync', [$this, 'trigger_sync'], 10, 3);
+        add_filter('pre_update_option_trackmage_trigger_sync', [$this, 'trigger_sync'], 10, 3);
     }
 
     /**
@@ -201,28 +201,29 @@ class Admin {
     }
 
     public function trigger_sync($value, $old_value, $option) {
-        // Exit if value has not changed.
-        if ($value === $old_value) {
-            return $old_value;
-        }
-
-        if($value === 1) {
-            $orderIds = [];
-            //$orders = wc_get_orders([]);
+        Plugin::instance()->getLogger()->info('Selected to trigger Sync',['value'=>$value]);
+        if($value == 1) {
             $allOrdersIds = get_posts( array(
                 'numberposts' => -1,
                 'fields'      => 'ids',
                 'post_type'   => wc_get_order_types(),
                 'post_status' => array_keys( wc_get_order_statuses() ),
                 'orderby' => 'date',
-                'order' => 'ASC'
+                'order' => 'ASC',
+                'post_parent' => 0
             ));
 
             foreach(array_chunk($allOrdersIds, 100) as $ordersIds) {
-                wp_schedule_single_event( time() + 1, 'trackmage_bulk_orders_sync', [ $ordersIds ] );
+                $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
+                $backgroundTask = $backgroundTaskRepo->insert([
+                    'action' => 'trackmage_bulk_orders_sync',
+                    'params' => $ordersIds,
+                    'status' => 'new'
+                ]);
+                wp_schedule_single_event( time() + 1, 'trackmage_bulk_orders_sync', [ $ordersIds , $backgroundTask['id'] ] );
             }
         }
-        return $value;
+        return 0;
     }
 
 }

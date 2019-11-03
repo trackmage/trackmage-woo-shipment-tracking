@@ -239,7 +239,7 @@
           }
         });
       return false;
-    }else if(params.settings.workspace === "0" && workspace !== 0 || differences.length > 0 && params.settings.workspace !== "0"){ // check if workspace is set first time || sync statuses were changed and workspace is set
+    }else if(params.settings.workspace == "0" && workspace != "0" || differences.length > 0 && params.settings.workspace != "0"){ // check if workspace is set first time || sync statuses were changed and workspace is set
       confirmDialog(
         '#trigger-sync-dialog',
         function(){
@@ -254,6 +254,26 @@
       return false;
     }
     return true;
+  });
+
+  $("button#btn-trigger-sync").on('click', function(e){
+    confirmDialog(
+      '#trigger-sync-dialog',
+      function(){
+        return true;
+      },
+      'Settings Save Confirmation',
+      'Yes'
+    ).then(function(yesno) {
+      if(yesno == 'yes'){
+        $('#trigger-sync').val("1");
+        console.log($('#trigger-sync').val());
+        $("form#general-settings-form").attr('cansubmit',true).submit();
+      }else{
+        return false;
+      }
+    });
+    return false;
   });
 
   $('#change-workspace-dialog input[type=checkbox]').on('change', function(){
