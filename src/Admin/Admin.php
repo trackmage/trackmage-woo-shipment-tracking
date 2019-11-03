@@ -201,7 +201,6 @@ class Admin {
     }
 
     public function trigger_sync($value, $old_value, $option) {
-        Plugin::instance()->getLogger()->info('Selected to trigger Sync',['value'=>$value]);
         if($value == 1) {
             $allOrdersIds = get_posts( array(
                 'numberposts' => -1,

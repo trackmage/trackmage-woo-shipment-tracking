@@ -95,7 +95,6 @@ class Synchronizer
     }
 
     public function bulkOrdersSync($orderIds = [], $taskId = null){
-        $this->logger->info(self::TAG.'Try to processing orders', ['orderIds'=>$orderIds,'taskId'=>$taskId]);
         try{
             $this->logger->info(self::TAG.'Start to processing orders', ['orderIds'=>$orderIds,'taskId'=>$taskId]);
             if($taskId !== null)
