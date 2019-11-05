@@ -35,8 +35,6 @@ class Admin {
 
         add_filter('pre_update_option_trackmage_trigger_sync', [$this, 'trigger_sync'], 10, 3);
         add_filter('pre_update_option_trackmage_delete_data', [$this, 'trigger_delete_data'], 10, 3);
-
-        add_action('update_option_trackmage_workspace', [$this, 'select_workspace'], 10, 3);
     }
 
     /**
@@ -148,7 +146,7 @@ class Admin {
      *
      * @since 0.1.0
      */
-    public function select_workspace($old_value, $value) {
+    public function select_workspace($value, $old_value, $option) {
         // Exit if value has not changed.
         if ($value === $old_value) {
             return $old_value;
