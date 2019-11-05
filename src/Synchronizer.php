@@ -91,6 +91,7 @@ class Synchronizer
         add_action( 'trackmage_delete_shipment_item', [ $this, 'deleteShipmentItem' ], 10, 1 );
 
         add_action( 'trackmage_bulk_orders_sync', [$this, 'bulkOrdersSync'], 10, 2);
+        add_action( 'trackmage_delete_data', [$this, 'deleteData'], 10, 2);
 
     }
 
@@ -107,6 +108,7 @@ class Synchronizer
             $this->logger->info(self::TAG.'Processing orders is completed', ['orderIds'=>$orderIds]);
             if($taskId !== null)
                 $this->backgroundTaskRepository->update(['status'=>'processed'],['id'=>$taskId]);
+            Helper::scheduleNextBackgroundTask();
         }catch (RuntimeException $e){
             $this->logger->warning(self::TAG.'Unable to bulk sync orders', array_merge([
                 'exception' => $e->getMessage(),
@@ -133,6 +135,28 @@ class Synchronizer
         } catch (RuntimeException $e) {
             $this->logger->warning(self::TAG.'Unable to sync remote order', array_merge([
                 'order_id' => $orderId,
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], $this->grabGuzzleData($e)));
+        }
+    }
+
+    public function deleteData($orderIds = [], $taskId = null){
+        try{
+            $this->logger->info(self::TAG.'Start to delete orders on TrackMage Workspace', ['orderIds'=>$orderIds,'taskId'=>$taskId]);
+            if($taskId !== null)
+                $this->backgroundTaskRepository->update(['status'=>'processing'],['id'=>$taskId]);
+
+            foreach ($orderIds as $orderId){
+                $this->deleteData($orderId);
+            }
+
+            $this->logger->info(self::TAG.'Orders deletion is completed', ['orderIds'=>$orderIds]);
+            if($taskId !== null)
+                $this->backgroundTaskRepository->update(['status'=>'processed'],['id'=>$taskId]);
+            Helper::scheduleNextBackgroundTask();
+        }catch (RuntimeException $e){
+            $this->logger->warning(self::TAG.'Unable to delete orders from TrackMage', array_merge([
                 'exception' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ], $this->grabGuzzleData($e)));

@@ -3,6 +3,7 @@
 namespace TrackMage\WordPress\Tests\wpunit\Repository;
 
 use Codeception\TestCase\WPTestCase;
+use TrackMage\WordPress\Helper;
 use TrackMage\WordPress\Repository\BackgroundTaskRepository;
 use WpunitTester;
 
@@ -27,6 +28,7 @@ class BackgroundTaskRepositoryTest extends WPTestCase
             'action' => 'test_action',
             'params' => '{}',
             'status' => 'status',
+            'priority' => 10
         ]);
         self::assertNotNull($row);
         $id = $row['id'];
@@ -38,7 +40,7 @@ class BackgroundTaskRepositoryTest extends WPTestCase
         $data = $this->repo->insert( $submitted = [
             'action' => 'new_action',
             'params' => '{orderIds:[]}',
-            'status' => 'active',
+            'status' => 'active'
         ]);
         $id = $data['id'];
         self::assertArraySubset($submitted, $this->repo->findOneBy(['action' => 'new_action','status' => 'active']));
@@ -59,4 +61,5 @@ class BackgroundTaskRepositoryTest extends WPTestCase
         self::assertEquals(1, $this->repo->delete([]));
         self::assertCount(0, $this->repo->findBy([]));
     }
+
 }

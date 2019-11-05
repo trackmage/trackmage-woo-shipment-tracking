@@ -18,6 +18,7 @@ class BackgroundTaskRepository extends AbstractRepository
                     `action` VARCHAR(100) NOT NULL,
                     `params` TEXT DEFAULT NULL,
                     `status` VARCHAR(100) NOT NULL,
+                    `priority` int(11) UNSIGNED DEFAULT 0,
                     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
                     PRIMARY KEY (id),
                     INDEX background_task_idx_created_at (created_at)

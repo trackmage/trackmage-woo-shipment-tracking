@@ -118,8 +118,8 @@ $isInSync = Helper::isBulkSynchronizationInProcess();
     <!-- End Section: Sync With TrackMage -->
 
     <input type="hidden" name="trackmage_trigger_sync" value="0" id="trigger-sync">
-    <input type="hidden" name="agree_change_workspace" required value="0" id="agree-change-workspace">
-    <input type="hidden" name="delete_data" value="0" id="delete-data">
+    <input type="hidden" name="agree_change_workspace" value="0" id="agree-change-workspace">
+    <input type="hidden" name="trackmage_delete_data" value="0" id="delete-data">
 
     <p class="actions" >
         <?php //submit_button( 'Save Changes', 'primary', 'submit', false, ['disabled'=>'disabled'] ); ?>

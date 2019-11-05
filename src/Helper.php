@@ -538,4 +538,22 @@ class Helper {
         }
         return $post_meta;
     }
+
+    /**
+     * Schedule next background task.
+     *
+     * @return int|bool
+     */
+    public static function scheduleNextBackgroundTask()
+    {
+        $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
+        $activeTask = $backgroundTaskRepo->findOneBy(['status'=>'processing']);
+        if(isset($activeTask['id']))
+            return false;
+        $nextTask = $backgroundTaskRepo->getQuery('SELECT * FROM _TBL_ WHERE status="new" ORDER BY priority, id LIMIT 1');
+        if(isset($nextTask[0]) && !isset($nextTask[0]->id))
+            return false;
+        $scheduled = wp_schedule_single_event( time(), $nextTask[0]->action, [ json_decode($nextTask[0]->params) , $nextTask[0]->id ] );
+        return $nextTask[0]->id;
+    }
 }

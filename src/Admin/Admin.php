@@ -33,6 +33,8 @@ class Admin {
         add_filter('pre_update_option_trackmage_workspace', [$this, 'select_workspace'], 10, 3);
 
         add_filter('pre_update_option_trackmage_trigger_sync', [$this, 'trigger_sync'], 10, 3);
+        add_filter('pre_update_option_trackmage_delete_data', [$this, 'trigger_delete_data'], 10, 3);
+
     }
 
     /**
@@ -82,6 +84,7 @@ class Admin {
         register_setting('trackmage_general', 'trackmage_workspace');
 
         register_setting('trackmage_general', 'trackmage_trigger_sync');
+        register_setting('trackmage_general', 'trackmage_delete_data');
 
         // Statuses settings.
         register_setting('trackmage_general', 'trackmage_sync_statuses');
@@ -200,6 +203,30 @@ class Admin {
         return $value;
     }
 
+    public function trigger_delete_data($value, $old_value, $option) {
+        if($value === 1) {
+            $allOrdersIds = get_posts( array(
+                'numberposts' => -1,
+                'fields'      => 'ids',
+                'post_type'   => wc_get_order_types(),
+                'post_status' => array_keys( wc_get_order_statuses() ),
+                'orderby' => 'date',
+                'order' => 'ASC',
+                'post_parent' => 0
+            ));
+            $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
+            foreach(array_chunk($allOrdersIds, 100) as $ordersIds) {
+                $backgroundTaskRepo->insert([
+                    'action' => 'trackmage_delete_data',
+                    'params' => $ordersIds,
+                    'status' => 'new'
+                ]);
+            }
+            Helper::scheduleNextBackgroundTask();
+        }
+        return 0;
+    }
+
     public function trigger_sync($value, $old_value, $option) {
         if($value == 1) {
             $allOrdersIds = get_posts( array(
@@ -212,17 +239,17 @@ class Admin {
                 'post_parent' => 0
             ));
 
+            $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
             foreach(array_chunk($allOrdersIds, 100) as $ordersIds) {
-                $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
                 $backgroundTask = $backgroundTaskRepo->insert([
                     'action' => 'trackmage_bulk_orders_sync',
-                    'params' => $ordersIds,
-                    'status' => 'new'
+                    'params' => json_encode($ordersIds),
+                    'status' => 'new',
+                    'priority' => 10
                 ]);
-                wp_schedule_single_event( time() + 1, 'trackmage_bulk_orders_sync', [ $ordersIds , $backgroundTask['id'] ] );
             }
+            Helper::scheduleNextBackgroundTask();
         }
         return 0;
     }
-
 }
