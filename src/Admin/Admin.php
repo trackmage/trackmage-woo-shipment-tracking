@@ -10,6 +10,7 @@
 
 namespace TrackMage\WordPress\Admin;
 
+use GuzzleHttp\Exception\ClientException;
 use TrackMage\WordPress\Plugin;
 use TrackMage\WordPress\Helper;
 use TrackMage\Client\Swagger\ApiException;
@@ -35,6 +36,7 @@ class Admin {
         add_filter('pre_update_option_trackmage_trigger_sync', [$this, 'trigger_sync'], 10, 3);
         add_filter('pre_update_option_trackmage_delete_data', [$this, 'trigger_delete_data'], 10, 3);
 
+        add_action('update_option_trackmage_workspace', [$this, 'select_workspace'], 10, 3);
     }
 
     /**
@@ -146,7 +148,7 @@ class Admin {
      *
      * @since 0.1.0
      */
-    public function select_workspace($value, $old_value, $option) {
+    public function select_workspace($old_value, $value) {
         // Exit if value has not changed.
         if ($value === $old_value) {
             return $old_value;
@@ -180,6 +182,7 @@ class Admin {
         $workflow = [
             'type' => 'webhook',
             'period' => 'immediately',
+            'event' => 'update',
             'title' => get_bloginfo('name'),
             'workspace' => '/workspaces/' . $value,
             'url' => $url,
@@ -193,8 +196,9 @@ class Admin {
             $response = $client->getGuzzleClient()->post('/workflows', ['json' => $workflow]);
             $contents = $response->getBody()->getContents();
             $data = json_decode($contents, true);
+        } catch( ClientException $e ) {
+            return $old_value;
         } catch (ApiException $e) {
-            // Trigger error message and exit.
             return $old_value;
         }
 
