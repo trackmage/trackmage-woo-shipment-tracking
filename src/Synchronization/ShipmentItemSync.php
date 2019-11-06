@@ -197,4 +197,9 @@ class ShipmentItemSync implements EntitySyncInterface
             $shipmentItem = $this->shipmentItemRepo->update(['trackmage_id' => null], ['id' => $id]);
         }
     }
+
+    public function unlink($id)
+    {
+        $shipmentItem = $this->shipmentItemRepo->update(['trackmage_id' => null], ['id' => $id]);
+    }
 }

@@ -143,6 +143,11 @@ class OrderSync implements EntitySyncInterface
         }
     }
 
+    public function unlink($id)
+    {
+        delete_post_meta($id, '_trackmage_order_id');
+    }
+
     /**
      * @return array|null
      */

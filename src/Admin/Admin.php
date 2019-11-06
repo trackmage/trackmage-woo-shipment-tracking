@@ -152,6 +152,14 @@ class Admin {
             return $old_value;
         }
 
+
+        $allOrdersIds = $this->getAllOrdersIds();
+
+        // Do unlink all orders, order items, shipments, shipment items from
+        foreach($allOrdersIds as $orderId) {
+            Plugin::instance()->getSynchronizer()->unlinkOrder($orderId);
+        }
+
         $client = Plugin::get_client();
         $url = Helper::get_endpoint();
 
@@ -206,16 +214,8 @@ class Admin {
     }
 
     public function trigger_delete_data($value, $old_value, $option) {
-        if($value === 1) {
-            $allOrdersIds = get_posts( array(
-                'numberposts' => -1,
-                'fields'      => 'ids',
-                'post_type'   => wc_get_order_types(),
-                'post_status' => array_keys( wc_get_order_statuses() ),
-                'orderby' => 'date',
-                'order' => 'ASC',
-                'post_parent' => 0
-            ));
+        if($value == 1) {
+            $allOrdersIds = $this->getAllOrdersIds();
             $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
             foreach(array_chunk($allOrdersIds, 100) as $ordersIds) {
                 $backgroundTaskRepo->insert([
@@ -231,16 +231,7 @@ class Admin {
 
     public function trigger_sync($value, $old_value, $option) {
         if($value == 1) {
-            $allOrdersIds = get_posts( array(
-                'numberposts' => -1,
-                'fields'      => 'ids',
-                'post_type'   => wc_get_order_types(),
-                'post_status' => array_keys( wc_get_order_statuses() ),
-                'orderby' => 'date',
-                'order' => 'ASC',
-                'post_parent' => 0
-            ));
-
+            $allOrdersIds = $this->getAllOrdersIds();
             $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
             foreach(array_chunk($allOrdersIds, 100) as $ordersIds) {
                 $backgroundTask = $backgroundTaskRepo->insert([
@@ -253,5 +244,17 @@ class Admin {
             Helper::scheduleNextBackgroundTask();
         }
         return 0;
+    }
+
+    private function getAllOrdersIds(){
+        return get_posts( array(
+            'numberposts' => -1,
+            'fields'      => 'ids',
+            'post_type'   => wc_get_order_types(),
+            'post_status' => array_keys( wc_get_order_statuses() ),
+            'orderby' => 'date',
+            'order' => 'ASC',
+            'post_parent' => 0
+        ));
     }
 }

@@ -209,4 +209,9 @@ class OrderItemSync implements EntitySyncInterface
             wc_delete_order_item_meta($id, '_trackmage_order_item_id');
         }
     }
+
+    public function unlink($id)
+    {
+        wc_delete_order_item_meta($id, '_trackmage_order_item_id');
+    }
 }

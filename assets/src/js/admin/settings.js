@@ -220,6 +220,10 @@
     let sync_statuses = $('#trackmage_sync_statuses').val();
     let differences = sync_statuses.filter(value => -1 === params.settings.sync_statuses.indexOf(value));
     if(params.settings.workspace !== "0" && params.settings.workspace != workspace){ // check if workspace is changed
+      if(workspace == 0)
+        $('#trigger_sync_cb').attr('disabled','disabled');
+      else
+        $('#trigger_sync_cb').removeAttr('disabled');
       confirmDialog(
         '#change-workspace-dialog',
         function(){

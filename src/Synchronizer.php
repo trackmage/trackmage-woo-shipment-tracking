@@ -188,6 +188,31 @@ class Synchronizer
         }
     }
 
+    public function unlinkOrder($orderId)
+    {
+        if ($this->disableEvents || Helper::isBulkSynchronizationInProcess()) {
+            return;
+        }
+        $order = wc_get_order( $orderId );
+        foreach ($order->get_items() as $item) {
+            $this->unlinkOrderItem($item->get_id());
+        }
+
+        foreach ($this->shipmentRepository->findBy(['order_id' => $orderId]) as $shipment) {
+            $this->shipmentSync->unlink($shipment['id']);
+        }
+
+        try {
+            $this->orderSync->unlink($orderId);
+        } catch (RuntimeException $e) {
+            $this->logger->warning(self::TAG.'Unable to delete remote order', [
+                'order_id' => $orderId,
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
+    }
+
     public function syncOrderItem($itemId )
     {
         if ( $this->disableEvents || Helper::isBulkSynchronizationInProcess()) {
@@ -226,6 +251,27 @@ class Synchronizer
                 'trace' => $e->getTraceAsString(),
             ], $this->grabGuzzleData($e)));
         }
+    }
+
+    public function unlinkOrderItem($itemId)
+    {
+        if ($this->disableEvents || Helper::isBulkSynchronizationInProcess()) {
+            return;
+        }
+        try{
+            foreach ($this->shipmentItemRepository->findBy(['order_item_id' => $itemId]) as $shipmentItem) {
+                $this->shipmentItemSync->unlink($shipmentItem['id']);
+            }
+
+            $this->orderItemSync->unlink($itemId);
+        } catch (RuntimeException $e) {
+            $this->logger->warning(self::TAG.'Unable to unlink order item', [
+                'item_id' => $itemId,
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
+
     }
 
     public function syncShipment($shipment_id)
