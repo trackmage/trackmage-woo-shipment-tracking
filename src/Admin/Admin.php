@@ -33,8 +33,9 @@ class Admin {
         add_action('wp_ajax_trackmage_test_credentials', [$this, 'test_credentials']);
         add_filter('pre_update_option_trackmage_workspace', [$this, 'select_workspace'], 10, 3);
 
-        add_filter('pre_update_option_trackmage_trigger_sync', [$this, 'trigger_sync'], 10, 3);
         add_filter('pre_update_option_trackmage_delete_data', [$this, 'trigger_delete_data'], 10, 3);
+        add_filter('pre_update_option_trackmage_trigger_sync', [$this, 'trigger_sync'], 20, 3);
+
     }
 
     /**
@@ -152,12 +153,12 @@ class Admin {
             return $old_value;
         }
 
-
-        $allOrdersIds = $this->getAllOrdersIds();
-
         // Do unlink all orders, order items, shipments, shipment items from
-        foreach($allOrdersIds as $orderId) {
-            Plugin::instance()->getSynchronizer()->unlinkOrder($orderId);
+        if(!(isset($_POST['trackmage_delete_data']) && $_POST['trackmage_delete_data'] != 0) ) {
+            $allOrdersIds = $this->getAllOrdersIds();
+            foreach ( $allOrdersIds as $orderId ) {
+                Plugin::instance()->getSynchronizer()->unlinkOrder( $orderId );
+            }
         }
 
         $client = Plugin::get_client();
@@ -217,7 +218,7 @@ class Admin {
         if($value == 1) {
             $allOrdersIds = $this->getAllOrdersIds();
             $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
-            foreach(array_chunk($allOrdersIds, 100) as $ordersIds) {
+            foreach(array_chunk($allOrdersIds, 50) as $ordersIds) {
                 $backgroundTaskRepo->insert([
                     'action' => 'trackmage_delete_data',
                     'params' => json_encode($ordersIds),
@@ -233,7 +234,7 @@ class Admin {
         if($value == 1) {
             $allOrdersIds = $this->getAllOrdersIds();
             $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
-            foreach(array_chunk($allOrdersIds, 100) as $ordersIds) {
+            foreach(array_chunk($allOrdersIds, 50) as $ordersIds) {
                 $backgroundTask = $backgroundTaskRepo->insert([
                     'action' => 'trackmage_bulk_orders_sync',
                     'params' => json_encode($ordersIds),
@@ -241,7 +242,8 @@ class Admin {
                     'priority' => 10
                 ]);
             }
-            Helper::scheduleNextBackgroundTask();
+            if(!(isset($_POST['trackmage_delete_data']) && $_POST['trackmage_delete_data'] != 0) )
+                Helper::scheduleNextBackgroundTask();
         }
         return 0;
     }

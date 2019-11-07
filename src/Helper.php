@@ -542,9 +542,11 @@ class Helper {
     /**
      * Schedule next background task.
      *
+     * @param int   $delay  Delay before run scheduled task
+     *
      * @return int|bool
      */
-    public static function scheduleNextBackgroundTask()
+    public static function scheduleNextBackgroundTask($delay = 0)
     {
         $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
         $activeTask = $backgroundTaskRepo->findOneBy(['status'=>'processing']);
@@ -553,7 +555,7 @@ class Helper {
         $nextTask = $backgroundTaskRepo->getQuery('SELECT * FROM _TBL_ WHERE status="new" ORDER BY priority, id LIMIT 1');
         if(isset($nextTask[0]) && !isset($nextTask[0]->id))
             return false;
-        $scheduled = wp_schedule_single_event( time(), $nextTask[0]->action, [ json_decode($nextTask[0]->params) , $nextTask[0]->id ] );
+        $scheduled = wp_schedule_single_event( time() + $delay, $nextTask[0]->action, [ json_decode($nextTask[0]->params) , $nextTask[0]->id ] );
         return $nextTask[0]->id;
     }
 }

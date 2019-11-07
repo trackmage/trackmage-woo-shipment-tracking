@@ -102,6 +102,7 @@ class Synchronizer
                 $this->backgroundTaskRepository->update(['status'=>'processing'],['id'=>$taskId]);
 
             foreach ($orderIds as $orderId){
+                delete_post_meta( $orderId, '_trackmage_hash');
                 $this->syncOrder($orderId);
             }
 
@@ -118,7 +119,7 @@ class Synchronizer
     }
 
     public function syncOrder($orderId ) {
-        if ($this->disableEvents || Helper::isBulkSynchronizationInProcess()) {
+        if ($this->disableEvents) {
             return;
         }
         try {
@@ -148,7 +149,7 @@ class Synchronizer
                 $this->backgroundTaskRepository->update(['status'=>'processing'],['id'=>$taskId]);
 
             foreach ($orderIds as $orderId){
-                $this->deleteData($orderId);
+                $this->deleteOrder($orderId);
             }
 
             $this->logger->info(self::TAG.'Orders deletion is completed', ['orderIds'=>$orderIds]);
@@ -165,7 +166,7 @@ class Synchronizer
 
     public function deleteOrder($orderId)
     {
-        if ($this->disableEvents || Helper::isBulkSynchronizationInProcess()) {
+        if ($this->disableEvents) {
             return;
         }
         $order = wc_get_order( $orderId );
@@ -190,7 +191,7 @@ class Synchronizer
 
     public function unlinkOrder($orderId)
     {
-        if ($this->disableEvents || Helper::isBulkSynchronizationInProcess()) {
+        if ($this->disableEvents) {
             return;
         }
         $order = wc_get_order( $orderId );
@@ -215,7 +216,7 @@ class Synchronizer
 
     public function syncOrderItem($itemId )
     {
-        if ( $this->disableEvents || Helper::isBulkSynchronizationInProcess()) {
+        if ( $this->disableEvents) {
             return;
         }
         try {
@@ -235,7 +236,7 @@ class Synchronizer
 
     public function deleteOrderItem($itemId)
     {
-        if ($this->disableEvents || Helper::isBulkSynchronizationInProcess()) {
+        if ($this->disableEvents) {
             return;
         }
         try {
@@ -255,7 +256,7 @@ class Synchronizer
 
     public function unlinkOrderItem($itemId)
     {
-        if ($this->disableEvents || Helper::isBulkSynchronizationInProcess()) {
+        if ($this->disableEvents) {
             return;
         }
         try{
@@ -276,7 +277,7 @@ class Synchronizer
 
     public function syncShipment($shipment_id)
     {
-        if ($this->disableEvents || Helper::isBulkSynchronizationInProcess()) {
+        if ($this->disableEvents) {
             return;
         }
         try {
@@ -292,7 +293,7 @@ class Synchronizer
 
     public function deleteShipment($shipment_id)
     {
-        if ($this->disableEvents || Helper::isBulkSynchronizationInProcess()) {
+        if ($this->disableEvents) {
             return;
         }
         try {
@@ -308,7 +309,7 @@ class Synchronizer
 
     public function syncShipmentItem($shipment_item_id)
     {
-        if ($this->disableEvents || Helper::isBulkSynchronizationInProcess()) {
+        if ($this->disableEvents) {
             return;
         }
         try {
@@ -324,7 +325,7 @@ class Synchronizer
 
     public function deleteShipmentItem($shipment_item_id)
     {
-        if ($this->disableEvents || Helper::isBulkSynchronizationInProcess()) {
+        if ($this->disableEvents) {
             return;
         }
         try {
