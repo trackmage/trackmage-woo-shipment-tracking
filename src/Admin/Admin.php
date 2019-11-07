@@ -220,7 +220,7 @@ class Admin {
             foreach(array_chunk($allOrdersIds, 100) as $ordersIds) {
                 $backgroundTaskRepo->insert([
                     'action' => 'trackmage_delete_data',
-                    'params' => $ordersIds,
+                    'params' => json_encode($ordersIds),
                     'status' => 'new'
                 ]);
             }
