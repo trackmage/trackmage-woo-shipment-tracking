@@ -248,8 +248,12 @@
         'Settings Save Confirmation',
         'Yes'
       ).then(function(yesno) {
-        $('#trigger-sync').val((yesno === 'yes')?1:0);
-        form.attr('cansubmit',true).submit();
+        if(yesno == 'yes'){
+          $('#trigger-sync').val("1");
+          $("form#general-settings-form").attr('cansubmit',true).submit();
+        }else{
+          return false;
+        }
       });
       return false;
     }
@@ -267,7 +271,6 @@
     ).then(function(yesno) {
       if(yesno == 'yes'){
         $('#trigger-sync').val("1");
-        console.log($('#trigger-sync').val());
         $("form#general-settings-form").attr('cansubmit',true).submit();
       }else{
         return false;
