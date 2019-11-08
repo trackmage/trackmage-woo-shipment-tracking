@@ -248,13 +248,11 @@ class OrderSync implements EntitySyncInterface
      */
     private function getTrackMageStatus(WC_Order $order)
     {
-        $status = $order->get_status();
-        $aliases = Helper::get_aliases();
-        $usedAliases = get_option( 'trackmage_order_status_aliases', [] );
-        $wcstatus = 'wc-'.$status;
-        if (isset($usedAliases[$wcstatus])) {
-            return ['code' => $usedAliases[$wcstatus], 'title' => $aliases[$usedAliases[$wcstatus]]];
-        }
-        return ['code' => $status,'title' => ucfirst($status)];
+        $orderStatus = $order->get_status();
+        $allStatuses = Helper::getOrderStatuses();
+        if(isset($allStatuses['wc-'.$orderStatus]))
+            return ['code' => $orderStatus,'title' => !empty($allStatuses['wc-'.$orderStatus]['alias'])?$allStatuses['wc-'.$orderStatus]['alias']:$allStatuses['wc-'.$orderStatus]['name']];
+        else
+            return null;
     }
 }

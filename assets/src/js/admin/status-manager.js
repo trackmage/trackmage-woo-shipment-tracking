@@ -105,10 +105,10 @@
       .find('[name="status_alias"]')
       .val(alias);
 
-    // Disable slug field if not a custom status.
+    // Disable name and slug field if not a custom status.
     if (isCustom != 1) {
       $(editRow)
-        .find('[name="status_slug"]')
+        .find('[name="status_slug"], [name="status_name"]')
         .prop("disabled", true);
     }
 
