@@ -122,7 +122,6 @@ $isInSync = Helper::isBulkSynchronizationInProcess();
     <input type="hidden" name="trackmage_delete_data" value="0" id="delete-data">
 
     <p class="actions" >
-        <?php //submit_button( 'Save Changes', 'primary', 'submit', false, ['disabled'=>'disabled'] ); ?>
         <button class="button button-primary disabled" id="btn-save-form" disabled="disabled" type="submit" title="<?php _e('Save Changes', 'trackmage');?>"><?php _e('Save Changes', 'trackmage');?></button>
         <button class="button button-secondary <?php echo empty($workspace)?'disabled':''?>" type="button" id="btn-trigger-sync" title="<?php _e('Trigger Sync', 'trackmage');?>"><?php _e('Trigger Sync', 'trackmage');?></button>
     </p>
