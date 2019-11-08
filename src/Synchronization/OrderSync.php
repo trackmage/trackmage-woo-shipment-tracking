@@ -250,8 +250,12 @@ class OrderSync implements EntitySyncInterface
     {
         $orderStatus = $order->get_status();
         $allStatuses = Helper::getOrderStatuses();
+        $aliases = Helper::get_aliases();
         if(isset($allStatuses['wc-'.$orderStatus]))
-            return ['code' => $orderStatus,'title' => !empty($allStatuses['wc-'.$orderStatus]['alias'])?$allStatuses['wc-'.$orderStatus]['alias']:$allStatuses['wc-'.$orderStatus]['name']];
+            return [
+                'code' => !empty($allStatuses['wc-'.$orderStatus]['alias'])?$allStatuses['wc-'.$orderStatus]['alias']:$orderStatus,
+                'title' => !empty($allStatuses['wc-'.$orderStatus]['alias'])?$aliases[$allStatuses['wc-'.$orderStatus]['alias']]:$allStatuses['wc-'.$orderStatus]['name']
+            ];
         else
             return null;
     }
