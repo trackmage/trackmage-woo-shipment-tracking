@@ -206,7 +206,13 @@ class OrderItemSync implements EntitySyncInterface
         } catch ( \Throwable $e ) {
             throw new SynchronizationException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
         } finally {
-            wc_delete_order_item_meta($id, '_trackmage_order_item_id');
+            wc_delete_order_item_meta( $id, '_trackmage_order_item_id');
         }
+    }
+
+    public function unlink($id)
+    {
+        wc_delete_order_item_meta( $id, '_trackmage_order_item_id');
+        wc_delete_order_item_meta( $id, '_trackmage_hash');
     }
 }

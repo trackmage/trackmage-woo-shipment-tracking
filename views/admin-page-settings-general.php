@@ -21,12 +21,18 @@ $workspace     = get_option( 'trackmage_workspace', 0 );
 $workspaces = Helper::get_workspaces();
 $credentials = Helper::check_credentials();
 $statuses = Helper::getOrderStatuses();
-$sync_statuses = get_option( 'trackmage_sync_statuses', [] );
+$sync_statuses = (array) get_option( 'trackmage_sync_statuses', [] );
+$isInSync = Helper::isBulkSynchronizationInProcess();
 ?>
 
-<div class="intro">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu.</div>
 
-<form method="post" action="options.php">
+<div class="intro">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu.</div>
+<?php if($isInSync): ?>
+    <div class="notice-large notice-warning">
+        <span class="spinner is-active"></span> <span>Synchronization in progress. Please refresh the page and check again later.</span>
+    </div>
+<?php endif;?>
+<form method="post" action="options.php" id="general-settings-form" <?php if($isInSync):?>class="blocked-form"<?php endif;?>>
     <?php settings_fields( 'trackmage_general' ); ?>
     <!-- Section: Credentials -->
     <div class="section">
@@ -36,18 +42,30 @@ $sync_statuses = get_option( 'trackmage_sync_statuses', [] );
             <tbody>
                 <tr>
                     <th scope="row"><label for="trackmage_client_id"><?php _e( 'Client ID', 'trackmage' ); ?></label></th>
-                    <td><input name="trackmage_client_id" type="text" id="trackmage_client_id" value="<?php echo esc_attr( $client_id ); ?>" class="regular-text" /></td>
+                    <td>
+                        <input <?php echo (!empty($workspace))?'disabled="disabled"':'name="trackmage_client_id"';?> type="text" id="trackmage_client_id" value="<?php echo esc_attr( $client_id ); ?>" class="regular-text" />
+                        <?php if(!empty($workspace)):?><input type="hidden" name="trackmage_client_id" value="<?php echo esc_attr( $client_id ); ?>"><?php endif;?>
+                    </td>
                 </tr>
                 <tr>
                     <th scope="row"><label for="trackmage_client_secret"><?php _e( 'Client Secret', 'trackmage' ); ?></label></th>
-                    <td><input name="trackmage_client_secret" type="password" id="trackmage_client_secret" value="<?php echo esc_attr( $client_secret ); ?>" class="regular-text" /></td>
+                    <td>
+                        <input <?php echo (!empty($workspace))?'disabled="disabled"':'name="trackmage_client_secret"';?> type="password" id="trackmage_client_secret" value="<?php echo esc_attr( $client_secret ); ?>" class="regular-text" />
+                        <?php if(!empty($workspace)):?><input type="hidden" name="trackmage_client_secret" value="<?php echo esc_attr( $client_secret ); ?>"><?php endif;?>
+                    </td>
                 </tr>
             </tbody>
         </table>
-        <div class="test-credentials">
-            <input id="testCredentials" type="button" class="button" value="<?php _e( 'Test Credentials', 'trackmage' ); ?>"/>
-            <span class="spinner"></span>
-        </div>
+        <?php if(!empty($workspace)):?>
+            <div class="trackmage-notification trackmage-warning" style="display: block;">
+                <p class="message">To change Credentials please disconnect the Workspace.</p>
+            </div>
+        <?php else:?>
+            <div class="test-credentials">
+                <input id="testCredentials" <?php echo (!empty($workspace))?'disabled="disabled"':'';?> type="button" class="button" value="<?php _e( 'Test Credentials', 'trackmage' ); ?>"/>
+                <span class="spinner"></span>
+            </div>
+        <?php endif;?>
     </div>
     <!-- End Section: Credentials -->
 
@@ -99,5 +117,14 @@ $sync_statuses = get_option( 'trackmage_sync_statuses', [] );
     </div>
     <!-- End Section: Sync With TrackMage -->
 
-    <p class="actions"><?php submit_button( 'Save Changes', 'primary', 'submit', false ); ?></p>
+    <input type="hidden" name="trackmage_trigger_sync" value="0" id="trigger-sync">
+    <input type="hidden" name="agree_change_workspace" value="0" id="agree-change-workspace">
+    <input type="hidden" name="trackmage_delete_data" value="0" id="delete-data">
+
+    <p class="actions" >
+        <button class="button button-primary disabled" id="btn-save-form" disabled="disabled" type="submit" title="<?php _e('Save Changes', 'trackmage');?>"><?php _e('Save Changes', 'trackmage');?></button>
+        <button class="button button-secondary <?php echo empty($workspace)?'disabled':''?>" type="button" id="btn-trigger-sync" title="<?php _e('Trigger Sync', 'trackmage');?>"><?php _e('Trigger Sync', 'trackmage');?></button>
+    </p>
 </form>
+<?php include( TRACKMAGE_VIEWS_DIR . "modals/admin-page-settings-general-trigger-sync.php" ); ?>
+<?php include( TRACKMAGE_VIEWS_DIR . "modals/admin-page-settings-general-change-workspace.php" ); ?>

@@ -8,6 +8,7 @@ use Throwable;
 use TrackMage\WordPress\Exception\RuntimeException;
 use TrackMage\WordPress\Repository\ShipmentItemRepository;
 use TrackMage\WordPress\Repository\ShipmentRepository;
+use TrackMage\WordPress\Repository\BackgroundTaskRepository;
 use TrackMage\WordPress\Synchronization\OrderItemSync;
 use TrackMage\WordPress\Synchronization\OrderSync;
 use TrackMage\WordPress\Synchronization\ShipmentItemSync;
@@ -26,12 +27,13 @@ class Synchronizer
     private $shipmentItemSync;
     private $shipmentRepository;
     private $shipmentItemRepository;
+    private $backgroundTaskRepository;
 
     private $logger;
 
     public function __construct(LoggerInterface $logger, OrderSync $orderSync, OrderItemSync $orderItemSync,
                                 ShipmentSync $shipmentSync, ShipmentItemSync $shipmentItemSync,
-                                ShipmentRepository $shipmentRepository, ShipmentItemRepository $shipmentItemRepository)
+                                ShipmentRepository $shipmentRepository, ShipmentItemRepository $shipmentItemRepository, BackgroundTaskRepository $backgroundTaskRepository)
     {
         $this->logger = $logger;
         $this->orderSync = $orderSync;
@@ -40,6 +42,7 @@ class Synchronizer
         $this->shipmentItemSync = $shipmentItemSync;
         $this->shipmentRepository = $shipmentRepository;
         $this->shipmentItemRepository = $shipmentItemRepository;
+        $this->backgroundTaskRepository = $backgroundTaskRepository;
         $this->bindEvents();
     }
 
@@ -86,6 +89,33 @@ class Synchronizer
         add_action( 'trackmage_new_shipment_item', [ $this, 'syncShipmentItem' ], 10, 1 );
         add_action( 'trackmage_update_shipment_item', [ $this, 'syncShipmentItem' ], 10, 1 );
         add_action( 'trackmage_delete_shipment_item', [ $this, 'deleteShipmentItem' ], 10, 1 );
+
+        add_action( 'trackmage_bulk_orders_sync', [$this, 'bulkOrdersSync'], 10, 2);
+        add_action( 'trackmage_delete_data', [$this, 'deleteData'], 10, 2);
+
+    }
+
+    public function bulkOrdersSync($orderIds = [], $taskId = null){
+        try{
+            $this->logger->info(self::TAG.'Start to processing orders', ['orderIds'=>$orderIds,'taskId'=>$taskId]);
+            if($taskId !== null)
+                $this->backgroundTaskRepository->update(['status'=>'processing'],['id'=>$taskId]);
+
+            foreach ($orderIds as $orderId){
+                delete_post_meta( $orderId, '_trackmage_hash');
+                $this->syncOrder($orderId);
+            }
+
+            $this->logger->info(self::TAG.'Processing orders is completed', ['orderIds'=>$orderIds]);
+            if($taskId !== null)
+                $this->backgroundTaskRepository->update(['status'=>'processed'],['id'=>$taskId]);
+            Helper::scheduleNextBackgroundTask();
+        }catch (RuntimeException $e){
+            $this->logger->warning(self::TAG.'Unable to bulk sync orders', array_merge([
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], $this->grabGuzzleData($e)));
+        }
     }
 
     public function syncOrder($orderId ) {
@@ -106,6 +136,28 @@ class Synchronizer
         } catch (RuntimeException $e) {
             $this->logger->warning(self::TAG.'Unable to sync remote order', array_merge([
                 'order_id' => $orderId,
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], $this->grabGuzzleData($e)));
+        }
+    }
+
+    public function deleteData($orderIds = [], $taskId = null){
+        try{
+            $this->logger->info(self::TAG.'Start to delete orders on TrackMage Workspace', ['orderIds'=>$orderIds,'taskId'=>$taskId]);
+            if($taskId !== null)
+                $this->backgroundTaskRepository->update(['status'=>'processing'],['id'=>$taskId]);
+
+            foreach ($orderIds as $orderId){
+                $this->deleteOrder($orderId);
+            }
+
+            $this->logger->info(self::TAG.'Orders deletion is completed', ['orderIds'=>$orderIds]);
+            if($taskId !== null)
+                $this->backgroundTaskRepository->update(['status'=>'processed'],['id'=>$taskId]);
+            Helper::scheduleNextBackgroundTask();
+        }catch (RuntimeException $e){
+            $this->logger->warning(self::TAG.'Unable to delete orders from TrackMage', array_merge([
                 'exception' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ], $this->grabGuzzleData($e)));
@@ -137,9 +189,34 @@ class Synchronizer
         }
     }
 
-    public function syncOrderItem($itemId )
+    public function unlinkOrder($orderId)
     {
         if ($this->disableEvents) {
+            return;
+        }
+        $order = wc_get_order( $orderId );
+        foreach ($order->get_items() as $item) {
+            $this->unlinkOrderItem($item->get_id());
+        }
+
+        foreach ($this->shipmentRepository->findBy(['order_id' => $orderId]) as $shipment) {
+            $this->shipmentSync->unlink($shipment['id']);
+        }
+
+        try {
+            $this->orderSync->unlink($orderId);
+        } catch (RuntimeException $e) {
+            $this->logger->warning(self::TAG.'Unable to delete remote order', [
+                'order_id' => $orderId,
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
+    }
+
+    public function syncOrderItem($itemId )
+    {
+        if ( $this->disableEvents) {
             return;
         }
         try {
@@ -175,6 +252,27 @@ class Synchronizer
                 'trace' => $e->getTraceAsString(),
             ], $this->grabGuzzleData($e)));
         }
+    }
+
+    public function unlinkOrderItem($itemId)
+    {
+        if ($this->disableEvents) {
+            return;
+        }
+        try{
+            foreach ($this->shipmentItemRepository->findBy(['order_item_id' => $itemId]) as $shipmentItem) {
+                $this->shipmentItemSync->unlink($shipmentItem['id']);
+            }
+
+            $this->orderItemSync->unlink($itemId);
+        } catch (RuntimeException $e) {
+            $this->logger->warning(self::TAG.'Unable to unlink order item', [
+                'item_id' => $itemId,
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
+
     }
 
     public function syncShipment($shipment_id)
