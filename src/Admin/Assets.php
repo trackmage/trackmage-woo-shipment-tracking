@@ -70,6 +70,8 @@ class Assets {
         if (in_array($screenId, Helper::getScreenIds())) {
             // External scripts.
             wp_enqueue_script('selectWoo');
+            wp_enqueue_script( 'jquery-ui-dialog' ); // jquery and jquery-ui should be dependencies, didn't check though...
+            wp_enqueue_style( 'wp-jquery-ui-dialog' );
 
             // Main scripts.
             wp_enqueue_script('trackmage-admin');
@@ -90,6 +92,8 @@ class Assets {
             // Settings.
             wp_enqueue_script('trackmage-admin-settings');
             wp_localize_script('trackmage-admin-settings', 'trackmageAdminSettings', [
+                'workspace' => get_option( 'trackmage_workspace', 0 ),
+                'sync_statuses' => get_option( 'trackmage_sync_statuses', [] ),
                 'i18n' => [
                     'testCredentials'  => __('Test Credentials', 'trackmage'),
                     'successValidKeys' => __('Valid credentials. Click on <em>“Save Changes”</em> for the changes to take effect.', 'trackmage'),

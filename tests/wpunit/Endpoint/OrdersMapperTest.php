@@ -62,7 +62,8 @@ class OrdersMapperTest extends WPTestCase
 
     protected function _before()
     {
-        update_option('trackmage_workspace', self::TM_WS_ID);
+        delete_option('trackmage_workspace');
+        add_option('trackmage_workspace', self::TM_WS_ID);
         $this->ordersMapper = new OrdersMapper(self::SOURCE);
     }
 

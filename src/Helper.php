@@ -190,6 +190,14 @@ class Helper {
         return $shipment;
     }
 
+
+    public static function isBulkSynchronizationInProcess()
+    {
+        global $wpdb;
+        $activeTasks = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM ".($wpdb->prefix.'trackmage_background_task')." WHERE action = %s AND (status = %s OR status = %s)","trackmage_bulk_orders_sync", "processing", "new" ) , ARRAY_A );
+        return is_array($activeTasks) && count($activeTasks) > 0;
+    }
+
     /**
      * @param array $shipment
      * @return array
@@ -529,5 +537,25 @@ class Helper {
             $post_meta[ $pm->meta_id ] = maybe_unserialize( $pm->meta_value );
         }
         return $post_meta;
+    }
+
+    /**
+     * Schedule next background task.
+     *
+     * @param int   $delay  Delay before run scheduled task
+     *
+     * @return int|bool
+     */
+    public static function scheduleNextBackgroundTask($delay = 0)
+    {
+        $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
+        $activeTask = $backgroundTaskRepo->findOneBy(['status'=>'processing']);
+        if(isset($activeTask['id']))
+            return false;
+        $nextTask = $backgroundTaskRepo->getQuery('SELECT * FROM _TBL_ WHERE status="new" ORDER BY priority, id LIMIT 1');
+        if(isset($nextTask[0]) && !isset($nextTask[0]->id))
+            return false;
+        $scheduled = wp_schedule_single_event( time() + $delay, $nextTask[0]->action, [ json_decode($nextTask[0]->params) , $nextTask[0]->id ] );
+        return $nextTask[0]->id;
     }
 }

@@ -23,7 +23,9 @@ settings_errors();
     <h1><?php _e( 'TrackMage Settings', 'trackmage' ); ?></h1>
     <nav class="nav-tab-wrapper trackmage-nav-tab-wrapper">
         <a href="<?php echo admin_url( 'admin.php?page=trackmage-settings&amp;tab=general' ); ?>" class="nav-tab<?php Helper::add_css_class( 'general' === $tab || '' === $tab, 'nav-tab-active', true, true ); ?>"><?php _e( 'General', 'trackmage' ); ?></a>
+        <?php /*  ADVANCED tab disabled for now ?>
         <a href="<?php echo admin_url( 'admin.php?page=trackmage-settings&amp;tab=advanced' ); ?>" class="nav-tab<?php Helper::add_css_class( 'advanced' === $tab, 'nav-tab-active', true, true ); ?>"><?php _e( 'Advanced', 'trackmage' ); ?></a>
+        <?php */?>
     </nav>
     <div class="postbox">
         <div class="inside tab tab-<?php echo $tab; ?>" id="trackmage-settings-<?php echo $tab; ?>">

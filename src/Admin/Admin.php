@@ -31,7 +31,11 @@ class Admin {
         add_action('admin_menu', [$this, 'add_page']);
         add_action('admin_init', [$this, 'settings']);
         add_action('wp_ajax_trackmage_test_credentials', [$this, 'test_credentials']);
-        add_action('update_option_trackmage_workspace', [$this, 'select_workspace'], 10, 3);
+        add_filter('pre_update_option_trackmage_workspace', [$this, 'select_workspace'], 10, 3);
+
+        add_filter('pre_update_option_trackmage_delete_data', [$this, 'trigger_delete_data'], 10, 3);
+        add_filter('pre_update_option_trackmage_trigger_sync', [$this, 'trigger_sync'], 20, 3);
+
     }
 
     /**
@@ -79,6 +83,9 @@ class Admin {
         register_setting('trackmage_general', 'trackmage_client_id');
         register_setting('trackmage_general', 'trackmage_client_secret');
         register_setting('trackmage_general', 'trackmage_workspace');
+
+        register_setting('trackmage_general', 'trackmage_trigger_sync');
+        register_setting('trackmage_general', 'trackmage_delete_data');
 
         // Statuses settings.
         register_setting('trackmage_general', 'trackmage_sync_statuses');
@@ -140,10 +147,18 @@ class Admin {
      *
      * @since 0.1.0
      */
-    public function select_workspace($old_value, $value) {
+    public function select_workspace($value, $old_value, $option) {
         // Exit if value has not changed.
         if ($value === $old_value) {
             return $old_value;
+        }
+
+        // Do unlink all orders, order items, shipments, shipment items from
+        if(!(isset($_POST['trackmage_delete_data']) && $_POST['trackmage_delete_data'] != 0) ) {
+            $allOrdersIds = $this->getAllOrdersIds();
+            foreach ( $allOrdersIds as $orderId ) {
+                Plugin::instance()->getSynchronizer()->unlinkOrder( $orderId );
+            }
         }
 
         $client = Plugin::get_client();
@@ -197,5 +212,51 @@ class Admin {
         update_option( 'trackmage_order_status_aliases', [] );
         update_option('trackmage_webhook', $data['id']);
         return $value;
+    }
+
+    public function trigger_delete_data($value, $old_value, $option) {
+        if($value == 1) {
+            $allOrdersIds = $this->getAllOrdersIds();
+            $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
+            foreach(array_chunk($allOrdersIds, 50) as $ordersIds) {
+                $backgroundTaskRepo->insert([
+                    'action' => 'trackmage_delete_data',
+                    'params' => json_encode($ordersIds),
+                    'status' => 'new'
+                ]);
+            }
+            Helper::scheduleNextBackgroundTask();
+        }
+        return 0;
+    }
+
+    public function trigger_sync($value, $old_value, $option) {
+        if($value == 1) {
+            $allOrdersIds = $this->getAllOrdersIds();
+            $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
+            foreach(array_chunk($allOrdersIds, 50) as $ordersIds) {
+                $backgroundTask = $backgroundTaskRepo->insert([
+                    'action' => 'trackmage_bulk_orders_sync',
+                    'params' => json_encode($ordersIds),
+                    'status' => 'new',
+                    'priority' => 10
+                ]);
+            }
+            if(!(isset($_POST['trackmage_delete_data']) && $_POST['trackmage_delete_data'] != 0) )
+                Helper::scheduleNextBackgroundTask();
+        }
+        return 0;
+    }
+
+    private function getAllOrdersIds(){
+        return get_posts( array(
+            'numberposts' => -1,
+            'fields'      => 'ids',
+            'post_type'   => wc_get_order_types(),
+            'post_status' => array_keys( wc_get_order_statuses() ),
+            'orderby' => 'date',
+            'order' => 'ASC',
+            'post_parent' => 0
+        ));
     }
 }
