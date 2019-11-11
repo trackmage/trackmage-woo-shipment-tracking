@@ -209,6 +209,13 @@ class Ajax {
 
                     ];
                 }, $orderItems);
+
+                $orderNotes = array_map(function(\WC_Order_Item $item) {
+                    return [
+                        'name' => $item->get_name(),
+                    ];
+                }, $orderItems);
+
             }
 
             Helper::validateShipment($shipment, $orderItems, $existingShipments);
@@ -491,6 +498,7 @@ class Ajax {
         }
 
         $slug = $_POST['slug'];
+        $name  = $_POST['name'];
         $custom_statuses = get_option('trackmage_custom_order_statuses', []);
         $status_aliases = get_option('trackmage_order_status_aliases', []);
 
