@@ -194,7 +194,8 @@ class Ajax {
         // Order data.
         $order               = wc_get_order($orderId);
         $orderItems          = $order->get_items();
-        $existingShipments = Helper::getOrderShipmentsWithJoinedItems($orderId);
+        $existingShipments   = Helper::getOrderShipmentsWithJoinedItems($orderId);
+        $orderNotes          = [];
 
         try {
             if ($addAllOrderItems) {
@@ -220,12 +221,21 @@ class Ajax {
 
             Helper::validateShipment($shipment, $orderItems, $existingShipments);
             $shipment = Helper::saveShipmentWithJoinedItems($shipment);
+            /* translators: %s item name. */
+            $order->add_order_note( sprintf( __( 'Added shipment %s for order items: %s', 'trackmage' ), $shipment['tracking_number'], implode( ', ', $orderNotes ) ), false, true );
 
             try {
                 // Get HTML to return.
                 ob_start();
                 include TRACKMAGE_VIEWS_DIR . 'meta-boxes/order-shipments.php';
                 $html = ob_get_clean();
+
+                ob_start();
+                $notes = wc_get_order_notes( array( 'order_id' => $orderId ) );
+                include WC()->plugin_path().'includes/admin/meta-boxes/views/html-order-notes.php';
+                $notes_html = ob_get_clean();
+
+
             } catch (\Exception $e) {
                 wp_send_json_error(['message' => $e->getMessage()]);
             }
@@ -233,6 +243,7 @@ class Ajax {
             wp_send_json_success([
                 'message' => __('Shipment added successfully!', 'trackmage'),
                 'html' => $html,
+                'notes' => $notes_html
             ]);
         } catch (\Exception $e) {
             wp_send_json_error(['message' => $e->getMessage()]);
