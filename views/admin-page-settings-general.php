@@ -43,26 +43,26 @@ $isInSync = Helper::isBulkSynchronizationInProcess();
                 <tr>
                     <th scope="row"><label for="trackmage_client_id"><?php _e( 'Client ID', 'trackmage' ); ?></label></th>
                     <td>
-                        <input <?php echo (!empty($workspace))?'disabled="disabled"':'name="trackmage_client_id"';?> type="text" id="trackmage_client_id" value="<?php echo esc_attr( $client_id ); ?>" class="regular-text" />
-                        <?php if(!empty($workspace)):?><input type="hidden" name="trackmage_client_id" value="<?php echo esc_attr( $client_id ); ?>"><?php endif;?>
+                        <input <?php echo ($credentials && !empty($workspace))?'disabled="disabled"':'name="trackmage_client_id"';?> type="text" id="trackmage_client_id" value="<?php echo esc_attr( $client_id ); ?>" class="regular-text" />
+                        <?php if($credentials && !empty($workspace)):?><input type="hidden" name="trackmage_client_id" value="<?php echo esc_attr( $client_id ); ?>"><?php endif;?>
                     </td>
                 </tr>
                 <tr>
                     <th scope="row"><label for="trackmage_client_secret"><?php _e( 'Client Secret', 'trackmage' ); ?></label></th>
                     <td>
-                        <input <?php echo (!empty($workspace))?'disabled="disabled"':'name="trackmage_client_secret"';?> type="password" id="trackmage_client_secret" value="<?php echo esc_attr( $client_secret ); ?>" class="regular-text" />
-                        <?php if(!empty($workspace)):?><input type="hidden" name="trackmage_client_secret" value="<?php echo esc_attr( $client_secret ); ?>"><?php endif;?>
+                        <input <?php echo ($credentials && !empty($workspace))?'disabled="disabled"':'name="trackmage_client_secret"';?> type="password" id="trackmage_client_secret" value="<?php echo esc_attr( $client_secret ); ?>" class="regular-text" />
+                        <?php if($credentials && !empty($workspace)):?><input type="hidden" name="trackmage_client_secret" value="<?php echo esc_attr( $client_secret ); ?>"><?php endif;?>
                     </td>
                 </tr>
             </tbody>
         </table>
-        <?php if(!empty($workspace)):?>
+        <?php if($credentials && !empty($workspace)):?>
             <div class="trackmage-notification trackmage-warning" style="display: block;">
                 <p class="message">To change Credentials please disconnect the Workspace.</p>
             </div>
         <?php else:?>
             <div class="test-credentials">
-                <input id="testCredentials" <?php echo (!empty($workspace))?'disabled="disabled"':'';?> type="button" class="button" value="<?php _e( 'Test Credentials', 'trackmage' ); ?>"/>
+                <input id="testCredentials" <?php echo ($credentials && !empty($workspace))?'disabled="disabled"':'';?> type="button" class="button" value="<?php _e( 'Test Credentials', 'trackmage' ); ?>"/>
                 <span class="spinner"></span>
             </div>
         <?php endif;?>
@@ -123,7 +123,7 @@ $isInSync = Helper::isBulkSynchronizationInProcess();
 
     <p class="actions" >
         <button class="button button-primary disabled" id="btn-save-form" disabled="disabled" type="submit" title="<?php _e('Save Changes', 'trackmage');?>"><?php _e('Save Changes', 'trackmage');?></button>
-        <button class="button button-secondary <?php echo empty($workspace)?'disabled':''?>" type="button" id="btn-trigger-sync" title="<?php _e('Trigger Sync', 'trackmage');?>"><?php _e('Trigger Sync', 'trackmage');?></button>
+        <button class="button button-secondary <?php echo (!$credentials || empty($workspace))?'disabled':''?>" type="button" id="btn-trigger-sync" title="<?php _e('Trigger Sync', 'trackmage');?>"><?php _e('Trigger Sync', 'trackmage');?></button>
     </p>
 </form>
 <?php include( TRACKMAGE_VIEWS_DIR . "modals/admin-page-settings-general-trigger-sync.php" ); ?>
