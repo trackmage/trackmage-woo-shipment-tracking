@@ -216,6 +216,11 @@
                 $("#trackmage-shipment-tracking .inside").html(
                   response.data.html
                 );
+
+                let notesContainer = $("ul.order_notes").parent();
+                $("ul.order_notes").remove();
+                notesContainer.prepend($(response.data.notes));
+
               },
               error: function(response) {
                 trackmageAlert(
@@ -426,6 +431,9 @@
                 $("#trackmage-shipment-tracking .inside").html(
                   response.data.html
                 );
+                let notesContainer = $("ul.order_notes").parent();
+                $("ul.order_notes").remove();
+                notesContainer.prepend($(response.data.notes));
               },
               error: function(response) {
                 trackmageAlert(
@@ -488,6 +496,11 @@
             $("#trackmage-shipment-tracking .inside").html(
               response.data.html
             );
+
+            let notesContainer = $("ul.order_notes").parent();
+            $("ul.order_notes").remove();
+            notesContainer.prepend($(response.data.notes));
+
           },
           error: function(response) {
             trackmageAlert(

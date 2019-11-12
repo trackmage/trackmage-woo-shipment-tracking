@@ -9,6 +9,8 @@
 
 namespace TrackMage\WordPress;
 
+use TrackMage\WordPress\Repository\ShipmentRepository;
+
 defined('WPINC') || exit;
 
 /**
@@ -210,17 +212,14 @@ class Ajax {
 
                     ];
                 }, $orderItems);
-
-                $orderNotes = array_map(function(\WC_Order_Item $item) {
-                    return [
-                        'name' => $item->get_name(),
-                    ];
-                }, $orderItems);
-
             }
 
             Helper::validateShipment($shipment, $orderItems, $existingShipments);
             $shipment = Helper::saveShipmentWithJoinedItems($shipment);
+
+            $orderNotes = array_map(function(\WC_Order_Item $item) {
+                return $item->get_name();
+            }, $orderItems);
             /* translators: %s item name. */
             $order->add_order_note( sprintf( __( 'Added shipment %s for order items: %s', 'trackmage' ), $shipment['tracking_number'], implode( ', ', $orderNotes ) ), false, true );
 
@@ -232,7 +231,7 @@ class Ajax {
 
                 ob_start();
                 $notes = wc_get_order_notes( array( 'order_id' => $orderId ) );
-                include WC()->plugin_path().'includes/admin/meta-boxes/views/html-order-notes.php';
+                include WC()->plugin_path().'/includes/admin/meta-boxes/views/html-order-notes.php';
                 $notes_html = ob_get_clean();
 
 
@@ -284,12 +283,19 @@ class Ajax {
 
             // Update shipment details in the database.
             $shipment = Helper::saveShipmentWithJoinedItems($shipment);
+            $order->add_order_note( sprintf( __( 'Shipment %s was updated', 'trackmage' ), $shipment['tracking_number']), false, true );
 
             try {
                 // Get HTML to return.
                 ob_start();
                 include TRACKMAGE_VIEWS_DIR . 'meta-boxes/order-shipments.php';
                 $html = ob_get_clean();
+
+                ob_start();
+                $notes = wc_get_order_notes( array( 'order_id' => $orderId ) );
+                include WC()->plugin_path().'/includes/admin/meta-boxes/views/html-order-notes.php';
+                $notes_html = ob_get_clean();
+
             } catch (\Exception $e) {
                 wp_send_json_error(['message' => $e->getMessage()]);
             }
@@ -297,6 +303,7 @@ class Ajax {
             wp_send_json_success([
                 'message' => __('Shipment updated successfully!', 'trackmage'),
                 'html' => $html,
+                'notes' => $notes_html
             ]);
         } catch (\Exception $e) {
             wp_send_json_error(['message' => $e->getMessage()]);
@@ -319,17 +326,27 @@ class Ajax {
         $orderId = $_POST['orderId'];
         $shipmentId = $_POST['id'];
 
+        $shipment = Helper::geShipmentWithJoinedItems($shipmentId);
         // Delete shipment record from the database.
         Helper::deleteShipment($shipmentId);
 
         // Order data.
         $order               = wc_get_order($orderId);
         $orderItems          = $order->get_items();
+
+        $order->add_order_note( sprintf( __( 'Shipment %s was deleted', 'trackmage' ), $shipment['tracking_number']), false, true );
+
         try {
             // Get HTML to return.
             ob_start();
             include TRACKMAGE_VIEWS_DIR . 'meta-boxes/order-shipments.php';
             $html = ob_get_clean();
+
+            ob_start();
+            $notes = wc_get_order_notes( array( 'order_id' => $orderId ) );
+            include WC()->plugin_path().'/includes/admin/meta-boxes/views/html-order-notes.php';
+            $notes_html = ob_get_clean();
+
         } catch (\Exception $e) {
             wp_send_json_error(['message' => $e->getMessage()]);
         }
@@ -337,6 +354,7 @@ class Ajax {
         wp_send_json_success([
             'message' => __('Shipment deleted successfully!', 'trackmage'),
             'html' => $html,
+            'notes' => $notes_html
         ]);
     }
 
