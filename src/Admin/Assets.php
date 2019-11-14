@@ -117,7 +117,7 @@ class Assets {
                     'delete'              => __('Delete', 'trackmage'),
                     'name'                => __('Name', 'trackmage'),
                     'slug'                => __('Slug', 'trackmage'),
-                    'alias'               => __('Alias', 'trackmage'),
+                    'alias'               => __('TrackMage Status', 'trackmage'),
                     'cancel'              => __('Cancel', 'trackmage'),
                     'update'              => __('Update', 'trackmage'),
                     'confirmDeleteStatus' => __('Are you sure you want to delete this status?', 'trackmage'),

@@ -55,7 +55,7 @@
   };
 
   $(document).ready(function() {
-    $('#general-settings-form input,  #general-settings-form select').on('change',function() {
+    $('#trackmage_workspace,  #trackmage_sync_statuses').on('change',function() {
       somethingChanged = true;
       $('#btn-save-form').removeClass('disabled').removeAttr('disabled');
     });
@@ -94,10 +94,16 @@
 
         if (response.data.status === "success") {
           message = params.settings.i18n.successValidKeys;
+          $('#btn-save-form').removeClass('disabled').removeAttr('disabled');
+          $("form#general-settings-form").prop('cansubmit',true);
         } else if (response.data.errors) {
           message = response.data.errors.join(" ");
+          $("form#general-settings-form").prop('cansubmit',false);
+          $('#btn-save-form').addClass('disabled').attr('disabled','disabled');
         } else {
           message = params.main.i18n.unknownError;
+          $("form#general-settings-form").prop('cansubmit',false);
+          $('#btn-save-form').addClass('disabled').attr('disabled','disabled');
         }
 
         // Response notification.
@@ -114,6 +120,8 @@
 
         message = params.main.i18n.unknownError;
 
+        $("form#general-settings-form").prop('cansubmit',false);
+        $('#btn-save-form').addClass('disabled').attr('disabled','disabled');
         // Response notification.
         trackmageAlert(
           params.settings.i18n.testCredentials,
