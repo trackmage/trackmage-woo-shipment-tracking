@@ -175,6 +175,8 @@ class Admin {
             }
         }
 
+        Helper::clearTransients();
+
         // Stop here if no workspace is selected.
         if (empty($value)) {
             return 0;

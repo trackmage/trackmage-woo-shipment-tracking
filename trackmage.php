@@ -26,7 +26,7 @@
 
 use BrightNucleus\Config\ConfigFactory;
 use TrackMage\WordPress\Plugin;
-
+use TrackMage\WordPress\Helper;
 
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
@@ -142,6 +142,7 @@ function trackMageDeactivate() {
             Plugin::instance()->getLogger()->critical("Unable to drop table {$repository->getTable()}: {$e->getMessage()}");
         }
     }
+    Helper::clearTransients();
 }
 
 
