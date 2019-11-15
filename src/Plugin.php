@@ -148,7 +148,7 @@ class Plugin {
                 $client_secret = isset( $config['client_secret'] ) ? $config['client_secret'] : get_option( 'trackmage_client_secret', '' );
 
                 self::$client = new TrackMageClient( $client_id, $client_secret );
-                self::$client->setHost( 'https://api.test.trackmage.com' );
+                self::$client->setHost( TRACKMAGE_API_DOMAIN );
             } catch( ApiException $e ) {
                 return null;
             }

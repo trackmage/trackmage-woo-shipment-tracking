@@ -105,6 +105,8 @@ require_once ABSPATH . '/wp-admin/includes/plugin.php';
 
 define('TRACKMAGE_PLUGIN_FILE',	__FILE__);
 
+define('TRACKMAGE_API_DOMAIN', getenv('API_DOMAIN') ?: 'https://api.trackmage.com');
+
 add_action('plugins_loaded', 'trackMageInit');
 register_activation_hook(__FILE__, 'trackMageActivate');
 register_deactivation_hook(__FILE__, 'trackMageDeactivate');

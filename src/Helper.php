@@ -41,7 +41,7 @@ class Helper {
 
         try {
             $client = new TrackMageClient( $client_id, $client_secret );
-            $client->setHost('https://api.test.trackmage.com');
+            $client->setHost(TRACKMAGE_API_DOMAIN);
             $client->getGuzzleClient()->get('/workspaces');
             return self::CREDENTIALS_VALID;
         } catch( ClientException $e ) {
