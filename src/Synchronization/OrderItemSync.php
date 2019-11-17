@@ -84,7 +84,7 @@ class OrderItemSync implements EntitySyncInterface
             throw new SynchronizationException('Unable to sync order item because order is not yet synced');
         }
 
-        $workspace = get_option( 'trackmage_workspace' );
+        $webhookId = get_option('trackmage_webhook', '');
 
         $client = Plugin::get_client();
         $guzzleClient = $client->getGuzzleClient();
@@ -95,7 +95,7 @@ class OrderItemSync implements EntitySyncInterface
             if (empty($trackmage_order_item_id)) {
                 try {
                     $response = $guzzleClient->post('/order_items', [
-                        'query' => ['ignoreWebhookId' => $workspace],
+                        'query' => ['ignoreWebhookId' => $webhookId],
                         'json' => [
                             'order' => '/orders/' . $trackmage_order_id,
                             'productName' => $item['name'],
@@ -126,7 +126,7 @@ class OrderItemSync implements EntitySyncInterface
             } else {
                 try {
                     $guzzleClient->put('/order_items/'.$trackmage_order_item_id, [
-                        'query' => ['ignoreWebhookId' => $workspace],
+                        'query' => ['ignoreWebhookId' => $webhookId],
                         'json' => [
                             'productName' => $item['name'],
                             'qty' => $item['quantity'],
@@ -197,10 +197,10 @@ class OrderItemSync implements EntitySyncInterface
         if (empty($trackmage_order_item_id)) {
             return;
         }
-        $workspace = get_option( 'trackmage_workspace' );
+        $webhookId = get_option('trackmage_webhook', '');
 
         try {
-            $guzzleClient->delete('/order_items/'.$trackmage_order_item_id, ['query' => ['ignoreWebhookId' => $workspace]]);
+            $guzzleClient->delete('/order_items/'.$trackmage_order_item_id, ['query' => ['ignoreWebhookId' => $webhookId]]);
         } catch ( ClientException $e ) {
             throw new SynchronizationException('Unable to delete order item: '.$e->getMessage(), $e->getCode(), $e);
         } catch ( \Throwable $e ) {

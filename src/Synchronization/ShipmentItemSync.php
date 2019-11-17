@@ -78,6 +78,8 @@ class ShipmentItemSync implements EntitySyncInterface
         }
 
         $workspace = get_option('trackmage_workspace');
+        $webhookId = get_option('trackmage_webhook', '');
+
         $client = Plugin::get_client();
         $guzzleClient = $client->getGuzzleClient();
 
@@ -85,7 +87,7 @@ class ShipmentItemSync implements EntitySyncInterface
             if (empty($trackmage_id)) {
                 try {
                     $response = $guzzleClient->post('/shipment_items', [
-                        'query' => ['ignoreWebhookId' => $workspace],
+                        'query' => ['ignoreWebhookId' => $webhookId],
                         'json' => [
                             'shipment' => '/shipments/' . $trackmageShipmentId,
                             'orderItem' => '/order_items/'.$trackmageOrderItemId,
@@ -111,7 +113,7 @@ class ShipmentItemSync implements EntitySyncInterface
             } else {
                 try {
                     $guzzleClient->put('/shipment_items/'.$trackmage_id, [
-                        'query' => ['ignoreWebhookId' => $workspace],
+                        'query' => ['ignoreWebhookId' => $webhookId],
                         'json' => [
                             'orderItem' => '/order_items/'.$trackmageOrderItemId,
                             'qty' => (int)$shipmentItem['qty'],
@@ -185,10 +187,10 @@ class ShipmentItemSync implements EntitySyncInterface
         if (empty($trackmage_id)) {
             return;
         }
-        $workspace = get_option('trackmage_workspace');
+        $webhookId = get_option('trackmage_webhook', '');
 
         try {
-            $guzzleClient->delete('/shipment_items/'.$trackmage_id, ['query' => ['ignoreWebhookId' => $workspace]]);
+            $guzzleClient->delete('/shipment_items/'.$trackmage_id, ['query' => ['ignoreWebhookId' => $webhookId]]);
         } catch ( ClientException $e ) {
             throw new SynchronizationException('Unable to delete shipmentItem: '.$e->getMessage(), $e->getCode(), $e);
         } catch ( \Throwable $e ) {

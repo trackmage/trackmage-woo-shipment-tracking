@@ -19,6 +19,7 @@ class ShipmentItemSyncTest extends WPTestCase
     const TM_SHIPMENT_ID = '1010';
     const TM_SHIPMENT_ITEM_ID = '1111';
     const TM_WS_ID = '1001';
+    const TM_WEBHOOK_ID = '0110';
     const TM_ORDER_ID = 'tm-order-id';
     const TM_ORDER_ITEM_ID = 'tm-order-item-id';
     const TEST_TRACKING_NUMBER = 'TN-ABC';
@@ -58,6 +59,7 @@ class ShipmentItemSyncTest extends WPTestCase
         self::$product = $product;
 
         add_option('trackmage_workspace', self::TM_WS_ID);
+        add_option('trackmage_webhook', self::TM_WEBHOOK_ID);
     }
 
     protected function _before()
@@ -171,7 +173,7 @@ class ShipmentItemSyncTest extends WPTestCase
         //THEN
         //check this shipment item is sent to TM
         $this->assertMethodsWereCalled($requests, [
-            ['POST', '/shipment_items', ['ignoreWebhookId' => self::TM_WS_ID]],
+            ['POST', '/shipment_items', ['ignoreWebhookId' => self::TM_WEBHOOK_ID]],
         ]);
         $this->assertSubmittedJsonIncludes([
             'shipment' => '/shipments/'.self::TM_SHIPMENT_ID,
@@ -222,7 +224,7 @@ class ShipmentItemSyncTest extends WPTestCase
         //THEN
         // make sure it updates the linked shipment in TM
         $this->assertMethodsWereCalled($requests, [
-            ['PUT', '/shipment_items/'.self::TM_SHIPMENT_ITEM_ID, ['ignoreWebhookId' => self::TM_WS_ID]],
+            ['PUT', '/shipment_items/'.self::TM_SHIPMENT_ITEM_ID, ['ignoreWebhookId' => self::TM_WEBHOOK_ID]],
         ]);
         $this->assertSubmittedJsonIncludes([
             'orderItem' => '/order_items/'.self::TM_ORDER_ITEM_ID,
@@ -434,7 +436,7 @@ class ShipmentItemSyncTest extends WPTestCase
 
         //THEN
         $this->assertMethodsWereCalled($requests, [
-            ['DELETE', '/shipment_items/'.self::TM_SHIPMENT_ITEM_ID, ['ignoreWebhookId' => self::TM_WS_ID]],
+            ['DELETE', '/shipment_items/'.self::TM_SHIPMENT_ITEM_ID, ['ignoreWebhookId' => self::TM_WEBHOOK_ID]],
         ]);
         self::assertNull($this->shipmentItemRepo->find($wcShipmentItemId)['trackmage_id']);
     }

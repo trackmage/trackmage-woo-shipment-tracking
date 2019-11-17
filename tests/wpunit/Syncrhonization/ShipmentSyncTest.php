@@ -16,6 +16,7 @@ class ShipmentSyncTest extends WPTestCase
     const TM_SHIPMENT_ID = '1010';
     const TM_ORDER_ID = '1110';
     const TM_WS_ID = '1001';
+    const TM_WEBHOOK_ID = '0110';
     const TEST_TRACKING_NUMBER = 'TN-ABC';
     const TEST_CARRIER = 'UPS';
 
@@ -35,6 +36,7 @@ class ShipmentSyncTest extends WPTestCase
         $synchronizer->setDisableEvents(true);
 
         WC()->init();
+        add_option('trackmage_webhook', self::TM_WEBHOOK_ID);
     }
 
     protected function _before()
@@ -73,7 +75,7 @@ class ShipmentSyncTest extends WPTestCase
         //THEN
         //check this shipment is sent to TM
         $this->assertMethodsWereCalled($requests, [
-            ['POST', '/shipments', ['ignoreWebhookId' => self::TM_WS_ID]],
+            ['POST', '/shipments', ['ignoreWebhookId' => self::TM_WEBHOOK_ID]],
         ]);
         $this->assertSubmittedJsonIncludes([
             'workspace' => '/workspaces/'.self::TM_WS_ID,
@@ -153,7 +155,7 @@ class ShipmentSyncTest extends WPTestCase
         //THEN
         // make sure it updates the linked shipment in TM
         $this->assertMethodsWereCalled($requests, [
-            ['PUT', '/shipments/'.self::TM_SHIPMENT_ID, ['ignoreWebhookId' => self::TM_WS_ID]],
+            ['PUT', '/shipments/'.self::TM_SHIPMENT_ID, ['ignoreWebhookId' => self::TM_WEBHOOK_ID]],
         ]);
         $this->assertSubmittedJsonIncludes([
             'trackingNumber' => self::TEST_TRACKING_NUMBER,
@@ -296,7 +298,7 @@ class ShipmentSyncTest extends WPTestCase
 
         //THEN
         $this->assertMethodsWereCalled($requests, [
-            ['DELETE', '/shipments/'.self::TM_SHIPMENT_ID, ['ignoreWebhookId' => self::TM_WS_ID]],
+            ['DELETE', '/shipments/'.self::TM_SHIPMENT_ID, ['ignoreWebhookId' => self::TM_WEBHOOK_ID]],
         ]);
         self::assertNull($this->shipmentRepo->find($wcShipmentId)['trackmage_id']);
     }

@@ -58,6 +58,7 @@ class OrderSync implements EntitySyncInterface
             return;
         }
         $workspace = get_option( 'trackmage_workspace' );
+        $webhookId = get_option('trackmage_webhook', '');
         $trackmage_order_id = get_post_meta( $order_id, '_trackmage_order_id', true );
         $client = Plugin::get_client();
         $guzzleClient = $client->getGuzzleClient();
@@ -67,7 +68,7 @@ class OrderSync implements EntitySyncInterface
             if (empty($trackmage_order_id)) {
                 try {
                     $response = $guzzleClient->post('/orders', [
-                        'query' => ['ignoreWebhookId' => $workspace],
+                        'query' => ['ignoreWebhookId' => $webhookId],
                         'json' => [
                             'workspace' => '/workspaces/' . $workspace,
                             'externalSyncId' => (string)$order_id,
@@ -98,7 +99,7 @@ class OrderSync implements EntitySyncInterface
             } else {
                 try {
                     $guzzleClient->put("/orders/{$trackmage_order_id}", [
-                        'query' => ['ignoreWebhookId' => $workspace],
+                        'query' => ['ignoreWebhookId' => $webhookId],
                         'json' => [
                             'orderStatus' => $this->getTrackMageStatus($order),
                             'shippingAddress' => $this->getShippingAddress($order),
@@ -130,10 +131,10 @@ class OrderSync implements EntitySyncInterface
         if (empty($trackmage_order_id)) {
             return;
         }
-        $workspace = get_option( 'trackmage_workspace' );
+        $webhookId = get_option('trackmage_webhook', '');
 
         try {
-            $guzzleClient->delete('/orders/'.$trackmage_order_id, ['query' => ['ignoreWebhookId' => $workspace]]);
+            $guzzleClient->delete('/orders/'.$trackmage_order_id, ['query' => ['ignoreWebhookId' => $webhookId]]);
         } catch ( ClientException $e ) {
             throw new SynchronizationException('Unable to delete order: '.$e->getMessage(), $e->getCode(), $e);
         } catch ( \Throwable $e ) {

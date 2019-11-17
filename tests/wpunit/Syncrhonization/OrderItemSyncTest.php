@@ -17,6 +17,7 @@ class OrderItemSyncTest extends WPTestCase
 
     const QTY = 1;
     const TM_WS_ID = '1001';
+    const TM_WEBHOOK_ID = '0110';
     const TM_ORDER_ID = 'tm-order-id';
     const TM_ORDER_ITEM_ID = 'tm-order-item-id';
     const PRODUCT_NAME = 'Test Product';
@@ -47,6 +48,7 @@ class OrderItemSyncTest extends WPTestCase
         self::$product = $product;
 
         add_option('trackmage_workspace', self::TM_WS_ID);
+        add_option('trackmage_webhook', self::TM_WEBHOOK_ID);
     }
 
     protected function _before()
@@ -99,7 +101,7 @@ class OrderItemSyncTest extends WPTestCase
         //THEN
         //check this order is sent to TM
         $this->assertMethodsWereCalled($requests, [
-            ['POST', '/order_items', ['ignoreWebhookId' => self::TM_WS_ID]],
+            ['POST', '/order_items', ['ignoreWebhookId' => self::TM_WEBHOOK_ID]],
         ]);
         $this->assertSubmittedJsonIncludes([
             'order' => '/orders/' . self::TM_ORDER_ID,
@@ -139,7 +141,7 @@ class OrderItemSyncTest extends WPTestCase
         //THEN
         // make sure it updates the linked order item in TM
         $this->assertMethodsWereCalled($requests, [
-            ['PUT', '/order_items/'.self::TM_ORDER_ITEM_ID, ['ignoreWebhookId' => self::TM_WS_ID]],
+            ['PUT', '/order_items/'.self::TM_ORDER_ITEM_ID, ['ignoreWebhookId' => self::TM_WEBHOOK_ID]],
         ]);
         $this->assertSubmittedJsonIncludes([
             'productName' => self::PRODUCT_NAME,
@@ -289,7 +291,7 @@ class OrderItemSyncTest extends WPTestCase
 
         //THEN
         $this->assertMethodsWereCalled($requests, [
-            ['DELETE', '/order_items/'.self::TM_ORDER_ITEM_ID, ['ignoreWebhookId' => self::TM_WS_ID]],
+            ['DELETE', '/order_items/'.self::TM_ORDER_ITEM_ID, ['ignoreWebhookId' => self::TM_WEBHOOK_ID]],
         ]);
         self::assertSame('', wc_get_order_item_meta($wcItemId, '_trackmage_order_item_id', true));
     }

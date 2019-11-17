@@ -9,6 +9,7 @@ class OrderSyncTest extends WPTestCase {
     use GuzzleMockTrait;
     const TM_ORDER_ID = 'tm-order-id';
     const TM_WS_ID = '1001';
+    const TM_WEBHOOK_ID = '0110';
     const SOURCE = 'wp';
     const TEST_ADDRESS = [
         'addressLine1' => 'addr1',
@@ -35,6 +36,7 @@ class OrderSyncTest extends WPTestCase {
         $synchronizer->setDisableEvents(true);
 
         WC()->init();
+        add_option('trackmage_webhook', self::TM_WEBHOOK_ID);
     }
 
     protected function _before()
@@ -86,7 +88,7 @@ class OrderSyncTest extends WPTestCase {
         //THEN
         //check this order is sent to TM
         $this->assertMethodsWereCalled($requests, [
-            ['POST', '/orders', ['ignoreWebhookId' => self::TM_WS_ID]],
+            ['POST', '/orders', ['ignoreWebhookId' => self::TM_WEBHOOK_ID]],
         ]);
 
         $this->assertSubmittedJsonIncludes([
@@ -145,7 +147,7 @@ class OrderSyncTest extends WPTestCase {
         //THEN
         // make sure it updates the linked order in TM
         $this->assertMethodsWereCalled($requests, [
-            ['PUT', '/orders/'.self::TM_ORDER_ID, ['ignoreWebhookId' => self::TM_WS_ID]],
+            ['PUT', '/orders/'.self::TM_ORDER_ID, ['ignoreWebhookId' => self::TM_WEBHOOK_ID]],
         ]);
         $this->assertSubmittedJsonIncludes([
             'orderStatus' => ['code' => 'pending', 'title' => 'Pending'],
@@ -319,7 +321,7 @@ class OrderSyncTest extends WPTestCase {
 
         //THEN
         $this->assertMethodsWereCalled($requests, [
-            ['DELETE', '/orders/'.self::TM_ORDER_ID, ['ignoreWebhookId' => self::TM_WS_ID]],
+            ['DELETE', '/orders/'.self::TM_ORDER_ID, ['ignoreWebhookId' => self::TM_WEBHOOK_ID]],
         ]);
         self::assertSame('', get_post_meta( $wcId, '_trackmage_order_id', true ));
     }
