@@ -349,7 +349,7 @@
   }
 }
 
-/** Statuse Manager */
+/** Status Manager */
 .status-manager {
   margin-top: 20px;
 
@@ -391,5 +391,12 @@
       color: #6d6d6d;
       text-shadow: 1px 1px #fff;
     }
+  }
+}
+
+/** Order edit page */
+.select2-container{
+  .select2-search__field{
+    min-width: 80px !important;
   }
 }

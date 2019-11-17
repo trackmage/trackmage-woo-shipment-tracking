@@ -195,14 +195,14 @@
               type: response.success ? "success" : "failure"
             };
 
-            trackmageAlert(alert.title, alert.message, alert.type, false);
+            trackmageAlert(alert.title, alert.message, alert.type, true);
           },
           error: function() {
             trackmageAlert(
               params.main.i18n.failure,
               params.main.i18n.unknownError,
               "failure",
-              false
+              true
             );
           },
           complete: function() {
@@ -288,14 +288,14 @@
           type: response.success ? "success" : "failure"
         };
 
-        trackmageAlert(alert.title, alert.message, alert.type, false);
+        trackmageAlert(alert.title, alert.message, alert.type, true);
       },
       error: function() {
         trackmageAlert(
           params.main.i18n.failure,
           params.main.i18n.unknownError,
           "failure",
-          false
+          true
         );
       },
       complete: function() {
@@ -387,14 +387,14 @@
               type: response.success ? "success" : "failure"
             };
 
-            trackmageAlert(alert.title, alert.message, alert.type, false);
+            trackmageAlert(alert.title, alert.message, alert.type, true);
           },
           error: function() {
             trackmageAlert(
               params.main.i18n.failure,
               params.main.i18n.unknownError,
               "failure",
-              false
+              true
             );
           }
         });

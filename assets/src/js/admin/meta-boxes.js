@@ -100,7 +100,7 @@
             params.main.i18n.failure,
             response.data.message,
             "failure",
-            false
+            true
           );
         }
       });
@@ -210,19 +210,24 @@
                   type: response.success ? "success" : "failure"
                 };
 
-                trackmageAlert(alert.title, alert.message, alert.type, false);
+                trackmageAlert(alert.title, alert.message, alert.type, true);
 
                 // Re-load the meta box.
                 $("#trackmage-shipment-tracking .inside").html(
                   response.data.html
                 );
+
+                let notesContainer = $("ul.order_notes").parent();
+                $("ul.order_notes").remove();
+                notesContainer.prepend($(response.data.notes));
+
               },
               error: function(response) {
                 trackmageAlert(
                   params.main.i18n.failure,
                   response.data.message,
                   "failure",
-                  false
+                  true
                 );
               },
               complete: function() {
@@ -420,19 +425,22 @@
                   type: response.success ? "success" : "failure"
                 };
 
-                trackmageAlert(alert.title, alert.message, alert.type, false);
+                trackmageAlert(alert.title, alert.message, alert.type, true);
 
                 // Re-load the meta box.
                 $("#trackmage-shipment-tracking .inside").html(
                   response.data.html
                 );
+                let notesContainer = $("ul.order_notes").parent();
+                $("ul.order_notes").remove();
+                notesContainer.prepend($(response.data.notes));
               },
               error: function(response) {
                 trackmageAlert(
                   params.main.i18n.failure,
                   response.data.message,
                   "failure",
-                  false
+                  true
                 );
               },
               complete: function() {
@@ -482,19 +490,24 @@
               type: response.success ? "success" : "failure"
             };
 
-            trackmageAlert(alert.title, alert.message, alert.type, false);
+            trackmageAlert(alert.title, alert.message, alert.type, true);
 
             // Re-load the meta box.
             $("#trackmage-shipment-tracking .inside").html(
               response.data.html
             );
+
+            let notesContainer = $("ul.order_notes").parent();
+            $("ul.order_notes").remove();
+            notesContainer.prepend($(response.data.notes));
+
           },
           error: function(response) {
             trackmageAlert(
               params.main.i18n.failure,
               response.data.message,
               "failure",
-              false
+              true
             );
           },
           complete: function() {

@@ -41,7 +41,7 @@ class Helper {
 
         try {
             $client = new TrackMageClient( $client_id, $client_secret );
-            $client->setHost('https://api.test.trackmage.com');
+            $client->setHost(TRACKMAGE_API_DOMAIN);
             $client->getGuzzleClient()->get('/workspaces');
             return self::CREDENTIALS_VALID;
         } catch( ClientException $e ) {
@@ -63,25 +63,26 @@ class Helper {
      * @return array Of workspaces, or an empty array if no workspaces found.
      */
     public static function get_workspaces() {
-        $workspaces = [];
+        $workspaces = get_transient( 'trackmage_workspaces' );
+        if ( false === $workspaces ) {
+            try {
+                $client   = Plugin::get_client();
+                $response = $client->getGuzzleClient()->get( '/workspaces' );
+                $contents = $response->getBody()->getContents();
+                $data     = json_decode( $contents, true );
+                $result   = isset( $data['hydra:member'] ) ? $data['hydra:member'] : [];
 
-        try {
-            $client = Plugin::get_client();
-            $response = $client->getGuzzleClient()->get('/workspaces');
-            $contents = $response->getBody()->getContents();
-            $data = json_decode($contents, true);
-            $result = isset($data['hydra:member'])? $data['hydra:member'] : [];
-
-            foreach ( $result as $workspace ) {
-                $workspaces[] = [
-                    'id' => $workspace['id'],
-                    'title' => $workspace['title'],
-                ];
+                foreach ( $result as $workspace ) {
+                    $workspaces[] = [
+                        'id'    => $workspace['id'],
+                        'title' => $workspace['title'],
+                    ];
+                }
+                set_transient( 'trackmage_workspaces', $workspaces, 3600 );
+            } catch ( ApiException $e ) {
+            } catch ( ClientException $e ) {
             }
-        } catch( ApiException $e ) {
-        } catch( ClientException $e ) {
         }
-
         return $workspaces;
     }
 
@@ -557,5 +558,18 @@ class Helper {
             return false;
         $scheduled = wp_schedule_single_event( time() + $delay, $nextTask[0]->action, [ json_decode($nextTask[0]->params) , $nextTask[0]->id ] );
         return $nextTask[0]->id;
+    }
+
+
+    public static function clearTransients()
+    {
+        $transients_to_clear = array(
+            'trackmage_order_statuses',
+            'trackmage_carriers',
+            'trackmage_workspaces'
+        );
+        foreach ( $transients_to_clear as $transient ) {
+            delete_transient( $transient );
+        }
     }
 }
