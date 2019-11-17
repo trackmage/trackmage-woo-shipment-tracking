@@ -211,7 +211,6 @@ class Plugin {
         $initClasses = [
             'Ajax',
             'Assets',
-            'Templates',
             'Admin\Assets',
         ];
 
