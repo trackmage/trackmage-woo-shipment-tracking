@@ -192,7 +192,7 @@ class OrderSync implements EntitySyncInterface
     private function getShippingAddress(WC_Order $order)
     {
         $countryIso2 = $order->get_shipping_country();
-        $stateCode = $order->get_billing_state();
+        $stateCode = $order->get_shipping_state();
         $state = $this->getState($countryIso2, $stateCode);
 
         return [
@@ -239,11 +239,11 @@ class OrderSync implements EntitySyncInterface
     private function getState($countryIso2, $stateCode)
     {
         if (empty($countryIso2) || empty($stateCode)) {
-            return null;
+            return $stateCode;
         }
         $states = WC()->countries->get_states($countryIso2);
         if (!isset($states[$stateCode])) {
-            return null;
+            return $stateCode;
         }
         $state = $states[$stateCode];
         $state = html_entity_decode($state);

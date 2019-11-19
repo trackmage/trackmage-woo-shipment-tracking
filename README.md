@@ -16,6 +16,11 @@ npm install -g gulp-cli
 npm rebuild node-sass
 ```
 
+Add this to wp-config.php to change the api domain:
+```
+define('TRACKMAGE_API_DOMAIN', 'https://api.test.trackmage.com');
+```
+
 ## Testing:
 
 Local commands:
