@@ -77,6 +77,8 @@ class OrderSync implements EntitySyncInterface
                             'shippingAddress' => $this->getShippingAddress($order),
                             'billingAddress' => $this->getBillingAddress($order),
                             'orderStatus' => $this->getTrackMageStatus($order),
+                            'subtotal' => (string)$order->get_subtotal(),
+                            'total' => (string)$order->get_total(),
                         ]
                     ]);
                     $result = json_decode( $response->getBody()->getContents(), true );
@@ -104,6 +106,8 @@ class OrderSync implements EntitySyncInterface
                             'orderStatus' => $this->getTrackMageStatus($order),
                             'shippingAddress' => $this->getShippingAddress($order),
                             'billingAddress' => $this->getBillingAddress($order),
+                            'subtotal' => (string)$order->get_subtotal(),
+                            'total' => (string)$order->get_total(),
                         ]
                     ]);
                 } catch (ClientException $e) {

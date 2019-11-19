@@ -99,6 +99,8 @@ class OrderSyncTest extends WPTestCase {
             'orderStatus' => ['code' => 'completed', 'title' => 'Completed'],
             'shippingAddress' => self::TEST_ADDRESS,
             'billingAddress' => self::TEST_ADDRESS,
+            'subtotal' => '0',
+            'total' => '0',
         ], $requests[0]['request']);
         //make sure that TM ID is saved to WC order meta
         self::assertSame(self::TM_ORDER_ID, get_post_meta($wcId, '_trackmage_order_id', true));
@@ -153,6 +155,8 @@ class OrderSyncTest extends WPTestCase {
             'orderStatus' => ['code' => 'pending', 'title' => 'Pending'],
             'shippingAddress' => self::TEST_ADDRESS,
             'billingAddress' => self::TEST_ADDRESS,
+            'subtotal' => '0',
+            'total' => '0',
         ], $requests[0]['request']);
     }
 
