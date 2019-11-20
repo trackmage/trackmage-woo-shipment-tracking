@@ -80,9 +80,11 @@ $isInSync = Helper::isBulkSynchronizationInProcess();
                     <td>
                         <select name="trackmage_workspace" id="trackmage_workspace">
                             <option value="0"><?php _e( '— Select —', 'trackmage' ); ?></option>
-                            <?php foreach ( $workspaces as $ws ) : ?>
-                                <option value="<?php echo $ws['id']; ?>" <?php selected( $ws['id'], $workspace ); ?>><?php echo $ws['title']; ?></option>
-                            <?php endforeach; ?>
+                            <?php if($workspaces):?>
+                                <?php foreach ( $workspaces as $ws ) : ?>
+                                    <option value="<?php echo $ws['id']; ?>" <?php selected( $ws['id'], $workspace ); ?>><?php echo $ws['title']; ?></option>
+                                <?php endforeach; ?>
+                            <?php endif;?>
                         </select>
                         <p class="description"><?php echo sprintf( __( 'Select a workspace or <a href="%1$s">create a new one</a> in TrackMage.', 'trackmage'), 'https://app.test.trackmage.com/dashboard/workspaces' ); ?></p>
                     </td>

@@ -226,7 +226,7 @@
     let form = $(this);
     let workspace = $("#trackmage_workspace").val();
     let sync_statuses = $('#trackmage_sync_statuses').val();
-    let differences = sync_statuses.filter(value => -1 === params.settings.sync_statuses.indexOf(value));
+    let differences = sync_statuses? sync_statuses.filter(value => -1 === params.settings.sync_statuses.indexOf(value)): [];
     if(params.settings.workspace !== "0" && params.settings.workspace != workspace){ // check if workspace is changed
       confirmDialog(
         '#change-workspace-dialog',
@@ -247,7 +247,7 @@
           }
         });
       return false;
-    }else if(params.settings.workspace == "0" && workspace != "0" || differences.length > 0 && params.settings.workspace != "0"){ // check if workspace is set first time || sync statuses were changed and workspace is set
+    }else if(params.settings.workspace == "0" && workspace != "0" || (differences.length > 0 || !sync_statuses) && params.settings.workspace != "0"){ // check if workspace is set first time || sync statuses were changed and workspace is set
       confirmDialog(
         '#trigger-sync-dialog',
         function(){
