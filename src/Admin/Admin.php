@@ -31,6 +31,10 @@ class Admin {
         add_action('admin_menu', [$this, 'add_page']);
         add_action('admin_init', [$this, 'settings']);
         add_action('wp_ajax_trackmage_test_credentials', [$this, 'test_credentials']);
+
+        add_filter('update_option_trackmage_client_id', [$this, 'changed_api_credentials'], 10, 3);
+        add_filter('update_option_trackmage_client_secret', [$this, 'changed_api_credentials'], 10, 3);
+
         add_filter('pre_update_option_trackmage_workspace', [$this, 'select_workspace'], 10, 3);
 
         add_filter('pre_update_option_trackmage_delete_data', [$this, 'trigger_delete_data'], 10, 3);
@@ -140,6 +144,14 @@ class Admin {
                 ]
             ]);
         }
+    }
+
+    public function changed_api_credentials($old_value, $value, $option){
+        // Exit if value has not changed.
+        if ($value === $old_value) {
+            return;
+        }
+        Helper::clearTransients();
     }
 
     /**
