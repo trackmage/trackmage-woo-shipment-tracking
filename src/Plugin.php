@@ -11,6 +11,7 @@
 namespace TrackMage\WordPress;
 
 use TrackMage\WordPress\Admin\Admin;
+use TrackMage\WordPress\Admin\Wizard;
 use TrackMage\WordPress\Admin\Orders;
 use TrackMage\WordPress\Webhook\Endpoint;
 use BrightNucleus\Config\ConfigInterface;
@@ -204,7 +205,9 @@ class Plugin {
 
         // Initialize classes.
         new Admin;
+        new Wizard;
         new Orders($this->getSynchronizer());
+
 
         $this->getEndpoint();
 
