@@ -25,19 +25,25 @@ class Wizard {
      */
     const PAGE_IDENTIFIER = 'trackmage-wizard';
 
+    const steps = [
+        'credentials',
+        'workspace',
+        'statuses'
+    ];
     /**
      * The constructor.
      *
      * @since 0.1.0
      */
     public function __construct() {
-        if ( ! ( $this->isConfigPage() && current_user_can( 'manage_options' ) ) ) {
+        if ( ! ( $this->isWizardPage() && current_user_can( 'manage_options' ) ) ) {
             return;
         }
         // Register the page for the wizard.
         add_action( 'admin_menu', [ $this, 'addWizardPage' ] );
-        //add_action( 'admin_enqueue_scripts', [ $this, 'enqueueAssets' ] );
+        add_action( 'admin_enqueue_scripts', [ $this, 'enqueueAssets' ] );
         add_action( 'admin_init', [ $this, 'renderWizardPage' ] );
+
     }
 
     /**
@@ -111,7 +117,7 @@ class Wizard {
         $this->remove_notification();
         $this->remove_notification_option();
 
-        wp_redirect( admin_url( 'admin.php?page=' . WPSEO_Admin::PAGE_IDENTIFIER ) );
+        //wp_redirect( admin_url( 'admin.php?page=' . WPSEO_Admin::PAGE_IDENTIFIER ) );
         exit;
     }
 
@@ -120,7 +126,12 @@ class Wizard {
      *
      * @return bool
      */
-    protected function isConfigPage() {
+    protected function isWizardPage() {
         return ( filter_input( INPUT_GET, 'page' ) === self::PAGE_IDENTIFIER );
+    }
+
+    protected function getStepHtml($step){
+        if(isset(self::steps[$step]) && file_exists(TRACKMAGE_VIEWS_DIR . "wizard/step-{$step}.php"))
+            include(TRACKMAGE_VIEWS_DIR . "wizard/step-{$step}.php");
     }
 }

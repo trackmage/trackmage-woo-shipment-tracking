@@ -12,7 +12,8 @@
 		"brightnucleus/config": "^0.4",
 		"psr/log": "^1.1",
 		"symfony/property-access": "^3.4|^4.3",
-		"trackmage/trackmage-sdk-php": "dev-shipments"
+		"trackmage/trackmage-sdk-php": "dev-shipments",
+		"twbs/bootstrap": "^4.1.3"
 	},
 	"require-dev": {
 		"ext-intl": "*",
@@ -38,6 +39,12 @@
 			"TrackMage\\WordPress\\Tests\\": "tests/"
 		}
 	},
+    "scripts": {
+        "post-update-cmd": [
+            "rm -rf assets/dist/bootstrap",
+            "cp -Rf vendor/twbs/bootstrap/dist/ assets/dist/bootstrap"
+        ]
+    },
 	"support": {
 		"issues": "https://github.com/trackmage/trackmage-wordpress-plugin/issues",
 		"source": "https://github.com/trackmage/trackmage-wordpress-plugin"
