@@ -14,6 +14,7 @@ use GuzzleHttp\Exception\ClientException;
 use TrackMage\WordPress\Plugin;
 use TrackMage\WordPress\Helper;
 use TrackMage\Client\Swagger\ApiException;
+use TrackMage\WordPress\Assets;
 
 class Wizard {
 
@@ -25,20 +26,32 @@ class Wizard {
      */
     const PAGE_IDENTIFIER = 'trackmage-wizard';
 
-    const steps = [
-        'credentials',
-        'workspace',
-        'statuses'
-    ];
+    const AJAX_PAGE_CONTENT_ENDPOINT = 'get_step_content';
+    const AJAX_PAGE_PROCESS_ENDPOINT = 'process_step';
+
+    private $_steps;
     /**
      * The constructor.
      *
      * @since 0.1.0
      */
     public function __construct() {
+        add_action('wp_ajax_trackmage_wizard_'.self::AJAX_PAGE_CONTENT_ENDPOINT, [$this, 'getStepHtml']);
+        add_action('wp_ajax_trackmage_wizard_'.self::AJAX_PAGE_PROCESS_ENDPOINT, [$this, 'processNextStep']);
+
+        add_action( 'admin_notices', [$this,'showAdminNotice'] );
+
         if ( ! ( $this->isWizardPage() && current_user_can( 'manage_options' ) ) ) {
             return;
         }
+
+        $this->_steps = [
+            [ 'code' => 'credentials', 'title' => __('API Credentials','trackmage'), 'icon' => ''],
+            [ 'code' => 'workspace', 'title' => __('Workspace','trackmage'), 'icon' => ''],
+            [ 'code' => 'statuses', 'title' => __('Sync statuses','trackmage'), 'icon' => '']
+            //[ 'code' => 'finish', 'title' => __('Finish','trackmage'), 'icon' => '']
+        ];
+
         // Register the page for the wizard.
         add_action( 'admin_menu', [ $this, 'addWizardPage' ] );
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueueAssets' ] );
@@ -65,26 +78,58 @@ class Wizard {
      * Enqueues the assets needed for the wizard.
      */
     public function enqueue_assets() {
+        $suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
+
         wp_enqueue_media();
 
         if ( ! wp_script_is( 'wp-element', 'registered' ) && function_exists( 'gutenberg_register_scripts_and_styles' ) ) {
             gutenberg_register_scripts_and_styles();
         }
 
-        wp_enqueue_style( 'forms' );
-        /*
-        $asset_manager = new WPSEO_Admin_Asset_Manager();
-        $asset_manager->register_wp_assets();
-        $asset_manager->register_assets();
-        $asset_manager->enqueue_script( 'configuration-wizard' );
-        $asset_manager->enqueue_style( 'yoast-components' );
 
-        $config = $this->get_config();
+        wp_register_style('trackmage-bootstrap', TRACKMAGE_URL . 'assets/dist/bootstrap/css/bootstrap' . $suffix . '.css', [], TRACKMAGE_VERSION, 'all');
+        wp_enqueue_style('trackmage-bootstrap');
+        wp_register_style('trackmage-wizard', TRACKMAGE_URL . 'assets/dist/css/admin/wizard' . $suffix . '.css', [], TRACKMAGE_VERSION, 'all');
+        wp_enqueue_style('trackmage-wizard');
+        // Enqueue WooCommerce styles.
+        wp_enqueue_style('select2', WC()->plugin_url() . '/assets/css/select2.css', array(), WC_VERSION);
+        wp_enqueue_style('woocommerce_admin_styles');
 
-        wp_localize_script( WPSEO_Admin_Asset_Manager::PREFIX . 'configuration-wizard', 'yoastWizardConfig', $config );
 
-        $yoast_components_l10n = new WPSEO_Admin_Asset_Yoast_Components_L10n();
-        $yoast_components_l10n->localize_script( WPSEO_Admin_Asset_Manager::PREFIX . 'configuration-wizard' );*/
+        wp_enqueue_script('selectWoo', WC()->plugin_url() . '/assets/js/selectWoo/selectWoo.full.js', [], WC_VERSION, true);
+
+        wp_register_script('trackmage-bootstrap', TRACKMAGE_URL . 'assets/dist/bootstrap/js/bootstrap' . $suffix . '.js', ['jquery'], TRACKMAGE_VERSION, true);
+        wp_enqueue_script('trackmage-bootstrap');
+
+        wp_register_script('jquery-validate', TRACKMAGE_URL . 'assets/dist/js/admin/jquery.validate.min.js', ['jquery'], TRACKMAGE_VERSION, true);
+        wp_enqueue_script('jquery-validate');
+
+
+
+        wp_register_script('trackmage-wizard-lib', TRACKMAGE_URL . 'assets/dist/js/admin/jquery.bootstrap.wizard' . $suffix . '.js', ['jquery'], TRACKMAGE_VERSION, true);
+        wp_enqueue_script('trackmage-wizard-lib');
+
+
+        wp_register_script('trackmage-wizard', TRACKMAGE_URL . 'assets/dist/js/admin/wizard' . $suffix . '.js', ['jquery'], TRACKMAGE_VERSION, true);
+        wp_enqueue_script('trackmage-wizard');
+        wp_localize_script('trackmage-wizard', 'trackmageWizard', [
+            'urls' => [
+                'ajax' => admin_url('admin-ajax.php'),
+                'completed' => admin_url()
+            ],
+            'steps' => $this->_steps,
+            'i18n' => [
+                'noSelect'     => __('— Select —', 'trackmage'),
+                'success'      => __('Success', 'trackmage'),
+                'failure'      => __('Failure', 'trackmage'),
+                'unknownError' => __('Unknown error occured.', 'trackmage'),
+                'testCredentials'  => __('Test Credentials', 'trackmage'),
+                'successValidKeys' => __('Valid credentials. Click on <em>“Save Changes”</em> for the changes to take effect.', 'trackmage'),
+            ],
+        ]);
+
+        //Assets::enqueueStyles();
+        //Assets::enqueueScripts();
     }
 
     /**
@@ -95,12 +140,11 @@ class Wizard {
         $settings_url = admin_url( '/admin.php?page=trackmage-settings' );
         $wizard_title  = sprintf(
         /* translators: %s expands to TrackMage. */
-            __( '%s &rsaquo; Configuration Wizard', 'trackmage' ),
+            __( '%s for Wordpress Installation Wizard', 'trackmage' ),
             'TrackMage'
         );
         include(TRACKMAGE_VIEWS_DIR . 'wizard/container.php');
 
-       // wp_print_scripts( 'trackmage-configuration-wizard' );
     }
 
     /**
@@ -130,8 +174,131 @@ class Wizard {
         return ( filter_input( INPUT_GET, 'page' ) === self::PAGE_IDENTIFIER );
     }
 
-    protected function getStepHtml($step){
-        if(isset(self::steps[$step]) && file_exists(TRACKMAGE_VIEWS_DIR . "wizard/step-{$step}.php"))
-            include(TRACKMAGE_VIEWS_DIR . "wizard/step-{$step}.php");
+    public function getStepHtml() {
+        if (! current_user_can('manage_options')) {
+            wp_die(-1);
+        }
+
+        $step = $_POST['step'];
+        $data = '';
+        if(file_exists(TRACKMAGE_VIEWS_DIR . "wizard/step-{$step}.php")) {
+            ob_start();
+            include( TRACKMAGE_VIEWS_DIR . "wizard/step-{$step}.php" );
+            $data = ob_get_clean();
+
+        }
+        wp_send_json_success([
+            'html' => $data
+        ]);
+    }
+
+    public function processNextStep(){
+        $step = $_POST['step'];
+        switch ($step){
+            case 'credentials':
+                $clientId = $_POST['trackmage_client_id'];
+                $clientSecret = $_POST['trackmage_client_secret'];
+                $credentials = Helper::check_credentials($clientId, $clientSecret);
+
+                if (Helper::CREDENTIALS_INVALID === $credentials) {
+                    wp_send_json_error([
+                        'status' => 'error',
+                        'errors' => [
+                            __('Invalid credentials.', 'trackmage'),
+                        ]
+                    ]);
+                }
+
+                if (Helper::CREDENTIALS_ERROR === $credentials) {
+                    wp_send_json_error([
+                        'status' => 'error',
+                        'errors' => [
+                            __('We could not perform the check. Please try again.', 'trackmage'),
+                        ]
+                    ]);
+                }
+                try {
+                    update_option( 'trackmage_client_id', $clientId );
+                    update_option( 'trackmage_client_secret', $clientSecret );
+                }catch (\Exception $e){
+                    wp_send_json_error([
+                        'status' => 'error',
+                        'errors' => [
+                            $e->getMessage(),
+                        ]
+                    ]);
+                }
+
+                wp_send_json_success([
+                    'status' => 'success',
+                ]);
+                break;
+            case 'workspace':
+                $workspaceId = $_POST['trackmage_workspace'];
+                try {
+                    update_option( 'trackmage_workspace', $workspaceId );
+                }catch (\Exception $e){
+                    wp_send_json_error([
+                        'status' => 'error',
+                        'errors' => [
+                            $e->getMessage(),
+                        ]
+                    ]);
+                }
+                wp_send_json_success([
+                    'status' => 'success',
+                ]);
+                break;
+            case 'statuses':
+                $statuses = $_POST['trackmage_sync_statuses'];
+                try {
+                    update_option( 'trackmage_sync_statuses', $statuses );
+                }catch (\Exception $e){
+                    wp_send_json_error([
+                        'status' => 'error',
+                        'errors' => [
+                            $e->getMessage(),
+                        ]
+                    ]);
+                }
+                wp_send_json_success([
+                    'status' => 'success',
+                ]);
+                break;
+            default:
+                wp_send_json_error([
+                    'status' => 'error',
+                    'errors' => [
+                        __('Unknown wizard step.', 'trackmage'),
+                    ]
+                ]);
+        }
+        wp_send_json_success([
+            'step' => $step
+        ]);
+    }
+
+
+    public function showAdminNotice(){
+
+        /* Check transient, if available display notice */
+        if( get_transient( 'trackmage-wizard-notice' ) ){
+            $message = sprintf(
+                __( 'We have detected that you have not finished this wizard yet, so we recommend you to %2$sstart the configuration wizard to configure %1$s%3$s.', 'trackmage' ),
+                'TrackMage',
+                '<a href="' . admin_url( '?page=' . self::PAGE_IDENTIFIER ) . '">',
+                '</a>'
+            );
+            ?>
+            <div class="updated notice is-dismissible">
+                <h3><?php echo  sprintf(
+                    /* translators: %s expands to TrackMage. */
+                        __( 'First-time %s configuration', 'trackmage' ),
+                        'TrackMage'
+                    );?></h3>
+                <p><?php echo $message?></p>
+            </div>
+            <?php
+        }
     }
 }

@@ -36,7 +36,7 @@ const paths = {
 // Task: compile public styles.
 const compileScss = () => {
   return gulp
-    .src([paths.styles.frontend.src + "main.scss"])
+    .src([paths.styles.frontend.src + "**/*.scss"])
     .pipe(sass())
     .pipe(rename({ extname: ".css" }))
     .pipe(gulp.dest(paths.styles.frontend.dist));
@@ -45,7 +45,10 @@ const compileScss = () => {
 // Task: minify public styles.
 const minifyCss = () => {
   return gulp
-    .src([paths.styles.frontend.dist + "main.css"])
+    .src([
+      paths.styles.frontend.dist + "**/*.css",
+      "!" + paths.styles.frontend.dist + "**/*.min.css"
+    ])
     .pipe(
       uglifycss({
         uglyComments: true
@@ -82,7 +85,7 @@ const minifyJs = () => {
 // Task: compile admin styles.
 const compileAdminScss = () => {
   return gulp
-    .src([paths.styles.admin.src + "main.scss"])
+    .src([paths.styles.admin.src + "**/*.scss"])
     .pipe(sass())
     .pipe(rename({ extname: ".css" }))
     .pipe(gulp.dest(paths.styles.admin.dist));
@@ -91,7 +94,10 @@ const compileAdminScss = () => {
 // Task: minify admin styles.
 const minifyAdminCss = () => {
   return gulp
-    .src([paths.styles.admin.dist + "main.css"])
+    .src([
+      paths.styles.admin.dist + "**/*.css",
+      "!" + paths.styles.admin.dist + "**/*.min.css"
+    ])
     .pipe(
       uglifycss({
         uglyComments: true

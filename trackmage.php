@@ -113,7 +113,6 @@ add_action('plugins_loaded', 'trackMageInit');
 register_activation_hook(__FILE__, 'trackMageActivate');
 register_deactivation_hook(__FILE__, 'trackMageDeactivate');
 
-
 /**
  * trackMageActivate
  *
@@ -131,6 +130,8 @@ function trackMageActivate() {
             $plugin->getLogger()->critical("Unable to create table {$repository->getTable()}: {$e->getMessage()}");
         }
     }
+    if(!get_transient('trackmage-wizard-notice'))
+        set_transient( 'trackmage-wizard-notice', true );
 }
 
 /**

@@ -29,5 +29,8 @@
     "gulp-wp-pot": "^2.3.5",
     "gulp-zip": "^4.2.0",
     "jshint": "^2.10.2"
+  },
+  "dependencies": {
+    "node-sass": "^4.13.0"
   }
 }
