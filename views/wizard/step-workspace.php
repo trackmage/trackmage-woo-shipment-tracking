@@ -25,7 +25,7 @@ $workspaces = Helper::get_workspaces();
                         <?php endforeach; ?>
                     <?php endif;?>
                 </select>
-                <small id="workspaceHelp" class="form-text text-muted"><?php echo sprintf( __( 'Select a workspace or <a href="%1$s">create a new one</a> in TrackMage.', 'trackmage'), TRACKMAGE_APP_DOMAIN.'/dashboard/workspaces' ); ?></small>
+                <small id="workspaceHelp" class="form-text text-muted"><?php echo sprintf( __( 'Select a workspace or <a target="_blank" href="%1$s">create a new one</a> in TrackMage.', 'trackmage'), TRACKMAGE_APP_DOMAIN.'/dashboard/workspaces' ); ?></small>
             </div>
         </div>
     </form>
