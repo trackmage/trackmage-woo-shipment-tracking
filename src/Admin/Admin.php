@@ -167,7 +167,7 @@ class Admin {
 
         // Do unlink all orders, order items, shipments, shipment items from
         if(!(isset($_POST['trackmage_delete_data']) && $_POST['trackmage_delete_data'] != 0) ) {
-            $allOrdersIds = $this->getAllOrdersIds();
+            $allOrdersIds = Helper::getAllOrdersIds();
             foreach ( $allOrdersIds as $orderId ) {
                 Plugin::instance()->getSynchronizer()->unlinkOrder( $orderId );
             }
