@@ -30,7 +30,25 @@ const paths = {
       dist: "assets/dist/js/admin/"
     }
   },
-  locale: "languages/"
+  locale: "languages/",
+  node: "node_modules/"
+};
+
+const copyBootstrapCss = () => {
+  return gulp.src(paths.node + 'bootstrap/dist/css/*.*')
+    .pipe(gulp.dest(paths.styles.admin.dist));
+};
+const copyBootstrapJs = () => {
+  return gulp.src(paths.node + 'bootstrap/dist/js/*.*')
+    .pipe(gulp.dest(paths.scripts.admin.dist));
+};
+const copyJqueryValidationJs = () => {
+  return gulp.src(paths.node + 'jquery-validation/dist/*.js')
+    .pipe(gulp.dest(paths.scripts.admin.dist));
+};
+const copyJqueryBsWizardJs = () => {
+  return gulp.src(paths.node + 'jquery-bootstrap-wizard/jquery.bootstrap.wizard*.js')
+    .pipe(gulp.dest(paths.scripts.admin.dist));
 };
 
 // Task: compile public styles.
@@ -172,9 +190,9 @@ gulp.task(
   "build",
   gulp.parallel(
     // generatePot,
-    gulp.series(compileScss, minifyCss),
-    gulp.series(compileAdminScss, minifyAdminCss),
-    gulp.series(compileJs, minifyJs),
-    gulp.series(compileAdminJs, minifyAdminJs)
+    gulp.series(compileScss, minifyCss, copyBootstrapCss),
+    gulp.series(compileAdminScss, minifyAdminCss, copyBootstrapJs),
+    gulp.series(compileJs, minifyJs, copyJqueryValidationJs),
+    gulp.series(compileAdminJs, minifyAdminJs, copyJqueryBsWizardJs)
   )
 );

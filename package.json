@@ -31,6 +31,9 @@
     "jshint": "^2.10.2"
   },
   "dependencies": {
+    "bootstrap": "^4.4.1",
+    "jquery-bootstrap-wizard": "^1.4.2",
+    "jquery-validation": "^1.19.1",
     "node-sass": "^4.13.0"
   }
 }

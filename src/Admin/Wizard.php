@@ -87,7 +87,7 @@ class Wizard {
         }
 
 
-        wp_register_style('trackmage-bootstrap', TRACKMAGE_URL . 'assets/dist/bootstrap/css/bootstrap' . $suffix . '.css', [], TRACKMAGE_VERSION, 'all');
+        wp_register_style('trackmage-bootstrap', TRACKMAGE_URL . 'assets/dist/css/admin/bootstrap' . $suffix . '.css', [], TRACKMAGE_VERSION, 'all');
         wp_enqueue_style('trackmage-bootstrap');
         wp_register_style('trackmage-wizard', TRACKMAGE_URL . 'assets/dist/css/admin/wizard' . $suffix . '.css', [], TRACKMAGE_VERSION, 'all');
         wp_enqueue_style('trackmage-wizard');
@@ -95,16 +95,13 @@ class Wizard {
         wp_enqueue_style('select2', WC()->plugin_url() . '/assets/css/select2.css', array(), WC_VERSION);
         wp_enqueue_style('woocommerce_admin_styles');
 
-
         wp_enqueue_script('selectWoo', WC()->plugin_url() . '/assets/js/selectWoo/selectWoo.full.js', [], WC_VERSION, true);
 
-        wp_register_script('trackmage-bootstrap', TRACKMAGE_URL . 'assets/dist/bootstrap/js/bootstrap' . $suffix . '.js', ['jquery'], TRACKMAGE_VERSION, true);
+        wp_register_script('trackmage-bootstrap', TRACKMAGE_URL . 'assets/dist/js/admin/bootstrap' . $suffix . '.js', ['jquery'], TRACKMAGE_VERSION, true);
         wp_enqueue_script('trackmage-bootstrap');
 
-        wp_register_script('jquery-validate', TRACKMAGE_URL . 'assets/dist/js/admin/jquery.validate.min.js', ['jquery'], TRACKMAGE_VERSION, true);
+        wp_register_script('jquery-validate', TRACKMAGE_URL . 'assets/dist/js/admin/jquery.validate' . $suffix . '.js', ['jquery'], TRACKMAGE_VERSION, true);
         wp_enqueue_script('jquery-validate');
-
-
 
         wp_register_script('trackmage-wizard-lib', TRACKMAGE_URL . 'assets/dist/js/admin/jquery.bootstrap.wizard' . $suffix . '.js', ['jquery'], TRACKMAGE_VERSION, true);
         wp_enqueue_script('trackmage-wizard-lib');
@@ -264,6 +261,7 @@ class Wizard {
                 wp_send_json_success([
                     'status' => 'success',
                 ]);
+                set_transient('trackmage-wizard-notice', false);
                 break;
             default:
                 wp_send_json_error([
