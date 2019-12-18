@@ -28,12 +28,12 @@
     "gulp-uglifycss": "^1.1.0",
     "gulp-wp-pot": "^2.3.5",
     "gulp-zip": "^4.2.0",
-    "jshint": "^2.10.2"
+    "jshint": "^2.10.2",
+    "node-sass": "^4.13.0"
   },
   "dependencies": {
     "bootstrap": "^4.4.1",
     "jquery-bootstrap-wizard": "^1.4.2",
-    "jquery-validation": "^1.19.1",
-    "node-sass": "^4.13.0"
+    "jquery-validation": "^1.19.1"
   }
 }
