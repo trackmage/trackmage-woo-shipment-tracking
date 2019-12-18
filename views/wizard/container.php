@@ -16,8 +16,8 @@
 <body class="wp-admin wp-core-ui">
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-11 col-sm-9 col-md-7 col-lg-6 col-xl-5 text-center p-0 mt-3 mb-2">
-            <div class="card px-0 pt-4 pb-0 mt-3 mb-3">
+        <div class="col-12 col-sm-11 col-md-10 col-lg-8 col-xl-6 text-center p-0 mb-2">
+            <div class="card px-0 pt-1 pb-0 mb-3">
                 <div class="card-header">
                     <img class="img-fluid mx-auto d-block main-logo"  src="<?php echo TRACKMAGE_URL . 'assets/dist/images/trackmage_logo_big.png'?>" alt="><?php echo esc_html( $wizard_title ); ?>">
                     <h2 id="heading"><?php echo esc_html( $wizard_title ); ?></h2>

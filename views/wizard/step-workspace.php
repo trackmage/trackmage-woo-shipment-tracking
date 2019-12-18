@@ -15,8 +15,8 @@ $workspaces = Helper::get_workspaces();
     <p class="message"><?php echo sprintf( __( 'Please select a workspace in TrackMage.', 'trackmage' ) ); ?></p>
     <form id="workspace-form" method="post" class="form-horizontal" action="javascript:void(0);">
         <div class="form-group row">
-            <label class="col-sm-2 col-form-label text-right font-weight-bold" for="trackmage_workspace"><?php _e( 'Workspace', 'trackmage' ); ?></label>
-            <div class="col-sm-10">
+            <label class="col-12 col-md-3 col-lg-2 col-xl-2 col-form-label text-left text-md-right font-weight-bold text-nowrap" for="trackmage_workspace"><?php _e( 'Workspace', 'trackmage' ); ?></label>
+            <div class="col-12 col-md-9 col-lg-10 col-xl-10 pl-md-0">
                 <select name="trackmage_workspace" id="trackmage_workspace" class="required form-control custom-select" required aria-describedby="workspaceHelp">
                     <option value=""><?php _e( '— Select —', 'trackmage' ); ?></option>
                     <?php if($workspaces):?>
@@ -25,7 +25,7 @@ $workspaces = Helper::get_workspaces();
                         <?php endforeach; ?>
                     <?php endif;?>
                 </select>
-                <small id="workspaceHelp" class="form-text text-muted"><?php echo sprintf( __( 'Select a workspace or <a href="%1$s">create a new one</a> in TrackMage.', 'trackmage'), 'https://app.trackmage.com/dashboard/workspaces' ); ?></small>
+                <small id="workspaceHelp" class="form-text text-muted"><?php echo sprintf( __( 'Select a workspace or <a href="%1$s">create a new one</a> in TrackMage.', 'trackmage'), TRACKMAGE_APP_DOMAIN.'/dashboard/workspaces' ); ?></small>
             </div>
         </div>
     </form>

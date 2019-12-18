@@ -37,7 +37,7 @@ $isInSync = Helper::isBulkSynchronizationInProcess();
     <!-- Section: Credentials -->
     <div class="section">
         <h2 class="headline"><?php _e( 'Credentials', 'trackmage' ); ?></h2>
-        <p class="message"><?php echo sprintf( __( 'If you have not created API keys yet, please <a href="%1$s" target="_blank">login</a> to TrackMage account and generate a new key for this website.', 'trackmage' ), 'https://app.test.trackmage.com/dashboard/user-profile/api-keys' ); ?></p>
+        <p class="message"><?php echo sprintf( __( 'If you have not created API keys yet, please <a href="%1$s" target="_blank">login</a> to TrackMage account and generate a new key for this website.', 'trackmage' ), TRACKMAGE_APP_DOMAIN.'/dashboard/user-profile/api-keys' ); ?></p>
         <table class="form-table">
             <tbody>
                 <tr>
@@ -86,7 +86,7 @@ $isInSync = Helper::isBulkSynchronizationInProcess();
                                 <?php endforeach; ?>
                             <?php endif;?>
                         </select>
-                        <p class="description"><?php echo sprintf( __( 'Select a workspace or <a href="%1$s">create a new one</a> in TrackMage.', 'trackmage'), 'https://app.test.trackmage.com/dashboard/workspaces' ); ?></p>
+                        <p class="description"><?php echo sprintf( __( 'Select a workspace or <a href="%1$s">create a new one</a> in TrackMage.', 'trackmage'), TRACKMAGE_APP_DOMAIN.'/dashboard/workspaces' ); ?></p>
                     </td>
                 </tr>
             </tbody>

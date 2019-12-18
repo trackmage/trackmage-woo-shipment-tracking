@@ -572,4 +572,16 @@ class Helper {
             delete_transient( $transient );
         }
     }
+
+    public static function getAllOrdersIds(){
+        return get_posts( array(
+            'numberposts' => -1,
+            'fields'      => 'ids',
+            'post_type'   => wc_get_order_types(),
+            'post_status' => array_keys( wc_get_order_statuses() ),
+            'orderby' => 'date',
+            'order' => 'ASC',
+            'post_parent' => 0
+        ));
+    }
 }

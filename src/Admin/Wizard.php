@@ -112,7 +112,7 @@ class Wizard {
         wp_localize_script('trackmage-wizard', 'trackmageWizard', [
             'urls' => [
                 'ajax' => admin_url('admin-ajax.php'),
-                'completed' => admin_url()
+                'completed' => admin_url('?page=trackmage-settings')
             ],
             'steps' => $this->_steps,
             'i18n' => [
@@ -135,11 +135,7 @@ class Wizard {
     public function showWizard() {
         $this->enqueue_assets();
         $settings_url = admin_url( '/admin.php?page=trackmage-settings' );
-        $wizard_title  = sprintf(
-        /* translators: %s expands to TrackMage. */
-            __( '%s for Wordpress Installation Wizard', 'trackmage' ),
-            'TrackMage'
-        );
+        $wizard_title  =  __( 'Installation Wizard', 'trackmage' );
         include(TRACKMAGE_VIEWS_DIR . 'wizard/container.php');
 
     }
@@ -258,10 +254,11 @@ class Wizard {
                         ]
                     ]);
                 }
+                set_transient('trackmage-wizard-notice', false);
+                $this->_triggerSync();
                 wp_send_json_success([
                     'status' => 'success',
                 ]);
-                set_transient('trackmage-wizard-notice', false);
                 break;
             default:
                 wp_send_json_error([
@@ -276,11 +273,28 @@ class Wizard {
         ]);
     }
 
+    private function _triggerSync(){
+        $allOrdersIds = Helper::getAllOrdersIds();
+        $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
+        foreach(array_chunk($allOrdersIds, 50) as $ordersIds) {
+            $backgroundTask = $backgroundTaskRepo->insert([
+                'action' => 'trackmage_bulk_orders_sync',
+                'params' => json_encode($ordersIds),
+                'status' => 'new',
+                'priority' => 10
+            ]);
+        }
+        Helper::scheduleNextBackgroundTask();
+    }
+
+    private function _shouldShowNotification(){
+        return get_transient( 'trackmage-wizard-notice' );
+    }
 
     public function showAdminNotice(){
 
         /* Check transient, if available display notice */
-        if( get_transient( 'trackmage-wizard-notice' ) ){
+        if( $this->_shouldShowNotification() ){
             $message = sprintf(
                 __( 'We have detected that you have not finished this wizard yet, so we recommend you to %2$sstart the configuration wizard to configure %1$s%3$s.', 'trackmage' ),
                 'TrackMage',
@@ -294,7 +308,7 @@ class Wizard {
                         __( 'First-time %s configuration', 'trackmage' ),
                         'TrackMage'
                     );?></h3>
-                <p><?php echo $message?></p>
+                <h3><?php echo $message?></h3>
             </div>
             <?php
         }
