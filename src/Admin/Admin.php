@@ -203,6 +203,7 @@ class Admin {
         $workflow = [
             'type' => 'webhook',
             'period' => 'immediately',
+            'externalSource' => Plugin::instance()->getInstanceId(),
             'event' => 'update',
             'title' => get_bloginfo('name'),
             'workspace' => '/workspaces/' . $value,
