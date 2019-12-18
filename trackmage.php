@@ -109,6 +109,10 @@ if (!defined('TRACKMAGE_API_DOMAIN')) {
     define('TRACKMAGE_API_DOMAIN', 'https://api.trackmage.com');
 }
 
+if (!defined('TRACKMAGE_APP_DOMAIN')) {
+    define('TRACKMAGE_APP_DOMAIN', 'https://app.trackmage.com');
+}
+
 add_action('plugins_loaded', 'trackMageInit');
 register_activation_hook(__FILE__, 'trackMageActivate');
 register_deactivation_hook(__FILE__, 'trackMageDeactivate');
