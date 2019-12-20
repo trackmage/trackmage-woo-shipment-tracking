@@ -68,7 +68,6 @@
         },
 
         onTabClick : function(tab, navigation, index){
-          if(!$(tab).hasClass('completed'))
             return false;
         },
 

@@ -134,6 +134,8 @@ body{
     -moz-transition: all .3s;
     -o-transition: all .3s;
     transition: all .3s;
+    outline: none;
+    box-shadow: none !important;
 
     &:hover, &:focus{
       color: #212529;
@@ -149,8 +151,10 @@ body{
     border-radius: 0px;
     cursor: pointer;
     padding: 10px 5px;
-    margin: 10px 5px 10px 0px;
+    margin: 10px 5px 10px 0;
     float: right;
+    outline: none;
+    box-shadow: none !important;
     &:hover, &:focus{
       background-color: #000000;
     }
@@ -225,6 +229,12 @@ body{
     float: left;
     position: relative;
     font-weight: 400;
+
+    a{
+      text-decoration: none;
+      cursor: default;
+      color: $main-color !important;
+    }
 
     &:before{
       content: '';

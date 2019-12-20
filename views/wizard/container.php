@@ -10,13 +10,14 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title><?php echo esc_html( $wizard_title ); ?></title>
     <?php
+     wp_print_styles();
      wp_print_head_scripts();
     ?>
 </head>
 <body class="wp-admin wp-core-ui">
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-12 col-sm-11 col-md-10 col-lg-8 col-xl-6 text-center p-0 mb-2">
+        <div class="col-12 col-sm-11 col-md-10 col-xl-8 text-center p-0 mb-2" style="max-width: 900px;">
             <div class="card px-0 pt-1 pb-0 mb-3">
                 <div class="card-header">
                     <img class="img-fluid mx-auto d-block main-logo"  src="<?php echo TRACKMAGE_URL . 'assets/dist/images/trackmage_logo_big.png'?>" alt="><?php echo esc_html( $wizard_title ); ?>">
