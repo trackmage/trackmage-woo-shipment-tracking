@@ -52,7 +52,7 @@ class Admin {
             __('TrackMage', 'trackmage'),
             __('TrackMage', 'trackmage'),
             'manage_options',
-            'trackmage-settings',
+            get_transient( 'trackmage-wizard-notice' )?'trackmage-wizard':'trackmage-settings',
             '',
             TRACKMAGE_URL . 'assets/dist/images/trackmage-icon-white-16x16.png',
             30
@@ -63,7 +63,7 @@ class Admin {
             __('Settings', 'trackmage'),
             __('Settings', 'trackmage'),
             'manage_options',
-            'trackmage-settings',
+            get_transient( 'trackmage-wizard-notice' )?'trackmage-wizard':'trackmage-settings',
             [$this, 'renderSettings']
         );
 
