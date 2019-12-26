@@ -43,8 +43,10 @@ class Assets {
         wp_register_style('trackmage_admin', TRACKMAGE_URL . 'assets/dist/css/admin/main' . $suffix . '.css', [], TRACKMAGE_VERSION, 'all');
 
         // Enqueue WooCommerce styles.
-        wp_enqueue_style('select2', WC()->plugin_url() . '/assets/css/select2.css', array(), WC_VERSION);
-        wp_enqueue_style('woocommerce_admin_styles');
+        if(function_exists('WC')){
+            wp_enqueue_style('select2', \WC()->plugin_url() . '/assets/css/select2.css', array(), WC_VERSION);
+            wp_enqueue_style('woocommerce_admin_styles');
+        }
 
         // Enqueue admin styles.
         wp_enqueue_style('trackmage_admin');
