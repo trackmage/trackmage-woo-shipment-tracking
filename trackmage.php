@@ -33,7 +33,7 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-if (PHP_VERSION_ID < 50600) {
+if (PHP_VERSION_ID < 50600 || (!is_plugin_active('woocommerce/woocommerce.php') && !is_plugin_active_for_network('woocommerce/woocommerce.php'))) {
 	add_action( 'plugins_loaded', 'trackmage_init_deactivation' );
 
 	/**
@@ -51,6 +51,7 @@ if (PHP_VERSION_ID < 50600) {
 	 */
 	function trackmage_deactivate() {
 		deactivate_plugins( plugin_basename( __FILE__ ) );
+        Helper::clearTransients();
 	}
 
 	/**
@@ -116,6 +117,7 @@ if (!defined('TRACKMAGE_APP_DOMAIN')) {
 add_action('plugins_loaded', 'trackMageInit');
 register_activation_hook(__FILE__, 'trackMageActivate');
 register_deactivation_hook(__FILE__, 'trackMageDeactivate');
+//register_uninstall_hook( __FILE__, 'trackMageUninstall');
 
 /**
  * trackMageActivate
@@ -142,13 +144,6 @@ function trackMageActivate() {
  * Plugin deactivate event
  */
 function trackMageDeactivate() {
-    foreach(Plugin::instance()->getRepos() as $repository) {
-        try {
-            $repository->drop();
-        } catch(Exception $e) {
-            Plugin::instance()->getLogger()->critical("Unable to drop table {$repository->getTable()}: {$e->getMessage()}");
-        }
-    }
     Helper::clearTransients();
 }
 
@@ -170,4 +165,15 @@ function trackMageInit() {
  */
 function trackMageWooCommerceError() {
     printf('<div class="error"><p>%s</p></div>', __('To use TrackMage for WooCommerce it is required that WooCommerce is installed and activated'));
+}
+
+function trackMageUninstall(){
+    foreach(Plugin::instance()->getRepos() as $repository) {
+        try {
+            $repository->drop();
+        } catch(Exception $e) {
+            Plugin::instance()->getLogger()->critical("Unable to drop table {$repository->getTable()}: {$e->getMessage()}");
+        }
+    }
+    Helper::clearTransients();
 }
