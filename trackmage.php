@@ -33,6 +33,8 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+require_once ABSPATH . '/wp-admin/includes/plugin.php';
+
 if (PHP_VERSION_ID < 50600 || (!is_plugin_active('woocommerce/woocommerce.php') && !is_plugin_active_for_network('woocommerce/woocommerce.php'))) {
 	add_action( 'plugins_loaded', 'trackmage_init_deactivation' );
 
@@ -102,7 +104,7 @@ if ( ! defined( 'TRACKMAGE_URL' ) ) {
 if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
     require_once __DIR__ . '/vendor/autoload.php';
 }
-require_once ABSPATH . '/wp-admin/includes/plugin.php';
+
 
 define('TRACKMAGE_PLUGIN_FILE',	__FILE__);
 
