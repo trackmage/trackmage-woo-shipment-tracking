@@ -60,12 +60,16 @@ if (PHP_VERSION_ID < 50600 || (!is_plugin_active('woocommerce/woocommerce.php') 
 	 * Show deactivation admin notice.
 	 */
 	function trackmage_deactivation_notice() {
-		$notice = sprintf(
-			// Translators: 1: Required PHP version, 2: Current PHP version.
-			__( '<strong>TrackMage for WordPress</strong> requires PHP %1$s to run. This site uses %2$s, so the plugin has been <strong>deactivated</strong>.', 'trackmage' ),
-			'5.6',
-			PHP_VERSION
-		);
+	    if(PHP_VERSION_ID < 50600) {
+            $notice = sprintf(
+            // Translators: 1: Required PHP version, 2: Current PHP version.
+                __( '<strong>TrackMage for WordPress</strong> requires PHP %1$s to run. This site uses %2$s, so the plugin has been <strong>deactivated</strong>.', 'trackmage' ),
+                '5.6',
+                PHP_VERSION
+            );
+        }else{
+	        $notice = __('To use TrackMage for WooCommerce it is required that WooCommerce is installed and activated', 'trackmage');
+        }
 		?>
 		<div class="updated"><p><?php echo wp_kses_post( $notice ); ?></p></div>
 		<?php
