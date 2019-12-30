@@ -53,7 +53,6 @@ if (PHP_VERSION_ID < 50600 || (!is_plugin_active('woocommerce/woocommerce.php') 
 	 */
 	function trackmage_deactivate() {
 		deactivate_plugins( plugin_basename( __FILE__ ) );
-        Helper::clearTransients();
 	}
 
 	/**
@@ -71,7 +70,7 @@ if (PHP_VERSION_ID < 50600 || (!is_plugin_active('woocommerce/woocommerce.php') 
 	        $notice = __('To use TrackMage for WooCommerce it is required that WooCommerce is installed and activated', 'trackmage');
         }
 		?>
-		<div class="updated"><p><?php echo wp_kses_post( $notice ); ?></p></div>
+		<div class="error"><p><?php echo wp_kses_post( $notice ); ?></p></div>
 		<?php
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['activate'] ) ) {
