@@ -26,10 +26,9 @@ $isInSync = Helper::isBulkSynchronizationInProcess();
 ?>
 
 
-<div class="intro">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu.</div>
 <?php if($isInSync): ?>
     <div class="notice-large notice-warning">
-        <span class="spinner is-active"></span> <span>Synchronization in progress. Please refresh the page and check again later.</span>
+        <h2><span class="spinner is-active" style="background-size: 30px; width: 30px; height: 30px; margin: 0;"></span> <span>Synchronization in progress. Please refresh the page and check again later.</span></h2>
     </div>
 <?php endif;?>
 <form method="post" action="options.php" id="general-settings-form" <?php if($isInSync):?>class="blocked-form"<?php endif;?>>
@@ -37,7 +36,7 @@ $isInSync = Helper::isBulkSynchronizationInProcess();
     <!-- Section: Credentials -->
     <div class="section">
         <h2 class="headline"><?php _e( 'Credentials', 'trackmage' ); ?></h2>
-        <p class="message"><?php echo sprintf( __( 'If you have not created API keys yet, please <a href="%1$s" target="_blank">login</a> to TrackMage account and generate a new key for this website.', 'trackmage' ), 'https://app.test.trackmage.com/dashboard/user-profile/api-keys' ); ?></p>
+        <p class="message"><?php echo sprintf( __( 'If you have not created API keys yet, please <a href="%1$s" target="_blank">login</a> to TrackMage account and generate a new key for this website.', 'trackmage' ), TRACKMAGE_APP_DOMAIN.'/dashboard/user-profile/api-keys' ); ?></p>
         <table class="form-table">
             <tbody>
                 <tr>
@@ -86,7 +85,7 @@ $isInSync = Helper::isBulkSynchronizationInProcess();
                                 <?php endforeach; ?>
                             <?php endif;?>
                         </select>
-                        <p class="description"><?php echo sprintf( __( 'Select a workspace or <a href="%1$s">create a new one</a> in TrackMage.', 'trackmage'), 'https://app.test.trackmage.com/dashboard/workspaces' ); ?></p>
+                        <p class="description"><?php echo sprintf( __( 'Select a workspace or <a target="_blank" href="%1$s">create a new one</a> in TrackMage.', 'trackmage'), TRACKMAGE_APP_DOMAIN.'/dashboard/workspaces' ); ?></p>
                     </td>
                 </tr>
             </tbody>

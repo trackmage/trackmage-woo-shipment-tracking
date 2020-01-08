@@ -33,7 +33,9 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-if (PHP_VERSION_ID < 50600) {
+require_once ABSPATH . '/wp-admin/includes/plugin.php';
+
+if (PHP_VERSION_ID < 50600 || (!is_plugin_active('woocommerce/woocommerce.php') && !is_plugin_active_for_network('woocommerce/woocommerce.php'))) {
 	add_action( 'plugins_loaded', 'trackmage_init_deactivation' );
 
 	/**
@@ -57,14 +59,18 @@ if (PHP_VERSION_ID < 50600) {
 	 * Show deactivation admin notice.
 	 */
 	function trackmage_deactivation_notice() {
-		$notice = sprintf(
-			// Translators: 1: Required PHP version, 2: Current PHP version.
-			__( '<strong>TrackMage for WordPress</strong> requires PHP %1$s to run. This site uses %2$s, so the plugin has been <strong>deactivated</strong>.', 'trackmage' ),
-			'5.6',
-			PHP_VERSION
-		);
+	    if(PHP_VERSION_ID < 50600) {
+            $notice = sprintf(
+            // Translators: 1: Required PHP version, 2: Current PHP version.
+                __( '<strong>TrackMage for WordPress</strong> requires PHP %1$s to run. This site uses %2$s, so the plugin has been <strong>deactivated</strong>.', 'trackmage' ),
+                '5.6',
+                PHP_VERSION
+            );
+        }else{
+	        $notice = __('To use TrackMage for WooCommerce it is required that WooCommerce is installed and activated', 'trackmage');
+        }
 		?>
-		<div class="updated"><p><?php echo wp_kses_post( $notice ); ?></p></div>
+		<div class="error"><p><?php echo wp_kses_post( $notice ); ?></p></div>
 		<?php
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['activate'] ) ) {
@@ -101,7 +107,7 @@ if ( ! defined( 'TRACKMAGE_URL' ) ) {
 if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
     require_once __DIR__ . '/vendor/autoload.php';
 }
-require_once ABSPATH . '/wp-admin/includes/plugin.php';
+
 
 define('TRACKMAGE_PLUGIN_FILE',	__FILE__);
 
@@ -109,10 +115,14 @@ if (!defined('TRACKMAGE_API_DOMAIN')) {
     define('TRACKMAGE_API_DOMAIN', 'https://api.trackmage.com');
 }
 
+if (!defined('TRACKMAGE_APP_DOMAIN')) {
+    define('TRACKMAGE_APP_DOMAIN', 'https://app.trackmage.com');
+}
+
 add_action('plugins_loaded', 'trackMageInit');
 register_activation_hook(__FILE__, 'trackMageActivate');
 register_deactivation_hook(__FILE__, 'trackMageDeactivate');
-
+//register_uninstall_hook( __FILE__, 'trackMageUninstall');
 
 /**
  * trackMageActivate
@@ -131,19 +141,14 @@ function trackMageActivate() {
             $plugin->getLogger()->critical("Unable to create table {$repository->getTable()}: {$e->getMessage()}");
         }
     }
+    if(!get_transient('trackmage-wizard-notice'))
+        set_transient( 'trackmage-wizard-notice', true );
 }
 
 /**
  * Plugin deactivate event
  */
 function trackMageDeactivate() {
-    foreach(Plugin::instance()->getRepos() as $repository) {
-        try {
-            $repository->drop();
-        } catch(Exception $e) {
-            Plugin::instance()->getLogger()->critical("Unable to drop table {$repository->getTable()}: {$e->getMessage()}");
-        }
-    }
     Helper::clearTransients();
 }
 
@@ -165,4 +170,15 @@ function trackMageInit() {
  */
 function trackMageWooCommerceError() {
     printf('<div class="error"><p>%s</p></div>', __('To use TrackMage for WooCommerce it is required that WooCommerce is installed and activated'));
+}
+
+function trackMageUninstall(){
+    foreach(Plugin::instance()->getRepos() as $repository) {
+        try {
+            $repository->drop();
+        } catch(Exception $e) {
+            Plugin::instance()->getLogger()->critical("Unable to drop table {$repository->getTable()}: {$e->getMessage()}");
+        }
+    }
+    Helper::clearTransients();
 }

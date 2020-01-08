@@ -30,13 +30,31 @@ const paths = {
       dist: "assets/dist/js/admin/"
     }
   },
-  locale: "languages/"
+  locale: "languages/",
+  node: "node_modules/"
+};
+
+const copyBootstrapCss = () => {
+  return gulp.src(paths.node + 'bootstrap/dist/css/*.*')
+    .pipe(gulp.dest(paths.styles.admin.dist));
+};
+const copyBootstrapJs = () => {
+  return gulp.src(paths.node + 'bootstrap/dist/js/*.*')
+    .pipe(gulp.dest(paths.scripts.admin.dist));
+};
+const copyJqueryValidationJs = () => {
+  return gulp.src(paths.node + 'jquery-validation/dist/*.js')
+    .pipe(gulp.dest(paths.scripts.admin.dist));
+};
+const copyJqueryBsWizardJs = () => {
+  return gulp.src(paths.node + 'jquery-bootstrap-wizard/jquery.bootstrap.wizard*.js')
+    .pipe(gulp.dest(paths.scripts.admin.dist));
 };
 
 // Task: compile public styles.
 const compileScss = () => {
   return gulp
-    .src([paths.styles.frontend.src + "main.scss"])
+    .src([paths.styles.frontend.src + "**/*.scss"])
     .pipe(sass())
     .pipe(rename({ extname: ".css" }))
     .pipe(gulp.dest(paths.styles.frontend.dist));
@@ -45,7 +63,10 @@ const compileScss = () => {
 // Task: minify public styles.
 const minifyCss = () => {
   return gulp
-    .src([paths.styles.frontend.dist + "main.css"])
+    .src([
+      paths.styles.frontend.dist + "**/*.css",
+      "!" + paths.styles.frontend.dist + "**/*.min.css"
+    ])
     .pipe(
       uglifycss({
         uglyComments: true
@@ -82,7 +103,7 @@ const minifyJs = () => {
 // Task: compile admin styles.
 const compileAdminScss = () => {
   return gulp
-    .src([paths.styles.admin.src + "main.scss"])
+    .src([paths.styles.admin.src + "**/*.scss"])
     .pipe(sass())
     .pipe(rename({ extname: ".css" }))
     .pipe(gulp.dest(paths.styles.admin.dist));
@@ -91,7 +112,10 @@ const compileAdminScss = () => {
 // Task: minify admin styles.
 const minifyAdminCss = () => {
   return gulp
-    .src([paths.styles.admin.dist + "main.css"])
+    .src([
+      paths.styles.admin.dist + "**/*.css",
+      "!" + paths.styles.admin.dist + "**/*.min.css"
+    ])
     .pipe(
       uglifycss({
         uglyComments: true
@@ -166,9 +190,9 @@ gulp.task(
   "build",
   gulp.parallel(
     // generatePot,
-    gulp.series(compileScss, minifyCss),
-    gulp.series(compileAdminScss, minifyAdminCss),
-    gulp.series(compileJs, minifyJs),
-    gulp.series(compileAdminJs, minifyAdminJs)
+    gulp.series(compileScss, minifyCss, copyBootstrapCss),
+    gulp.series(compileAdminScss, minifyAdminCss, copyBootstrapJs),
+    gulp.series(compileJs, minifyJs, copyJqueryValidationJs),
+    gulp.series(compileAdminJs, minifyAdminJs, copyJqueryBsWizardJs)
   )
 );

@@ -1,6 +1,7 @@
 node_modules
 assets/dist/css
 assets/dist/js
+assets/dist/bootstrap
 vendor
 /build
 

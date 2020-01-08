@@ -16,13 +16,14 @@
   }
 
   .blocked-form {
+    position: relative;
     &:after{
       content: ' ';
       position: absolute;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      right: 0;
+      top: -20px;
+      left: -10px;
+      bottom: -10px;
+      right: -10px;
       display: block;
       background: rgba(0,0,0,0.3);
     }

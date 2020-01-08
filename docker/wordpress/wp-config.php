@@ -13,6 +13,7 @@ define('DB_PASSWORD', '');
 define('DB_CHARSET', 'utf8');
 define('DB_COLLATE', '');
 define('TRACKMAGE_API_DOMAIN', 'https://api.test.trackmage.com');
+define('TRACKMAGE_APP_DOMAIN', 'https://app.test.trackmage.com');
 
 /*
  * Salts.

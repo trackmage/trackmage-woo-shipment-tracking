@@ -52,7 +52,7 @@ class Admin {
             __('TrackMage', 'trackmage'),
             __('TrackMage', 'trackmage'),
             'manage_options',
-            'trackmage-settings',
+            get_transient( 'trackmage-wizard-notice' )?'trackmage-wizard':'trackmage-settings',
             '',
             TRACKMAGE_URL . 'assets/dist/images/trackmage-icon-white-16x16.png',
             30
@@ -63,7 +63,7 @@ class Admin {
             __('Settings', 'trackmage'),
             __('Settings', 'trackmage'),
             'manage_options',
-            'trackmage-settings',
+            get_transient( 'trackmage-wizard-notice' )?'trackmage-wizard':'trackmage-settings',
             [$this, 'renderSettings']
         );
 
@@ -140,7 +140,7 @@ class Admin {
             wp_send_json_error([
                 'status' => 'error',
                 'errors' => [
-                    __('We could not peform the check. Please try again.', 'trackmage'),
+                    __('We could not perform the check. Please try again.', 'trackmage'),
                 ]
             ]);
         }
@@ -167,7 +167,7 @@ class Admin {
 
         // Do unlink all orders, order items, shipments, shipment items from
         if(!(isset($_POST['trackmage_delete_data']) && $_POST['trackmage_delete_data'] != 0) ) {
-            $allOrdersIds = $this->getAllOrdersIds();
+            $allOrdersIds = Helper::getAllOrdersIds();
             foreach ( $allOrdersIds as $orderId ) {
                 Plugin::instance()->getSynchronizer()->unlinkOrder( $orderId );
             }
@@ -230,7 +230,7 @@ class Admin {
 
     public function trigger_delete_data($value, $old_value, $option) {
         if($value == 1) {
-            $allOrdersIds = $this->getAllOrdersIds();
+            $allOrdersIds = Helper::getAllOrdersIds();
             $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
             foreach(array_chunk($allOrdersIds, 50) as $ordersIds) {
                 $backgroundTaskRepo->insert([
@@ -246,7 +246,7 @@ class Admin {
 
     public function trigger_sync($value, $old_value, $option) {
         if($value == 1) {
-            $allOrdersIds = $this->getAllOrdersIds();
+            $allOrdersIds = Helper::getAllOrdersIds();
             $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
             foreach(array_chunk($allOrdersIds, 50) as $ordersIds) {
                 $backgroundTask = $backgroundTaskRepo->insert([
@@ -260,17 +260,5 @@ class Admin {
                 Helper::scheduleNextBackgroundTask();
         }
         return 0;
-    }
-
-    private function getAllOrdersIds(){
-        return get_posts( array(
-            'numberposts' => -1,
-            'fields'      => 'ids',
-            'post_type'   => wc_get_order_types(),
-            'post_status' => array_keys( wc_get_order_statuses() ),
-            'orderby' => 'date',
-            'order' => 'ASC',
-            'post_parent' => 0
-        ));
     }
 }
