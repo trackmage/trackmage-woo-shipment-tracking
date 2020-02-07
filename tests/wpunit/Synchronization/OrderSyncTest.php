@@ -78,6 +78,8 @@ class OrderSyncTest extends WPTestCase {
         $wcOrder->set_billing_last_name(self::TEST_ADDRESS['lastName']);
         $wcOrder->set_billing_postcode(self::TEST_ADDRESS['postcode']);
         $wcOrder->set_billing_state('CN2'); //Beijing
+        $wcOrder->set_billing_email('email@email.test');
+        $wcOrder->set_billing_phone('+123456789');
         $wcOrder->save();
 
         $wcId = $wcOrder->get_id();
@@ -99,6 +101,8 @@ class OrderSyncTest extends WPTestCase {
             'orderStatus' => ['code' => 'completed', 'title' => 'Completed'],
             'shippingAddress' => self::TEST_ADDRESS,
             'billingAddress' => self::TEST_ADDRESS,
+            'email' => $wcOrder->get_billing_email(),
+            'phoneNumber' => $wcOrder->get_billing_phone(),
             'subtotal' => '0',
             'total' => '0',
         ], $requests[0]['request']);
@@ -139,6 +143,8 @@ class OrderSyncTest extends WPTestCase {
         $wcOrder->set_billing_last_name(self::TEST_ADDRESS['lastName']);
         $wcOrder->set_billing_postcode(self::TEST_ADDRESS['postcode']);
         $wcOrder->set_billing_state('CN2'); //Beijing
+        $wcOrder->set_billing_email('email@email.test');
+        $wcOrder->set_billing_phone('+123456789');
         $wcOrder->save();
         $wcId = $wcOrder->get_id();
         add_post_meta( $wcId, '_trackmage_order_id', self::TM_ORDER_ID, true );
@@ -155,6 +161,8 @@ class OrderSyncTest extends WPTestCase {
             'orderStatus' => ['code' => 'pending', 'title' => 'Pending'],
             'shippingAddress' => self::TEST_ADDRESS,
             'billingAddress' => self::TEST_ADDRESS,
+            'email' => $wcOrder->get_billing_email(),
+            'phoneNumber' => $wcOrder->get_billing_phone(),
             'subtotal' => '0',
             'total' => '0',
         ], $requests[0]['request']);

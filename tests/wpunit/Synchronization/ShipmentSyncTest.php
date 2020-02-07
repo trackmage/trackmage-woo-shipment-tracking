@@ -59,6 +59,9 @@ class ShipmentSyncTest extends WPTestCase
 
         //programmatically create a shipment in WC
         $wcOrder = wc_create_order(['status' => 'completed']);
+        $wcOrder->set_billing_email('email@email.test');
+        $wcOrder->set_billing_phone('+123456789');
+        $wcOrder->save();
         $wcOrderId = $wcOrder->get_id();
         add_post_meta( $wcOrderId, '_trackmage_order_id', self::TM_ORDER_ID );
 
@@ -83,6 +86,8 @@ class ShipmentSyncTest extends WPTestCase
             'externalSource' => self::SOURCE,
             'trackingNumber' => self::TEST_TRACKING_NUMBER,
             'originCarrier' => self::TEST_CARRIER,
+            'email' => $wcOrder->get_billing_email(),
+            'phoneNumber' => $wcOrder->get_billing_phone(),
             'orders' => ['/orders/'.self::TM_ORDER_ID],
         ], $requests[0]['request']);
         //make sure that TM ID is saved to WC shipment meta
@@ -139,6 +144,9 @@ class ShipmentSyncTest extends WPTestCase
 
         // pre-create shipment in TM
         $wcOrder = wc_create_order(['status' => 'completed']);
+        $wcOrder->set_billing_email('email@email.test');
+        $wcOrder->set_billing_phone('+123456789');
+        $wcOrder->save();
         $wcOrderId = $wcOrder->get_id();
         add_post_meta( $wcOrderId, '_trackmage_order_id', self::TM_ORDER_ID );
         $wcShipment = $this->shipmentRepo->insert([
@@ -159,6 +167,8 @@ class ShipmentSyncTest extends WPTestCase
         ]);
         $this->assertSubmittedJsonIncludes([
             'trackingNumber' => self::TEST_TRACKING_NUMBER,
+            'email' => $wcOrder->get_billing_email(),
+            'phoneNumber' => $wcOrder->get_billing_phone(),
             'orders' => ['/orders/'.self::TM_ORDER_ID],
         ], $requests[0]['request']);
     }

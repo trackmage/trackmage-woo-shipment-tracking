@@ -74,6 +74,8 @@ class OrderSync implements EntitySyncInterface
                             'externalSyncId' => (string)$order_id,
                             'externalSource' => $this->source,
                             'orderNumber' => $order->get_order_number(),
+                            'email' => $order->get_billing_email(),
+                            'phoneNumber' => $order->get_billing_phone(),
                             'shippingAddress' => $this->getShippingAddress($order),
                             'billingAddress' => $this->getBillingAddress($order),
                             'orderStatus' => $this->getTrackMageStatus($order),
@@ -104,6 +106,8 @@ class OrderSync implements EntitySyncInterface
                         'query' => ['ignoreWebhookId' => $webhookId],
                         'json' => [
                             'orderStatus' => $this->getTrackMageStatus($order),
+                            'email' => $order->get_billing_email(),
+                            'phoneNumber' => $order->get_billing_phone(),
                             'shippingAddress' => $this->getShippingAddress($order),
                             'billingAddress' => $this->getBillingAddress($order),
                             'subtotal' => (string)$order->get_subtotal(),

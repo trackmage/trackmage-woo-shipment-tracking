@@ -85,7 +85,7 @@ $isInSync = Helper::isBulkSynchronizationInProcess();
                                 <?php endforeach; ?>
                             <?php endif;?>
                         </select>
-                        <p class="description"><?php echo sprintf( __( 'Select a workspace or <a target="_blank" href="%1$s">create a new one</a> in TrackMage.', 'trackmage'), TRACKMAGE_APP_DOMAIN.'/dashboard/workspaces' ); ?></p>
+                        <p class="description"><?php echo sprintf( __( 'Select a workspace or <a target="_blank" href="%1$s">create a new one</a> in TrackMage. New workspace will be visible in Wordpress in a 5 minutes.', 'trackmage'), TRACKMAGE_APP_DOMAIN.'/dashboard/workspaces' ); ?></p>
                     </td>
                 </tr>
             </tbody>
