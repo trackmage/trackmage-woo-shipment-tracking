@@ -78,6 +78,8 @@ class ShipmentSync implements EntitySyncInterface
                             'originCarrier' => $shipment['carrier'] === 'auto' ? null : $shipment['carrier'],
                             'externalSyncId' => (string)$shipmentId,
                             'externalSource' => $this->source,
+                            'email' => $order->get_billing_email(),
+                            'phoneNumber' => $order->get_billing_phone(),
                             'orders' => ['/orders/'.$trackmage_order_id],
                         ]
                     ]);
@@ -101,6 +103,8 @@ class ShipmentSync implements EntitySyncInterface
                         'query' => ['ignoreWebhookId' => $webhookId],
                         'json' => [
                             'trackingNumber' => $shipment['tracking_number'],
+                            'email' => $order->get_billing_email(),
+                            'phoneNumber' => $order->get_billing_phone(),
                             'orders' => ['/orders/'.$trackmage_order_id],
                         ]
                     ]);

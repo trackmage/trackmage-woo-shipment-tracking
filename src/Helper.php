@@ -78,7 +78,7 @@ class Helper {
                         'title' => $workspace['title'],
                     ];
                 }
-                set_transient( 'trackmage_workspaces', $workspaces, 3600 );
+                set_transient( 'trackmage_workspaces', $workspaces, 300 );
             } catch ( ApiException $e ) {
             } catch ( ClientException $e ) {
             }
