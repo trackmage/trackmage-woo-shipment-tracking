@@ -15,7 +15,7 @@ use WC_Product_Simple;
 class ShipmentItemSyncTest extends WPTestCase
 {
     use GuzzleMockTrait;
-    const SOURCE = 'wp';
+    const INTEGRATION = 'tm-integration-id';
     const TM_SHIPMENT_ID = '1010';
     const TM_SHIPMENT_ITEM_ID = '1111';
     const TM_WS_ID = '1001';
@@ -66,7 +66,7 @@ class ShipmentItemSyncTest extends WPTestCase
     {
         $this->shipmentRepo = Plugin::instance()->getShipmentRepo();
         $this->shipmentItemRepo = Plugin::instance()->getShipmentItemsRepo();
-        $this->shipmentItemSync = new ShipmentItemSync($this->shipmentItemRepo, $this->shipmentRepo, self::SOURCE);
+        $this->shipmentItemSync = new ShipmentItemSync($this->shipmentItemRepo, $this->shipmentRepo, self::INTEGRATION);
     }
 
     public function testShipmentItemIsNotPostedBecauseShipmentMustBeSyncedFirst()
@@ -180,7 +180,7 @@ class ShipmentItemSyncTest extends WPTestCase
             'orderItem' => '/order_items/'.self::TM_ORDER_ITEM_ID,
             'qty' => self::TEST_QTY,
             'externalSyncId' => (string) $wcShipmentItemId,
-            'externalSource' => self::SOURCE,
+            'integration' => '/workflows/'.self::INTEGRATION,
         ], $requests[0]['request']);
         //make sure that TM ID is saved to WC shipment meta
         self::assertSame(self::TM_SHIPMENT_ITEM_ID, $this->shipmentItemRepo->find($wcShipmentItemId)['trackmage_id']);
@@ -313,7 +313,7 @@ class ShipmentItemSyncTest extends WPTestCase
         // make sure it updates the linked shipment in TM
         $this->assertMethodsWereCalled($requests, [
             ['POST', '/shipment_items'],
-            ['GET', '/shipment_items', ['workspace.id' => self::TM_WS_ID, 'externalSyncId' => (string) $wcShipmentItemId, 'externalSource' => self::SOURCE]],
+            ['GET', '/shipment_items', ['workspace.id' => self::TM_WS_ID, 'externalSyncId' => (string) $wcShipmentItemId, 'integration' => '/workflows/'.self::INTEGRATION]],
             ['PUT', '/shipment_items/'.self::TM_SHIPMENT_ITEM_ID],
         ]);
 

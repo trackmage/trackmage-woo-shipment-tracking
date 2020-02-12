@@ -18,7 +18,7 @@ use WC_Order_Item;
 class ShipmentItemsMapperTest extends WPTestCase
 {
 
-    const SOURCE = 'wp-5d9da5faf010c';
+    const INTEGRATION = 'tm-integration-id';
     const TRACKING_NUMBER = 'UPS-ABCDEF012345';
     const CARRIER = 'UPS';
 
@@ -71,7 +71,7 @@ class ShipmentItemsMapperTest extends WPTestCase
 
         $this->shipmentRepo = Plugin::instance()->getShipmentRepo();
         $this->shipmentItemRepo = Plugin::instance()->getShipmentItemsRepo();
-        $this->shipmentItemsMapper = new ShipmentItemsMapper($this->shipmentItemRepo, self::SOURCE);
+        $this->shipmentItemsMapper = new ShipmentItemsMapper($this->shipmentItemRepo, self::INTEGRATION);
     }
 
     public function testShipmentItemIsFullyUpdated() {
@@ -108,7 +108,7 @@ class ShipmentItemsMapperTest extends WPTestCase
                 "orderItem" => "/order_items/".self::TEST_TM_ORDER_ITEM_ID,
                 "qty" => self::TEST_QTY,
                 "externalSyncId" => $wcShipmentItemId,
-                "externalSource" => self::SOURCE,
+                "integration" => '/workflows/'.self::INTEGRATION,
                 "id" => self::TM_SHIPMENT_ITEM_ID,
                 "workspace" => "/workspaces/".self::TM_WS_ID
             ],
@@ -134,10 +134,10 @@ class ShipmentItemsMapperTest extends WPTestCase
         self::assertEquals(count(array_intersect_assoc($dataBefore, $dataAfter)),0);
     }
 
-    public function testShipmentItemCanNotBeHandledBecauseWrongExternalSource() {
+    public function testShipmentItemCanNotBeHandledBecauseWrongIntegration() {
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Unable to handle because external source does not match');
+        $this->expectExceptionMessage('Unable to handle because integration Id does not match');
         //GIVEN
         add_option('trackmage_workspace', self::TM_WS_ID);
 
@@ -168,7 +168,7 @@ class ShipmentItemsMapperTest extends WPTestCase
                 "orderItem" => "/order_items/".self::TM_ORDER_ITEM_ID,
                 "qty" => self::TEST_QTY,
                 "externalSyncId" => $wcShipmentItemId,
-                "externalSource" => self::SOURCE,
+                "integration" => '/workflows/'.self::INTEGRATION,
                 "id" => self::TM_SHIPMENT_ITEM_ID,
                 "workspace" => "/workspaces/".self::TM_WS_ID
             ],
@@ -178,7 +178,7 @@ class ShipmentItemsMapperTest extends WPTestCase
 
         //WHEN external source is wrong
         $wrongItem = $item;
-        $wrongItem['data']['externalSource'] = 'wp-test0001';
+        $wrongItem['data']['integration'] = '/workflows/wp-test-0001';
         $this->shipmentItemsMapper->handle($wrongItem);
     }
 
@@ -216,7 +216,7 @@ class ShipmentItemsMapperTest extends WPTestCase
                 "orderItem" => "/order_items/".self::TM_ORDER_ITEM_ID,
                 "qty" => self::TEST_QTY,
                 "externalSyncId" => $wcShipmentItemId,
-                "externalSource" => self::SOURCE,
+                "integration" => '/workflows/'.self::INTEGRATION,
                 "id" => self::TM_SHIPMENT_ITEM_ID,
                 "workspace" => "/workspaces/".self::TM_WS_ID
             ],
@@ -266,7 +266,7 @@ class ShipmentItemsMapperTest extends WPTestCase
                 "orderItem" => "/order_items/".self::TM_ORDER_ITEM_ID,
                 "qty" => self::TEST_QTY,
                 "externalSyncId" => $wcShipmentItemId,
-                "externalSource" => self::SOURCE,
+                "integration" => '/workflows/'.self::INTEGRATION,
                 "id" => self::TM_SHIPMENT_ITEM_ID
             ],
             "event" => "update",

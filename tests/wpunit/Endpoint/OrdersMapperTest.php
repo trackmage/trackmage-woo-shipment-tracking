@@ -10,7 +10,7 @@ use WC_Order;
 
 class OrdersMapperTest extends WPTestCase
 {
-    const SOURCE = 'wp-5d9da5faf010c';
+    const INTEGRATION = 'tm-integration-id';
     const STATUS = 'completed';
 
     const TM_WS_ID = 'tm-workspace-id';
@@ -64,7 +64,7 @@ class OrdersMapperTest extends WPTestCase
     {
         delete_option('trackmage_workspace');
         add_option('trackmage_workspace', self::TM_WS_ID);
-        $this->ordersMapper = new OrdersMapper(self::SOURCE);
+        $this->ordersMapper = new OrdersMapper(self::INTEGRATION);
     }
 
 
@@ -104,7 +104,7 @@ class OrdersMapperTest extends WPTestCase
             "data" => [
                 "workspace" => "/workspaces/".self::TM_WS_ID,
                 "orderNumber" => $wcId,
-                "externalSource" => self::SOURCE,
+                "integration" => '/workflows/'.self::INTEGRATION,
                 "externalSyncId" => $wcId,
                 "orderStatus" => [
                     "code" => self::TEST_STATUS,
@@ -200,7 +200,7 @@ class OrdersMapperTest extends WPTestCase
             "data" => [
                 "workspace" => "/workspaces/".self::TM_WS_ID,
                 "orderNumber" => $wcId,
-                "externalSource" => self::SOURCE,
+                "integration" => '/workflows/'.self::INTEGRATION,
                 "externalSyncId" => $wcId,
                 "orderStatus" => [
                     "code" => self::TEST_STATUS,
@@ -221,10 +221,10 @@ class OrdersMapperTest extends WPTestCase
 
     }
 
-    public function testOrderCanNotBeHandledBecauseExternalSourceIsWrong() {
+    public function testOrderCanNotBeHandledBecauseIntegrationIsWrong() {
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Unable to handle because external source does not match');
+        $this->expectExceptionMessage('Unable to handle because integration Id does not match');
 
         //GIVEN
         //update_option('trackmage_workspace', self::TM_WS_ID);
@@ -240,7 +240,7 @@ class OrdersMapperTest extends WPTestCase
             "data" => [
                 "workspace" => "/workspaces/".self::TM_WS_ID,
                 "orderNumber" => $wcId,
-                "externalSource" => self::SOURCE,
+                "integration" => '/workflows/'.self::INTEGRATION,
                 "externalSyncId" => $wcId,
                 "orderStatus" => [
                     "code" => self::TEST_STATUS,
@@ -256,7 +256,7 @@ class OrdersMapperTest extends WPTestCase
 
         //WHEN external source is wrong
         $wrongItem = $item;
-        $wrongItem['data']['externalSource'] = 'wp-test0001';
+        $wrongItem['data']['integration'] = '/workflows/wp-test-0001';
         $this->ordersMapper->handle($wrongItem);
 
     }
@@ -280,7 +280,7 @@ class OrdersMapperTest extends WPTestCase
             "data" => [
                 "workspace" => "/workspaces/".self::TM_WS_ID,
                 "orderNumber" => $wcId,
-                "externalSource" => self::SOURCE,
+                "integration" => '/workflows/'.self::INTEGRATION,
                 "externalSyncId" => $wcId,
                 "orderStatus" => [
                     "code" => self::TEST_STATUS,

@@ -13,19 +13,19 @@ class ShipmentSync implements EntitySyncInterface
 {
     use SyncSharedTrait;
 
-    private $source;
+    private $integration;
     private $shipmentRepo;
 
     /** @var ChangesDetector */
     private $changesDetector;
 
     /**
-     * @param string|null $source
+     * @param string|null $integration
      */
-    public function __construct(ShipmentRepository $shipmentRepo, $source = null)
+    public function __construct(ShipmentRepository $shipmentRepo, $integration = null)
     {
         $this->shipmentRepo = $shipmentRepo;
-        $this->source = $source;
+        $this->integration = '/workflows/'.$integration;
     }
 
     /**
@@ -77,7 +77,7 @@ class ShipmentSync implements EntitySyncInterface
                             'trackingNumber' => $shipment['tracking_number'],
                             'originCarrier' => $shipment['carrier'] === 'auto' ? null : $shipment['carrier'],
                             'externalSyncId' => (string)$shipmentId,
-                            'externalSource' => $this->source,
+                            'integration' => $this->integration,
                             'email' => $order->get_billing_email(),
                             'phoneNumber' => $order->get_billing_phone(),
                             'orders' => ['/orders/'.$trackmage_order_id],
@@ -139,7 +139,7 @@ class ShipmentSync implements EntitySyncInterface
         $content = $response->getBody()->getContents();
         if (false !== strpos($content, 'externalSyncId')) {
             $query['externalSyncId'] = $shipment['id'];
-            $query['externalSource'] = $this->source;
+            $query['integration'] = $this->integration;
         } else {
             return null;
         }

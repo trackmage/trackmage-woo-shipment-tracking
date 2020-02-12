@@ -15,16 +15,16 @@ class AbstractMapper implements EntityMapperInterface {
     protected $requestBody;
     protected $repo;
 
-    protected $source;
+    protected $integration;
     protected $entity;
 
     protected $map = [];
 
     protected $workspace;
 
-    public function __construct($source = null) {
+    public function __construct($integration = null) {
         $this->workspace = get_option( 'trackmage_workspace' );
-        $this->source = $source;
+        $this->integration = '/workflows/'.$integration;
     }
 
     /**
@@ -51,8 +51,8 @@ class AbstractMapper implements EntityMapperInterface {
      */
     protected function validateData(){
         // check source
-        if(!isset($this->data['externalSource']) || $this->data['externalSource'] != $this->source)
-            throw new InvalidArgumentException('Unable to handle because external source does not match');
+        if(!isset($this->data['integration']) || $this->data['integration'] !== $this->integration)
+            throw new InvalidArgumentException('Unable to handle because integration Id does not match');
 
         // check if entity is exist
         if(!$this->entity)

@@ -18,14 +18,14 @@ class OrderItemSync implements EntitySyncInterface
     private $changesDetector;
 
     /** @var string|null */
-    private $source;
+    private $integration;
 
     /**
-     * @param string|null $source
+     * @param string|null $integration
      */
-    public function __construct($source = null)
+    public function __construct($integration = null)
     {
-        $this->source = $source;
+        $this->integration = '/workflows/'.$integration;
     }
 
     /**
@@ -103,7 +103,7 @@ class OrderItemSync implements EntitySyncInterface
                             'price' => $product->get_price(),
                             'rowTotal' => $item->get_total(),
                             'externalSyncId' => (string)$orderItemId,
-                            'externalSource' => $this->source,
+                            'integration' => $this->integration,
                         ]
                     ]);
                     $result = json_decode( $response->getBody()->getContents(), true );
@@ -164,7 +164,7 @@ class OrderItemSync implements EntitySyncInterface
         $content = $response->getBody()->getContents();
         if (false !== strpos($content, 'externalSyncId')) {
             $query['externalSyncId'] = $item->get_id();
-            $query['externalSource'] = $this->source;
+            $query['integration'] = $this->integration;
         } else {
             return null;
         }

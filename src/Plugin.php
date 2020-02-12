@@ -70,9 +70,6 @@ class Plugin {
 
     private $wpdb;
 
-    /** @var string|null */
-    private $instanceId;
-
     /**
      * Static instance of the plugin.
      *
@@ -283,19 +280,9 @@ class Plugin {
         return [$this->getLogRepo(), $this->getShipmentRepo(), $this->getShipmentItemsRepo(), $this->getBackgroundTaskRepo()];
     }
 
-    /**
-     * @return string
-     */
-    public function getInstanceId()
+    public function getIntegrationId()
     {
-        if ($this->instanceId === null) {
-            $instanceId = get_option('trackmage_instance_id');
-            if ($instanceId === false) {
-                add_option('trackmage_instance_id', $instanceId = uniqid('wp-'));
-            }
-            $this->instanceId = $instanceId;
-        }
-        return $this->instanceId;
+        return get_option('trackmage_integration','');
     }
 
     /**
@@ -304,7 +291,7 @@ class Plugin {
     public function getOrderSync()
     {
         if (null === $this->orderSync) {
-            $this->orderSync = new OrderSync($this->getInstanceId());
+            $this->orderSync = new OrderSync($this->getIntegrationId());
         }
         return $this->orderSync;
     }
@@ -315,7 +302,7 @@ class Plugin {
     public function getOrderItemSync()
     {
         if (null === $this->orderItemSync) {
-            $this->orderItemSync = new OrderItemSync($this->getInstanceId());
+            $this->orderItemSync = new OrderItemSync($this->getIntegrationId());
         }
         return $this->orderItemSync;
     }
@@ -326,7 +313,7 @@ class Plugin {
     public function getShipmentSync()
     {
         if (null === $this->shipmentSync) {
-            $this->shipmentSync = new ShipmentSync($this->getShipmentRepo(), $this->getInstanceId());
+            $this->shipmentSync = new ShipmentSync($this->getShipmentRepo(), $this->getIntegrationId());
         }
         return $this->shipmentSync;
     }
@@ -337,7 +324,7 @@ class Plugin {
     public function getShipmentItemSync()
     {
         if (null === $this->shipmentItemSync) {
-            $this->shipmentItemSync = new ShipmentItemSync($this->getShipmentItemsRepo(), $this->getShipmentRepo(), $this->getInstanceId());
+            $this->shipmentItemSync = new ShipmentItemSync($this->getShipmentItemsRepo(), $this->getShipmentRepo(), $this->getIntegrationId());
         }
         return $this->shipmentItemSync;
     }
@@ -348,7 +335,7 @@ class Plugin {
     public function getOrdersMapper()
     {
         if (null === $this->ordersMapper) {
-            $this->ordersMapper = new OrdersMapper($this->getInstanceId());
+            $this->ordersMapper = new OrdersMapper($this->getIntegrationId());
         }
 
         return $this->ordersMapper;
@@ -360,7 +347,7 @@ class Plugin {
     public function getOrderItemsMapper()
     {
         if (null === $this->orderItemsMapper) {
-            $this->orderItemsMapper = new OrderItemsMapper($this->getInstanceId());
+            $this->orderItemsMapper = new OrderItemsMapper($this->getIntegrationId());
         }
 
         return $this->orderItemsMapper;
@@ -371,7 +358,7 @@ class Plugin {
      */
     public function getShipmentsMapper() {
         if (null === $this->shipmentsMapper) {
-            $this->shipmentsMapper = new ShipmentsMapper($this->getShipmentRepo(), $this->getInstanceId());
+            $this->shipmentsMapper = new ShipmentsMapper($this->getShipmentRepo(), $this->getIntegrationId());
         }
         return $this->shipmentsMapper;
     }
@@ -381,7 +368,7 @@ class Plugin {
      */
     public function getShipmentItemsMapper() {
         if (null === $this->shipmentItemsMapper) {
-            $this->shipmentItemsMapper = new ShipmentItemsMapper($this->getShipmentItemsRepo(), $this->getInstanceId());
+            $this->shipmentItemsMapper = new ShipmentItemsMapper($this->getShipmentItemsRepo(), $this->getIntegrationId());
         }
         return $this->shipmentItemsMapper;
     }

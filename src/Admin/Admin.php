@@ -11,6 +11,7 @@
 namespace TrackMage\WordPress\Admin;
 
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\RequestOptions;
 use TrackMage\WordPress\Plugin;
 use TrackMage\WordPress\Helper;
 use TrackMage\Client\Swagger\ApiException;
@@ -165,23 +166,19 @@ class Admin {
             return $old_value;
         }
 
-        // Do unlink all orders, order items, shipments, shipment items from
-        if(!(isset($_POST['trackmage_delete_data']) && $_POST['trackmage_delete_data'] != 0) ) {
-            $allOrdersIds = Helper::getAllOrdersIds();
-            foreach ( $allOrdersIds as $orderId ) {
-                Plugin::instance()->getSynchronizer()->unlinkOrder( $orderId );
-            }
-        }
+        $deleteData = isset($_POST['trackmage_delete_data']) && $_POST['trackmage_delete_data'] === '1';
 
         $client = Plugin::get_client();
         $url = Helper::get_endpoint();
 
-        // Find and remove any activated webhook, if any.
+        // Find and remove any activated integration and webhook, if any.
+        $integration = get_option('trackmage_integration', '');
         $webhook = get_option('trackmage_webhook', '');
-        if (! empty($webhook)) {
+        if (! empty($integration)) {
             try {
-                $client->getWorkflowApi()->deleteWorkflowItem($webhook);
+                $client->getGuzzleClient()->delete('/workflows/'.$integration, [RequestOptions::QUERY => ['deleteData'=>$deleteData]]);
                 update_option('trackmage_webhook', '');
+                update_option('trackmage_integration', '');
             } catch (ApiException $e) {
                 // Do nothing. Webhook might be removed from TrackMage.
             }
@@ -203,7 +200,6 @@ class Admin {
         $workflow = [
             'type' => 'webhook',
             'period' => 'immediately',
-            'externalSource' => Plugin::instance()->getInstanceId(),
             'event' => 'update',
             'title' => get_bloginfo('name'),
             'workspace' => '/workspaces/' . $value,
@@ -212,6 +208,12 @@ class Admin {
             'username' => $username,
             'password' => $password,
             'enabled' => true,
+            'integration' => [
+                'title' => get_bloginfo('name'),
+                'workspace' => '/workspaces/' . $value,
+                'type' => 'integration-woocommerce',
+                'enabled' => true,
+            ]
         ];
 
         try {
@@ -226,27 +228,20 @@ class Admin {
 
         update_option( 'trackmage_order_status_aliases', [] );
         update_option('trackmage_webhook', $data['id']);
+        update_option('trackmage_integration', $data['integration']['id']);
         return $value;
     }
 
     public function trigger_delete_data($value, $old_value, $option) {
-        if($value == 1) {
-            $allOrdersIds = Helper::getAllOrdersIds();
-            $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
-            foreach(array_chunk($allOrdersIds, 50) as $ordersIds) {
-                $backgroundTaskRepo->insert([
-                    'action' => 'trackmage_delete_data',
-                    'params' => json_encode($ordersIds),
-                    'status' => 'new'
-                ]);
-            }
-            Helper::scheduleNextBackgroundTask();
+        $allOrdersIds = Helper::getAllOrdersIds();
+        foreach ( $allOrdersIds as $orderId ) {
+            Plugin::instance()->getSynchronizer()->unlinkOrder( $orderId );
         }
         return 0;
     }
 
     public function trigger_sync($value, $old_value, $option) {
-        if($value == 1) {
+        if($value === '1') {
             $allOrdersIds = Helper::getAllOrdersIds();
             $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
             foreach(array_chunk($allOrdersIds, 50) as $ordersIds) {

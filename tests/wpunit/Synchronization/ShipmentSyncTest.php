@@ -12,7 +12,7 @@ use TrackMage\WordPress\Synchronization\ShipmentSync;
 class ShipmentSyncTest extends WPTestCase
 {
     use GuzzleMockTrait;
-    const SOURCE = 'wp';
+    const INTEGRATION = 'tm-integration-id';
     const TM_SHIPMENT_ID = '1010';
     const TM_ORDER_ID = '1110';
     const TM_WS_ID = '1001';
@@ -42,7 +42,7 @@ class ShipmentSyncTest extends WPTestCase
     protected function _before()
     {
         $this->shipmentRepo = Plugin::instance()->getShipmentRepo();
-        $this->shipmentSync = new ShipmentSync($this->shipmentRepo, self::SOURCE);
+        $this->shipmentSync = new ShipmentSync($this->shipmentRepo, self::INTEGRATION);
     }
 
     public function testNewShipmentGetsPosted()
@@ -83,7 +83,7 @@ class ShipmentSyncTest extends WPTestCase
         $this->assertSubmittedJsonIncludes([
             'workspace' => '/workspaces/'.self::TM_WS_ID,
             'externalSyncId' => (string) $wcShipmentId,
-            'externalSource' => self::SOURCE,
+            'integration' => '/workflows/'.self::INTEGRATION,
             'trackingNumber' => self::TEST_TRACKING_NUMBER,
             'originCarrier' => self::TEST_CARRIER,
             'email' => $wcOrder->get_billing_email(),
@@ -237,7 +237,7 @@ class ShipmentSyncTest extends WPTestCase
         // make sure it updates the linked shipment in TM
         $this->assertMethodsWereCalled($requests, [
             ['POST', '/shipments'],
-            ['GET', '/workspaces/'.self::TM_WS_ID.'/shipments', ['externalSyncId' => (string) $wcShipmentId, 'externalSource' => self::SOURCE]],
+            ['GET', '/workspaces/'.self::TM_WS_ID.'/shipments', ['externalSyncId' => (string) $wcShipmentId, 'integration' => '/workflows/'.self::INTEGRATION,]],
             ['PUT', '/shipments/'.self::TM_SHIPMENT_ID],
         ]);
 

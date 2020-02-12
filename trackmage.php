@@ -132,7 +132,6 @@ register_deactivation_hook(__FILE__, 'trackMageDeactivate');
 function trackMageActivate() {
     $plugin = Plugin::instance();
     $plugin->init(ConfigFactory::create( __DIR__ . '/config/defaults.php' )->getSubConfig( 'TrackMage\WordPress' ));
-    $plugin->getInstanceId();
     foreach($plugin->getRepos() as $repository) {
         try {
             $repository->init();

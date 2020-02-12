@@ -131,7 +131,7 @@ class Helper {
         $aliases = [];
         if($cachedAliases && isset($cachedAliases[$workspaceId])) {
             $aliases = $cachedAliases[$workspaceId];
-        }elseif($workspaceId != 0){
+        }elseif($workspaceId !== 0){
             try {
                 $client = Plugin::get_client();
                 $guzzleClient = $client->getGuzzleClient();
