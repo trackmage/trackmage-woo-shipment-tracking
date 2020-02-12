@@ -14,7 +14,7 @@ use WC_Order_Item;
 
 class OrderItemsMapperTest extends WPTestCase
 {
-    const SOURCE = 'wp-5d9da5faf010c';
+    const INTEGRATION = 'tm-integration-id';
     const STATUS = 'completed';
     const PRICE = 50;
 
@@ -58,7 +58,7 @@ class OrderItemsMapperTest extends WPTestCase
     {
         add_option('trackmage_workspace', self::TM_WS_ID);
 
-        $this->orderItemsMapper = new OrderItemsMapper(self::SOURCE);
+        $this->orderItemsMapper = new OrderItemsMapper(self::INTEGRATION);
     }
 
     public function testOrderItemIsFullyUpdated() {
@@ -84,7 +84,7 @@ class OrderItemsMapperTest extends WPTestCase
                 "price" => self::PRICE,
                 "rowTotal" => self::TEST_QTY*self::PRICE,
                 "externalSyncId" => $wcOrderItemId,
-                "externalSource" => self::SOURCE,
+                "integration" => '/workflows/'.self::INTEGRATION,
                 "id" => self::TM_ORDER_ITEM_ID,
             ],
             "event" => "update",
@@ -103,9 +103,9 @@ class OrderItemsMapperTest extends WPTestCase
         self::assertEquals(count(array_intersect_assoc($dataBefore, $dataAfter)),0);
     }
 
-    public function testOrderItemCanNotBeHandledBecauseWrongExternalSource() {
+    public function testOrderItemCanNotBeHandledBecauseWrongIntegration() {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Unable to handle because external source does not match');
+        $this->expectExceptionMessage('Unable to handle because integration Id does not match');
         //GIVEN
         //programmatically create an order in WC
         $wcOrder = wc_create_order(['status' => self::STATUS]);
@@ -122,7 +122,7 @@ class OrderItemsMapperTest extends WPTestCase
                 "price" => self::PRICE,
                 "rowTotal" => self::TEST_QTY*self::PRICE,
                 "externalSyncId" => $wcOrderItemId,
-                "externalSource" => self::SOURCE,
+                "integration" => '/workflows/'.self::INTEGRATION,
                 "id" => self::TM_ORDER_ITEM_ID,
             ],
             "event" => "update",
@@ -131,7 +131,7 @@ class OrderItemsMapperTest extends WPTestCase
 
         //WHEN external source is wrong
         $wrongItem = $item;
-        $wrongItem['data']['externalSource'] = 'wp-test0001';
+        $wrongItem['data']['integration'] = '/workflows/wp-test-0001';
         $this->orderItemsMapper->handle($wrongItem);
 
     }
@@ -156,7 +156,7 @@ class OrderItemsMapperTest extends WPTestCase
                 "price" => self::PRICE,
                 "rowTotal" => self::TEST_QTY*self::PRICE,
                 "externalSyncId" => $wcOrderItemId,
-                "externalSource" => self::SOURCE,
+                "integration" => '/workflows/'.self::INTEGRATION,
                 "id" => self::TM_ORDER_ITEM_ID,
             ],
             "event" => "update",
@@ -190,7 +190,7 @@ class OrderItemsMapperTest extends WPTestCase
                 "price" => self::PRICE,
                 "rowTotal" => self::TEST_QTY*self::PRICE,
                 "externalSyncId" => $wcOrderItemId,
-                "externalSource" => self::SOURCE,
+                "integration" => '/workflows/'.self::INTEGRATION,
                 "id" => self::TM_ORDER_ITEM_ID,
             ],
             "event" => "update",

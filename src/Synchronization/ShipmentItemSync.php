@@ -14,7 +14,7 @@ class ShipmentItemSync implements EntitySyncInterface
 {
     use SyncSharedTrait;
 
-    private $source;
+    private $integration;
     private $shipmentItemRepo;
     private $shipmentRepo;
 
@@ -26,11 +26,11 @@ class ShipmentItemSync implements EntitySyncInterface
      */
     public function __construct(ShipmentItemRepository $shipmentItemRepo,
                                 ShipmentRepository $shipmentRepo,
-                                $source = null)
+                                $integration = null)
     {
         $this->shipmentItemRepo = $shipmentItemRepo;
         $this->shipmentRepo = $shipmentRepo;
-        $this->source = $source;
+        $this->integration = '/workflows/'.$integration;
     }
 
     /**
@@ -93,7 +93,7 @@ class ShipmentItemSync implements EntitySyncInterface
                             'orderItem' => '/order_items/'.$trackmageOrderItemId,
                             'qty' => (int)$shipmentItem['qty'],
                             'externalSyncId' => (string)$shipmentItemId,
-                            'externalSource' => $this->source,
+                            'integration' => $this->integration,
                         ]
                     ]);
                     $result = json_decode( $response->getBody()->getContents(), true );
@@ -150,7 +150,7 @@ class ShipmentItemSync implements EntitySyncInterface
         $content = $response->getBody()->getContents();
         if (false !== strpos($content, 'externalSyncId')) {
             $query['externalSyncId'] = $shipmentItem['id'];
-            $query['externalSource'] = $this->source;
+            $query['integration'] = $this->integration;
         } else {
             return null;
         }

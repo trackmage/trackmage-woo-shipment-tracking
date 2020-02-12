@@ -11,7 +11,7 @@ use TrackMage\WordPress\Webhook\Mappers\ShipmentsMapper;
 class ShipmentsMapperTest extends WPTestCase
 {
 
-    const SOURCE = 'wp';
+    const INTEGRATION = 'tm-integration-id';
     const TM_SHIPMENT_ID = '1010';
     const TM_WS_ID = '1001';
     const TEST_TRACKING_NUMBER = 'UPS-ABCDEFG012345';
@@ -41,7 +41,7 @@ class ShipmentsMapperTest extends WPTestCase
         add_option('trackmage_workspace', self::TM_WS_ID);
 
         $this->shipmentRepo = Plugin::instance()->getShipmentRepo();
-        $this->shipmentsMapper = new ShipmentsMapper($this->shipmentRepo, self::SOURCE);
+        $this->shipmentsMapper = new ShipmentsMapper($this->shipmentRepo, self::INTEGRATION);
     }
 
 
@@ -67,13 +67,13 @@ class ShipmentsMapperTest extends WPTestCase
             'entity'        => 'shipments',
             'data'          =>
                 [
-                    'id'                     => $trackMageId,
-                    'trackingNumber'         => 'DHL0123456789',
-                    'status'                 => 'returned',
-                    'originCarrier'          => 'DHL',
-                    'workspace'              => '/workspaces/'.self::TM_WS_ID,
-                    'externalSource'         => self::SOURCE,
-                    'externalSyncId'         => $wcShipmentId
+                    'id'             => $trackMageId,
+                    'trackingNumber' => 'DHL0123456789',
+                    'status'         => 'returned',
+                    'originCarrier'  => 'DHL',
+                    'workspace'      => '/workspaces/'.self::TM_WS_ID,
+                    'integration'    => '/workflows/' . self::INTEGRATION,
+                    'externalSyncId' => $wcShipmentId
                 ],
             'event'         => 'update',
             'updatedFields' => [ 'status', 'originCarrier', 'trackingNumber' ]
@@ -117,13 +117,13 @@ class ShipmentsMapperTest extends WPTestCase
             'entity'        => 'shipments',
             'data'          =>
                 [
-                    'id'                     => $trackMageId,
-                    'trackingNumber'         => 'DHL0123456789',
-                    'status'                 => 'delivered',
-                    'originCarrier'          => 'dhl',
-                    'workspace'              => '/workspaces/'.self::TM_WS_ID,
-                    'externalSource'         => self::SOURCE,
-                    'externalSyncId'         => $wcShipmentId
+                    'id'             => $trackMageId,
+                    'trackingNumber' => 'DHL0123456789',
+                    'status'         => 'delivered',
+                    'originCarrier'  => 'dhl',
+                    'workspace'      => '/workspaces/'.self::TM_WS_ID,
+                    'integration'    => '/workflows/'.self::INTEGRATION,
+                    'externalSyncId' => $wcShipmentId
                 ],
             'event'         => 'update',
             'updatedFields' => ['status', 'originCarrier' ]
@@ -136,10 +136,10 @@ class ShipmentsMapperTest extends WPTestCase
 
     }
 
-    public function testShipmentCanNotBeHandledBecauseExternalSourceIsWrong() {
+    public function testShipmentCanNotBeHandledBecauseIntegrationIsWrong() {
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Unable to handle because external source does not match');
+        $this->expectExceptionMessage('Unable to handle because integration Id does not match');
 
         //GIVEN
         add_option('trackmage_workspace', self::TM_WS_ID);
@@ -159,13 +159,13 @@ class ShipmentsMapperTest extends WPTestCase
             'entity'        => 'shipments',
             'data'          =>
                 [
-                    'id'                     => $trackMageId,
-                    'trackingNumber'         => 'DHL0123456789',
-                    'status'                 => 'delivered',
-                    'originCarrier'          => 'dhl',
-                    'workspace'              => '/workspaces/'.self::TM_WS_ID,
-                    'externalSource'         => self::SOURCE,
-                    'externalSyncId'         => $wcShipmentId
+                    'id'             => $trackMageId,
+                    'trackingNumber' => 'DHL0123456789',
+                    'status'         => 'delivered',
+                    'originCarrier'  => 'dhl',
+                    'workspace'      => '/workspaces/'.self::TM_WS_ID,
+                    'integration'    => '/workflows/'.self::INTEGRATION,
+                    'externalSyncId' => $wcShipmentId
                 ],
             'event'         => 'update',
             'updatedFields' => [ 'status', 'originCarrier' ],
@@ -173,7 +173,7 @@ class ShipmentsMapperTest extends WPTestCase
 
         //WHEN external source is wrong
         $wrongItem = $item;
-        $wrongItem['data']['externalSource'] = 'wp-test0001';
+        $wrongItem['data']['integration'] = '/workflows/wp-test-0001';
         $this->shipmentsMapper->handle($wrongItem);
 
     }
@@ -201,13 +201,13 @@ class ShipmentsMapperTest extends WPTestCase
             'entity'        => 'shipments',
             'data'          =>
                 [
-                    'id'                     => $trackMageId,
-                    'trackingNumber'         => 'DHL0123456789',
-                    'status'                 => 'delivered',
-                    'originCarrier'          => 'dhl',
-                    'workspace'              => '/workspaces/'.self::TM_WS_ID,
-                    'externalSource'         => self::SOURCE,
-                    'externalSyncId'         => $wcShipmentId
+                    'id'             => $trackMageId,
+                    'trackingNumber' => 'DHL0123456789',
+                    'status'         => 'delivered',
+                    'originCarrier'  => 'dhl',
+                    'workspace'      => '/workspaces/'.self::TM_WS_ID,
+                    'integration'    => '/workflows/'.self::INTEGRATION,
+                    'externalSyncId' => $wcShipmentId
                 ],
             'event'         => 'update',
             'updatedFields' => [ 'status', 'originCarrier' ]

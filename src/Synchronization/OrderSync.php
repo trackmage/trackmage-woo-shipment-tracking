@@ -17,14 +17,14 @@ class OrderSync implements EntitySyncInterface
     private $changesDetector;
 
     /** @var string|null */
-    private $source;
+    private $integration;
 
     /**
-     * @param string|null $source
+     * @param string|null $integration
      */
-    public function __construct($source = null)
+    public function __construct($integration = null)
     {
-        $this->source = $source;
+        $this->integration = '/workflows/'.$integration;
     }
 
     /**
@@ -72,7 +72,7 @@ class OrderSync implements EntitySyncInterface
                         'json' => [
                             'workspace' => '/workspaces/' . $workspace,
                             'externalSyncId' => (string)$order_id,
-                            'externalSource' => $this->source,
+                            'integration' => $this->integration,
                             'orderNumber' => $order->get_order_number(),
                             'email' => $order->get_billing_email(),
                             'phoneNumber' => $order->get_billing_phone(),
@@ -170,7 +170,7 @@ class OrderSync implements EntitySyncInterface
         $content = $response->getBody()->getContents();
         if (false !== strpos($content, 'externalSyncId')) {
             $query['externalSyncId'] = $order->get_id();
-            $query['externalSource'] = $this->source;
+            $query['integration'] = $this->integration;
         } else {
             return null;
         }

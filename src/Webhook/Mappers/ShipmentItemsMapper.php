@@ -22,11 +22,11 @@ class ShipmentItemsMapper extends AbstractMapper {
      * ShipmentsMapper constructor.
      *
      * @param ShipmentItemRepository $shipmentItenRepo
-     * @param string|null $source
+     * @param string|null $integration
      */
-    public function __construct(ShipmentItemRepository $shipmentItemRepo, $source = null) {
+    public function __construct(ShipmentItemRepository $shipmentItemRepo, $integration = null) {
         $this->repo = $shipmentItemRepo;
-        parent::__construct($source);
+        parent::__construct($integration);
     }
 
     /**

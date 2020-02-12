@@ -10,7 +10,7 @@ class OrderSyncTest extends WPTestCase {
     const TM_ORDER_ID = 'tm-order-id';
     const TM_WS_ID = '1001';
     const TM_WEBHOOK_ID = '0110';
-    const SOURCE = 'wp';
+    const INTEGRATION = 'tm-integration-id';
     const TEST_ADDRESS = [
         'addressLine1' => 'addr1',
         'addressLine2' => 'addr2',
@@ -41,7 +41,7 @@ class OrderSyncTest extends WPTestCase {
 
     protected function _before()
     {
-        $this->orderSync = new OrderSync(self::SOURCE);
+        $this->orderSync = new OrderSync(self::INTEGRATION);
     }
 
     public function testNewOrderGetsPosted()
@@ -96,7 +96,7 @@ class OrderSyncTest extends WPTestCase {
         $this->assertSubmittedJsonIncludes([
             'workspace' => '/workspaces/'.self::TM_WS_ID,
             'externalSyncId' => (string) $wcId,
-            'externalSource' => self::SOURCE,
+            'integration' => '/workflows/'.self::INTEGRATION,
             'orderNumber' => $wcOrder->get_order_number(),
             'orderStatus' => ['code' => 'completed', 'title' => 'Completed'],
             'shippingAddress' => self::TEST_ADDRESS,
@@ -223,7 +223,7 @@ class OrderSyncTest extends WPTestCase {
         // make sure it updates the linked order in TM
         $this->assertMethodsWereCalled($requests, [
             ['POST', '/orders'],
-            ['GET', '/workspaces/'.self::TM_WS_ID.'/orders', ['externalSyncId' => (string) $wcId, 'externalSource' => self::SOURCE]],
+            ['GET', '/workspaces/'.self::TM_WS_ID.'/orders', ['externalSyncId' => (string) $wcId, 'integration' => '/workflows/'.self::INTEGRATION]],
             ['PUT', '/orders/'.self::TM_ORDER_ID],
         ]);
 
