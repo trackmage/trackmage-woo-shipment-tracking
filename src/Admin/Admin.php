@@ -33,6 +33,9 @@ class Admin {
         add_action('admin_init', [$this, 'settings']);
         add_action('wp_ajax_trackmage_test_credentials', [$this, 'test_credentials']);
 
+        add_action('wp_ajax_trackmage_reload_workspaces', [$this, 'reload_workspaces']);
+
+
         add_filter('update_option_trackmage_client_id', [$this, 'changed_api_credentials'], 10, 3);
         add_filter('update_option_trackmage_client_secret', [$this, 'changed_api_credentials'], 10, 3);
 
@@ -138,6 +141,24 @@ class Admin {
         }
 
         if (Helper::CREDENTIALS_ERROR === $credentials) {
+            wp_send_json_error([
+                'status' => 'error',
+                'errors' => [
+                    __('We could not perform the check. Please try again.', 'trackmage'),
+                ]
+            ]);
+        }
+    }
+
+    public function reload_workspaces(){
+        $workspaces = Helper::get_workspaces(true);
+        if($workspaces !== false){
+            wp_send_json_success([
+                'status'    => 'success',
+                'message'   => __('Workspaces have been reloaded', 'trackmage'),
+                'workspaces' => $workspaces
+            ]);
+        } else {
             wp_send_json_error([
                 'status' => 'error',
                 'errors' => [

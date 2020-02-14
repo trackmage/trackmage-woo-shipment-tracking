@@ -59,6 +59,7 @@
               return false;
             } else {
               $(tab).addClass('completed');
+              $(self._errorsContainer).html('');
               return true;
             }
         },

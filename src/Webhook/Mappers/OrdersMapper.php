@@ -4,6 +4,7 @@
 namespace TrackMage\WordPress\Webhook\Mappers;
 
 
+use TrackMage\WordPress\Helper;
 use WC_Order;
 use TrackMage\WordPress\Exception\EndpointException;
 use TrackMage\WordPress\Exception\InvalidArgumentException;
@@ -84,8 +85,8 @@ class OrdersMapper extends AbstractMapper {
 
         try {
             foreach ($this->updatedFields as $field){
-                if($field == 'orderStatus'){
-                    $this->entity->update_status($this->getWpStatus($this->data['orderStatus']['code']));
+                if($field === 'orderStatus'){
+                    $this->entity->update_status($this->getWpStatus($this->data['orderStatus']));
                 }else{
                     $parts = explode('.', $field);
                     if(isset($parts[0]) && isset($this->map[$parts[0]]) && isset($parts[1]) && isset($this->map[$parts[0]][$parts[1]])){
@@ -107,11 +108,30 @@ class OrdersMapper extends AbstractMapper {
     }
 
     /**
-     * @return string|null
+     * @return string
      */
     private function getWpStatus($tmStatus)
     {
         $usedAliases = get_option( 'trackmage_order_status_aliases', [] );
-        return ($res = array_search($tmStatus, $usedAliases))?str_replace('wp-','',$res):null;
+        // search status in aliases
+        $status = ($res = array_search($tmStatus['code'], $usedAliases, true))?str_replace('wp-','',$res):false;
+        if($status !== false)
+            return $status;
+        // search status in all statuses
+        $statuses = wc_get_order_statuses();
+        if(isset($statuses['wc-'.$tmStatus['code']]))
+            return $tmStatus['code'];
+        // create new custom status
+        $custom_statuses = get_option('trackmage_custom_order_statuses', []);
+        $status_aliases = get_option('trackmage_order_status_aliases', []);
+
+        $status_aliases['wc-'.$tmStatus['code']] = $tmStatus['code'];
+        $custom_statuses['wc-'.$tmStatus['code']] = __($tmStatus['title'], 'trackmage');
+
+        update_option('trackmage_custom_order_statuses', $custom_statuses);
+        update_option('trackmage_order_status_aliases', $status_aliases);
+
+        Helper::registerCustomStatus('wc-'.$tmStatus['code'], $tmStatus['title']);
+        return $tmStatus['code'];
     }
 }
