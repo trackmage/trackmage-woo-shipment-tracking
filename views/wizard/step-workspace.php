@@ -8,7 +8,7 @@
 use TrackMage\WordPress\Helper;
 $workspace     = get_option( 'trackmage_workspace', 0 );
 
-$workspaces = Helper::get_workspaces();
+$workspaces = Helper::get_workspaces(true);
 ?>
 <!-- Step: Workspace -->
 <div class="section<?php Helper::add_css_class( ! $credentials, 'disabled', true, true ); ?>">
@@ -25,7 +25,7 @@ $workspaces = Helper::get_workspaces();
                         <?php endforeach; ?>
                     <?php endif;?>
                 </select>
-                <small id="workspaceHelp" class="form-text text-muted"><?php echo sprintf( __( 'Select a workspace or <a target="_blank" href="%1$s">create a new one</a> in TrackMage. New workspace will be visible in Wordpress in a 5 minutes.', 'trackmage'), TRACKMAGE_APP_DOMAIN.'/dashboard/workspaces' ); ?></small>
+                <small id="workspaceHelp" class="form-text text-muted"><?php echo sprintf( __( 'Select a workspace or <a target="_blank" href="%1$s">create a new one</a> in TrackMage. Don\'t forget to refresh page after create new workspace.', 'trackmage'), TRACKMAGE_APP_DOMAIN.'/dashboard/workspaces' ); ?></small>
             </div>
         </div>
     </form>

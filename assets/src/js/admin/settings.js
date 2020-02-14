@@ -133,6 +133,67 @@
     });
   });
 
+  // Reload workspaces.
+  $("#trackmage-settings-general #reloadWorkspaces").on("click", function (e) {
+    let reloadWorkspaces = $(this);
+    let twSelect = $('#trackmage_workspace');
+    e.preventDefault();
+
+    // Request data.
+    let data = {
+      action: "trackmage_reload_workspaces",
+    };
+    // Response message.
+    let message = "";
+
+    $.ajax({
+      url: params.main.urls.ajax,
+      method: "post",
+      data: data,
+      beforeSend: function () {
+        trackmageToggleSpinner(reloadWorkspaces, "activate");
+        trackmageToggleFormElement(reloadWorkspaces, "disable");
+      },
+      success: function (response) {
+        trackmageToggleSpinner(reloadWorkspaces, "deactivate");
+        trackmageToggleFormElement(reloadWorkspaces, "enable");
+
+        if (response.data.status === "success") {
+          message = response.data.message;
+          let oldValue = twSelect.val();
+          twSelect.find('option[value!=0]').remove();
+          $.each(response.data.workspaces,function(idx, workspace){
+            let opt = $('<option></option>').text(workspace.title).val(workspace.id).attr('selected',oldValue === workspace.id);
+            twSelect.append(opt);
+          });
+        } else if (response.data.errors) {
+          message = response.data.errors.join(" ");
+        }
+        // Response notification.
+        trackmageAlert(
+          '',
+          message,
+          response.data.status,
+          true
+        );
+      },
+      error: function () {
+        trackmageToggleSpinner(reloadWorkspaces, "deactivate");
+        trackmageToggleFormElement(reloadWorkspaces, "enable");
+
+        message = params.main.i18n.unknownError;
+
+        // Response notification.
+        trackmageAlert(
+          '',
+          message,
+          response.data.status,
+          true
+        );
+      }
+    });
+  });
+
   /**
    * Disable input fields, buttons and links inside disabled sections.
    */

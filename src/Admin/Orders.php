@@ -8,6 +8,7 @@
 
 namespace TrackMage\WordPress\Admin;
 
+use TrackMage\WordPress\Helper;
 use TrackMage\WordPress\Synchronizer;
 use TrackMage\WordPress\Plugin;
 
@@ -29,8 +30,10 @@ class Orders {
         $this->synchronizer = $synchronizer;
         add_action( 'add_meta_boxes', [ $this, 'add_meta_box'] );
         add_action( 'save_post', [ $this, 'save_meta_box'] );
-        add_filter( 'wc_order_statuses', [ $this, 'order_statuses' ], 999999, 1 );
+        add_filter( 'wc_order_statuses', [ $this, 'order_statuses' ], PHP_INT_MAX, 1 );
         add_filter( 'woocommerce_hidden_order_itemmeta', [ $this, 'hide_order_itemmeta' ], 10, 1 );
+        add_filter( 'wc_order_is_editable', [ $this, 'custom_status_orders_are_editable' ], 20, 2 );
+        add_filter( 'init', [ $this, 'register_order_statuses' ] );
     }
 
     public function hide_order_itemmeta( $fields ) {
@@ -102,18 +105,30 @@ class Orders {
      */
     public function order_statuses( $order_statuses ) {
         $custom_statuses = get_option( 'trackmage_custom_order_statuses', [] );
-        $modified_statuses = get_option( 'trackmage_modified_order_statuses', [] );
-
         // Register custom order statuses added by our plugin.
         $order_statuses = array_merge( $order_statuses, $custom_statuses );
 
-        // Update the registered statuses.
-        foreach ( $order_statuses as $key => $name ) {
-            if ( array_key_exists( $key, $modified_statuses ) ) {
-                $order_statuses[ $key ] = __( $modified_statuses[ $key ], 'trackmage' );
-            }
+        return $order_statuses;
+    }
+
+    /**
+     * Register custom statuses
+     */
+    public function register_order_statuses(){
+        $custom_statuses = get_option( 'trackmage_custom_order_statuses', [] );
+        foreach($custom_statuses as $code => $title){
+            Helper::registerCustomStatus($code, $title);
+        }
+    }
+
+    public function custom_status_orders_are_editable( $editable, $order ) {
+        $custom_statuses = get_option( 'trackmage_custom_order_statuses', [] );
+        $editable_custom_statuses = array_map(function($key){return str_replace('wp-','',$key);}, array_keys($custom_statuses));
+
+        if (in_array($order->get_status(), $editable_custom_statuses, true)) {
+            $editable = true;
         }
 
-        return $order_statuses;
+        return $editable;
     }
 }

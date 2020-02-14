@@ -30,14 +30,18 @@ class Helper {
     /**
      * Check the validity of API credentials
      *
-     * @param string $client_id     Client ID (default: '').
-     * @param string $client_secret Client secret (default: '').
+     * @param string|false $client_id     Client ID (default: false).
+     * @param string $client_secret Client secret (default: false).
      *
      * @return int 0 if invalid, 1 if valid or 2 otherwise.
      */
-    public static function check_credentials( $client_id = '', $client_secret = '' ) {
-        $client_id = ! empty( $client_id ) ? $client_id : get_option( 'trackmage_client_id', '' );
-        $client_secret = ! empty( $client_secret ) ? $client_secret : get_option( 'trackmage_client_secret', '' );
+    public static function check_credentials( $client_id = false, $client_secret = false ) {
+        $client_id = ($client_id !== false) ? trim($client_id) : get_option( 'trackmage_client_id', '' );
+        $client_secret = ($client_secret !== false) ? trim($client_secret) : get_option( 'trackmage_client_secret', '' );
+
+        if(empty( $client_id ) || empty( $client_secret )){
+            return self::CREDENTIALS_INVALID;
+        }
 
         try {
             $client = new TrackMageClient( $client_id, $client_secret );
@@ -59,18 +63,20 @@ class Helper {
     /**
      * Returns a list of the workspaces created by the current user.
      *
+     * @param bool $refresh
+     * @return array|false Of workspaces, or an empty array if no workspaces found.
      * @since 0.1.0
-     * @return array Of workspaces, or an empty array if no workspaces found.
      */
-    public static function get_workspaces() {
+    public static function get_workspaces($refresh = false) {
         $workspaces = get_transient( 'trackmage_workspaces' );
-        if ( false === $workspaces ) {
+        if ( false === $workspaces || $refresh) {
             try {
                 $client   = Plugin::get_client();
                 $response = $client->getGuzzleClient()->get( '/workspaces' );
                 $contents = $response->getBody()->getContents();
                 $data     = json_decode( $contents, true );
                 $result   = isset( $data['hydra:member'] ) ? $data['hydra:member'] : [];
+                $workspaces = [];
 
                 foreach ( $result as $workspace ) {
                     $workspaces[] = [
@@ -78,9 +84,11 @@ class Helper {
                         'title' => $workspace['title'],
                     ];
                 }
-                set_transient( 'trackmage_workspaces', $workspaces, 300 );
+                set_transient( 'trackmage_workspaces', $workspaces, 3600 );
             } catch ( ApiException $e ) {
+                return false;
             } catch ( ClientException $e ) {
+                return false;
             }
         }
         return $workspaces;
@@ -109,7 +117,6 @@ class Helper {
                         'name' => $carrier->getName(),
                     ];
                 }
-
                 set_transient( 'trackmage_carriers', $carriers, 0 );
             } catch( ApiException $e ) {
                 $carriers = [];
@@ -131,7 +138,7 @@ class Helper {
         $aliases = [];
         if($cachedAliases && isset($cachedAliases[$workspaceId])) {
             $aliases = $cachedAliases[$workspaceId];
-        }elseif($workspaceId !== 0){
+        }elseif(!empty($workspaceId) && self::check_credentials() === self::CREDENTIALS_VALID){
             try {
                 $client = Plugin::get_client();
                 $guzzleClient = $client->getGuzzleClient();
@@ -583,5 +590,16 @@ class Helper {
             'order' => 'ASC',
             'post_parent' => 0
         ));
+    }
+
+    public static function registerCustomStatus($code, $title){
+        register_post_status( $code, array(
+            'label' => _x( $title, 'WooCommerce Order status', 'trackmage' ),
+            'public' => true,
+            'exclude_from_search' => false,
+            'show_in_admin_all_list' => true,
+            'show_in_admin_status_list' => true,
+            'label_count' => _n_noop( $title.' (%s)', $title.' (%s)', 'trackmage' )
+        ) );
     }
 }

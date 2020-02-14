@@ -69,14 +69,14 @@ class ShipmentsMapperTest extends WPTestCase
                 [
                     'id'             => $trackMageId,
                     'trackingNumber' => 'DHL0123456789',
-                    'status'         => 'returned',
+                    'trackingStatus' => 'returned',
                     'originCarrier'  => 'DHL',
                     'workspace'      => '/workspaces/'.self::TM_WS_ID,
                     'integration'    => '/workflows/' . self::INTEGRATION,
                     'externalSyncId' => $wcShipmentId
                 ],
             'event'         => 'update',
-            'updatedFields' => [ 'status', 'originCarrier', 'trackingNumber' ]
+            'updatedFields' => [ 'trackingStatus', 'originCarrier', 'trackingNumber' ]
         ];
 
         //WHEN everything is OK
@@ -91,7 +91,7 @@ class ShipmentsMapperTest extends WPTestCase
         ];
         $differences = array_intersect_assoc($dataBefore, $dataAfter);
 
-        self::assertEquals(count($differences),0);
+        self::assertEquals(0, count($differences));
     }
 
     public function testShipmentCanNotBeHandledBecauseWorkspaceIsWrong() {

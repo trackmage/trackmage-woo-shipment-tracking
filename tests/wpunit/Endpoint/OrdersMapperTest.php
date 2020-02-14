@@ -218,7 +218,6 @@ class OrdersMapperTest extends WPTestCase
         $wrongItem = $item;
         $wrongItem['data']['workspace'] = '/workspaces/999999';
         $this->ordersMapper->handle($wrongItem);
-
     }
 
     public function testOrderCanNotBeHandledBecauseIntegrationIsWrong() {
@@ -258,7 +257,6 @@ class OrdersMapperTest extends WPTestCase
         $wrongItem = $item;
         $wrongItem['data']['integration'] = '/workflows/wp-test-0001';
         $this->ordersMapper->handle($wrongItem);
-
     }
 
     public function testOrderCanNotBeHandledBecauseUnknownOrder() {
@@ -300,6 +298,42 @@ class OrdersMapperTest extends WPTestCase
         $wrongItem['data']['id'] = rand(1000,9999);
         $this->ordersMapper->handle($wrongItem);
 
+    }
+
+    public function testOrderHandledWithNewCustomStatusCreated(){
+        $wcOrder = wc_create_order(['status' => self::STATUS]);
+        $wcOrder->save();
+        $wcId = $wcOrder->get_id();
+        add_post_meta( $wcId, '_trackmage_order_id', self::TM_ORDER_ID, true );
+
+        $item = [
+            "entity" => "orders",
+            "data" => [
+                "workspace" => "/workspaces/".self::TM_WS_ID,
+                "orderNumber" => $wcId,
+                "integration" => '/workflows/'.self::INTEGRATION,
+                "externalSyncId" => $wcId,
+                "orderStatus" => [
+                    "code" => "created",
+                    "title" => "Created"
+                ],
+                "shippingAddress" => [],
+                "billingAddress" => [],
+                "id" => self::TM_ORDER_ID
+            ],
+            "event" => "update",
+            "updatedFields" => [ "orderStatus" ]
+        ];
+
+        $this->ordersMapper->handle($item);
+        $wcOrderAfterChanges = wc_get_order($wcId);
+        $statusAfter = $wcOrderAfterChanges->get_status();
+        self::assertEquals('created',$statusAfter);
+        $customStatuses = get_option('trackmage_custom_order_statuses', false);
+        self::assertIsArray($customStatuses);
+        self::assertArrayHasKey('wc-created', $customStatuses);
+        $allStatuses = wc_get_order_statuses();
+        self::assertArrayHasKey('wc-created', $allStatuses);
     }
 
     /**

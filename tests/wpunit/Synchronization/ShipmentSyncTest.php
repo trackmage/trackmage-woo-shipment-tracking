@@ -78,7 +78,7 @@ class ShipmentSyncTest extends WPTestCase
         //THEN
         //check this shipment is sent to TM
         $this->assertMethodsWereCalled($requests, [
-            ['POST', '/shipments', ['ignoreWebhookId' => self::TM_WEBHOOK_ID]],
+            ['POST', '/shipments'],
         ]);
         $this->assertSubmittedJsonIncludes([
             'workspace' => '/workspaces/'.self::TM_WS_ID,
