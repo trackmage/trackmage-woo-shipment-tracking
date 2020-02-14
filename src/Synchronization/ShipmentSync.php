@@ -35,7 +35,7 @@ class ShipmentSync implements EntitySyncInterface
     {
         if (null === $this->changesDetector) {
             $detector = new ChangesDetector([
-                '[tracking_number]',
+                '[tracking_number]', '[carrier]',
             ], function(array $shipment) {
                 return $shipment['hash'];
             }, function(array $shipment, $hash) {
@@ -71,7 +71,6 @@ class ShipmentSync implements EntitySyncInterface
             if (empty($trackmage_id)) {
                 try {
                     $response = $guzzleClient->post('/shipments', [
-                        'query' => ['ignoreWebhookId' => $webhookId],
                         'json' => [
                             'workspace' => '/workspaces/' . $workspace,
                             'trackingNumber' => $shipment['tracking_number'],

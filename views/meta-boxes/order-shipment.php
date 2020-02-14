@@ -15,7 +15,7 @@ $carrier = $carriers[$carrierKey]['name'];
     <td class="shipment__tracking-number">
         <a href=""><?php echo $shipment['tracking_number']; ?></a>
     </td>
-    <td class="shipment__status"><?php echo $shipment['status']?></td>
+    <td class="shipment__status"><?php echo ucwords(str_replace('_',' ', $shipment['status']))?></td>
     <td class="shipment__carrier">
         <?php echo $carrier; ?>
     </td>

@@ -11,7 +11,7 @@ class ShipmentsMapper extends AbstractMapper {
 
     protected $map = [
         "trackingNumber"            =>  "tracking_number",
-        "status"                    =>  "status",
+        "trackingStatus"            =>  "status",
         "originCarrier"             =>  "carrier",
     ];
 
