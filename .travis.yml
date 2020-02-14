@@ -62,7 +62,7 @@ before_deploy:
 
 deploy:
   provider: script
-  script: make deploy
+  script: SERVER=51.15.103.205 PORT=48022 make deploy; SERVER=51.15.103.205 PORT=48042 make deploy
   skip_cleanup: true
   on:
     all_branches: true
