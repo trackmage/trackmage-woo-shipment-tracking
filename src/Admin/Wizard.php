@@ -10,11 +10,8 @@
 
 namespace TrackMage\WordPress\Admin;
 
-use GuzzleHttp\Exception\ClientException;
 use TrackMage\WordPress\Plugin;
 use TrackMage\WordPress\Helper;
-use TrackMage\Client\Swagger\ApiException;
-use TrackMage\WordPress\Assets;
 
 class Wizard {
 
@@ -124,9 +121,6 @@ class Wizard {
                 'successValidKeys' => __('Valid credentials. Click on <em>“Save Changes”</em> for the changes to take effect.', 'trackmage'),
             ],
         ]);
-
-        //Assets::enqueueStyles();
-        //Assets::enqueueScripts();
     }
 
     /**
@@ -137,7 +131,6 @@ class Wizard {
         $settings_url = admin_url( '/admin.php?page=trackmage-settings' );
         $wizard_title  =  __( 'Installation Wizard', 'trackmage' );
         include(TRACKMAGE_VIEWS_DIR . 'wizard/container.php');
-
     }
 
     /**
