@@ -180,7 +180,7 @@ sync_hosts_entries: remove_hosts_entries
 	sudo -- sh -c "echo '127.0.0.1 $${TEST_HOSTS}' >> /etc/hosts" && \
 	sudo -- sh -c "echo '## ${PROJECT} project - end ##' >> /etc/hosts"
 
-# Export a dump of WordPressdatabase to the _data folder of the project.
+# Export a dump of WordPress database to the _data folder of the project.
 wp_dump:
 	docker run -it --rm --volumes-from wpbrowser_wp --network container:wpbrowser_wp wordpress:cli-php${PHP_VERSION} wp db export \
 		/project/tests/_data/dump.sql
@@ -190,6 +190,6 @@ deploy: export TRAVIS_BRANCH ?= master
 deploy: export BRANCH_SLUG = $${TRAVIS_BRANCH//\//-}
 deploy: export DEPLOY_DIR = "/var/www/html/wp-content/plugins/${TEST_PLUGIN_NAME}-${BRANCH_SLUG}"
 deploy:
-	echo "Deploying to ${DEPLOY_DIR}"
-	cd ${BUILD_PLUGIN_FOLDER} && tar zcf - . | sshpass -e ssh -oStrictHostKeyChecking=no www-data@51.15.103.205 -p 48022 "\
+	echo "Deploying to ${DEPLOY_DIR}" ${SERVER}:${PORT}
+	cd ${BUILD_PLUGIN_FOLDER} && tar zcf - . | sshpass -e ssh -oStrictHostKeyChecking=no www-data@${SERVER} -p ${PORT} "\
 		rm -rf ${DEPLOY_DIR} && mkdir ${DEPLOY_DIR} && cd ${DEPLOY_DIR} && cat | tar zx"
