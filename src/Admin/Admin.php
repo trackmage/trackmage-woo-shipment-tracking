@@ -192,18 +192,21 @@ class Admin {
         $client = Plugin::get_client();
         $url = Helper::get_endpoint();
 
+        $workspaces = Helper::get_workspaces();
+
         // Find and remove any activated integration and webhook, if any.
         $integration = get_option('trackmage_integration', '');
         $webhook = get_option('trackmage_webhook', '');
-        if (! empty($integration)) {
+        if (! empty($integration) && in_array($old_value, array_column('id', $workspaces), true)) {
             try {
                 $client->getGuzzleClient()->delete('/workflows/'.$integration, [RequestOptions::QUERY => ['deleteData'=>$deleteData]]);
-                update_option('trackmage_webhook', '');
-                update_option('trackmage_integration', '');
-            } catch (ApiException $e) {
-                // Do nothing. Webhook might be removed from TrackMage.
+            } catch(\Exception $e){
+                // do nothing
             }
         }
+
+        update_option('trackmage_webhook', '');
+        update_option('trackmage_integration', '');
 
         Helper::clearTransients();
 
