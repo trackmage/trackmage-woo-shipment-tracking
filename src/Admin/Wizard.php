@@ -182,8 +182,8 @@ class Wizard {
         $step = $_POST['step'];
         switch ($step){
             case 'credentials':
-                $clientId = $_POST['trackmage_client_id'];
-                $clientSecret = $_POST['trackmage_client_secret'];
+                $clientId = trim($_POST['trackmage_client_id']);
+                $clientSecret = trim($_POST['trackmage_client_secret']);
                 $credentials = Helper::check_credentials($clientId, $clientSecret);
 
                 if (Helper::CREDENTIALS_INVALID === $credentials) {
