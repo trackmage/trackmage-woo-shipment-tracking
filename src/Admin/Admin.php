@@ -35,7 +35,8 @@ class Admin {
 
         add_action('wp_ajax_trackmage_reload_workspaces', [$this, 'reload_workspaces']);
 
-
+        add_filter('pre_update_option_trackmage_client_id', [$this, 'trimCredentials'], 10, 3);
+        add_filter('pre_update_option_trackmage_client_secret', [$this, 'trimCredentials'], 10, 3);
         add_filter('update_option_trackmage_client_id', [$this, 'changed_api_credentials'], 10, 3);
         add_filter('update_option_trackmage_client_secret', [$this, 'changed_api_credentials'], 10, 3);
 
@@ -166,6 +167,10 @@ class Admin {
                 ]
             ]);
         }
+    }
+
+    public function trimCredentials($value, $old_value, $option){
+        return trim($value);
     }
 
     public function changed_api_credentials($old_value, $value, $option){

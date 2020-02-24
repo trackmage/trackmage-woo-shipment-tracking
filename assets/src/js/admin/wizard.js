@@ -175,7 +175,6 @@
     processStep: function($data, $step, cb){
       let self = this;
       $data += "&action=trackmage_wizard_process_step";
-      console.log($data);
       $.ajax({
         url: params.wizard.urls.ajax,
         method: "post",
@@ -185,12 +184,11 @@
         },
         success: function success(response) {
           if (response.success) {
-            $('#'+$step).addClass('completed').removeClass('changed');
-            //self._instanse.nextTab();
+            $('#'+$step).addClass('completed').removeClass('changed').next().addClass('reload').removeClass('completed');
             cb();
           }else{
             if(response.data.status == 'error'){
-              $('#'+$data.step).removeClass('completed');
+              $('#'+$data.step).removeClass('completed').next().addClass('reload').removeClass('completed');
               $(self._errorsContainer).html('');
               $.each(response.data.errors, function(idx, err){
                 $('<div></div>').addClass('alert').addClass('alert-danger').html(err).attr('role','alert').appendTo($(self._errorsContainer));
