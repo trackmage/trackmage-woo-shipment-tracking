@@ -348,14 +348,36 @@
     return false;
   });
 
-  $('#change-workspace-dialog input[type=checkbox]').on('change', function(){
+  $("button#btn-reset-plugin").on('click', function(e){
+    confirmDialog(
+      '#reset-dialog',
+      function(){
+          if(!$('#agree_reset').is(':checked')) {
+            $('#agree_reset').parent().addClass('error').find('p.description').show();
+            return false;
+          }
+          return true;
+      },
+      'Reset Plugin Confirmation',
+      'Reset'
+    ).then(function(yesno) {
+      if(yesno == 'yes'){
+        $('#reset-plugin').val("1");
+        $("form#general-settings-form").attr('cansubmit',true).submit();
+      }else{
+        return false;
+      }
+    });
+    return false;
+  });
+
+  $('#change-workspace-dialog input[type=checkbox], #reset-dialog input[type=checkbox]').on('change', function(){
     let target = $(this).attr('rel');
     $(target).val($(this).is(':checked')?1:0);
   });
 
   $('#agree_to_change_cb').on('change', function(){
     let workspace = $("#trackmage_workspace").val();
-
     $('#trigger_sync_cb').prop('disabled', !$(this).is(':checked') || workspace == 0);
     $('#delete_data_cb').prop('disabled', !$(this).is(':checked'));
   })

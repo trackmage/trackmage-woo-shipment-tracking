@@ -125,11 +125,13 @@ $isInSync = Helper::isBulkSynchronizationInProcess();
     <input type="hidden" name="trackmage_trigger_sync" value="0" id="trigger-sync">
     <input type="hidden" name="agree_change_workspace" value="0" id="agree-change-workspace">
     <input type="hidden" name="trackmage_delete_data" value="0" id="delete-data">
-
+    <input type="hidden" name="reset_plugin_settings" value="0" id="reset-plugin">
     <p class="actions" >
         <button class="button button-primary disabled" id="btn-save-form" disabled="disabled" type="submit" title="<?php _e('Save Changes', 'trackmage');?>"><?php _e('Save Changes', 'trackmage');?></button>
         <button class="button button-secondary <?php echo (!$credentials || empty($workspace))?'disabled':''?>" type="button" id="btn-trigger-sync" title="<?php _e('Trigger Sync', 'trackmage');?>"><?php _e('Trigger Sync', 'trackmage');?></button>
+        <button type="button" class="button button-secondary" id="btn-reset-plugin"><?php _e('Reset Plugin', 'trackmage');?></button>
     </p>
 </form>
 <?php include( TRACKMAGE_VIEWS_DIR . "modals/admin-page-settings-general-trigger-sync.php" ); ?>
 <?php include( TRACKMAGE_VIEWS_DIR . "modals/admin-page-settings-general-change-workspace.php" ); ?>
+<?php include( TRACKMAGE_VIEWS_DIR . "modals/admin-page-settings-general-reset-settings.php" ); ?>

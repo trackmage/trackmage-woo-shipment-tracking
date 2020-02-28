@@ -134,6 +134,11 @@ class AbstractRepository implements EntityRepositoryInterface
         return $this->db->query("DELETE FROM `{$this->table}` {$whereSql} {$limitSql}");
     }
 
+    public function truncate()
+    {
+        return $this->db->query("TRUNCATE TABLE `{$this->table}`");
+    }
+
     protected function getWhereStringValue($filter_key_values_array)
     {
         $filterConverter = new Converter();

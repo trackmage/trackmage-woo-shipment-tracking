@@ -217,6 +217,8 @@ class Plugin {
         foreach ( $initClasses as $class ) {
             call_user_func( [ __NAMESPACE__ . "\\{$class}", 'init' ] );
         }
+
+        Helper::scheduleNextBackgroundTask(1);
     }
 
     /**
