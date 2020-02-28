@@ -108,9 +108,7 @@ class Helper {
                 $client = Plugin::get_client();
                 $result = $client->getCarrierApi()->getCarrierCollection();
 
-                $carriers = [
-                    ['code' => 'auto', 'name' => 'Detect automatically'],
-                ];
+                $carriers = [];
                 foreach ( $result as $carrier ) {
                     $carriers[] = [
                         'code' => $carrier->getCode(),
@@ -560,11 +558,34 @@ class Helper {
         $activeTask = $backgroundTaskRepo->findOneBy(['status'=>'processing']);
         if(isset($activeTask['id']))
             return false;
-        $nextTask = $backgroundTaskRepo->getQuery('SELECT * FROM _TBL_ WHERE status="new" ORDER BY priority, id LIMIT 1');
-        if(isset($nextTask[0]) && !isset($nextTask[0]->id))
+        $nextTask = last($backgroundTaskRepo->getQuery('SELECT * FROM _TBL_ WHERE status="new" ORDER BY priority, id LIMIT 1'));
+        if($nextTask === false){
             return false;
-        $scheduled = wp_schedule_single_event( time() + $delay, $nextTask[0]->action, [ json_decode($nextTask[0]->params) , $nextTask[0]->id ] );
-        return $nextTask[0]->id;
+        }
+        if(!wp_get_scheduled_event($nextTask->action, [ json_decode($nextTask->params) , $nextTask->id ])){
+            $scheduled = wp_schedule_single_event( time() + $delay, $nextTask->action, [ json_decode($nextTask->params) , $nextTask->id ] );
+        }
+        return $nextTask->id;
+    }
+
+    public static function clearOptions()
+    {
+        $options_to_clear = array(
+            'trackmage_client_id',
+            'trackmage_client_secret',
+            'trackmage_workspace',
+            'trackmage_sync_statuses',
+            'trackmage_webhook',
+            'trackmage_integration',
+            'trackmage_webhook_username',
+            'trackmage_webhook_password',
+            'trackmage_custom_order_statuses',
+            'trackmage_order_status_aliases',
+            'trackmage_modified_order_statuses',
+        );
+        foreach($options_to_clear as $option){
+            delete_option($option);
+        }
     }
 
 

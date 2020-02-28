@@ -12,6 +12,7 @@ namespace TrackMage\WordPress\Admin;
 
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\RequestOptions;
+use MongoDB\Driver\Exception\Exception;
 use TrackMage\WordPress\Plugin;
 use TrackMage\WordPress\Helper;
 use TrackMage\Client\Swagger\ApiException;
@@ -32,7 +33,6 @@ class Admin {
         add_action('admin_menu', [$this, 'add_page']);
         add_action('admin_init', [$this, 'settings']);
         add_action('wp_ajax_trackmage_test_credentials', [$this, 'test_credentials']);
-
         add_action('wp_ajax_trackmage_reload_workspaces', [$this, 'reload_workspaces']);
 
         add_filter('pre_update_option_trackmage_client_id', [$this, 'trimCredentials'], 10, 3);
@@ -40,11 +40,11 @@ class Admin {
         add_filter('update_option_trackmage_client_id', [$this, 'changed_api_credentials'], 10, 3);
         add_filter('update_option_trackmage_client_secret', [$this, 'changed_api_credentials'], 10, 3);
 
+        add_filter('pre_update_option_reset_plugin_settings', [$this, 'resetPluginSettings'], 10, 3);
         add_filter('pre_update_option_trackmage_workspace', [$this, 'select_workspace'], 10, 3);
 
         add_filter('pre_update_option_trackmage_delete_data', [$this, 'trigger_delete_data'], 10, 3);
         add_filter('pre_update_option_trackmage_trigger_sync', [$this, 'trigger_sync'], 20, 3);
-
     }
 
     /**
@@ -95,6 +95,7 @@ class Admin {
 
         register_setting('trackmage_general', 'trackmage_trigger_sync');
         register_setting('trackmage_general', 'trackmage_delete_data');
+        register_setting('trackmage_general', 'reset_plugin_settings');
 
         // Statuses settings.
         register_setting('trackmage_general', 'trackmage_sync_statuses');
@@ -187,13 +188,13 @@ class Admin {
      * @since 0.1.0
      */
     public function select_workspace($value, $old_value, $option) {
+        $resetPlugin = isset($_POST['reset_plugin_settings']) && $_POST['reset_plugin_settings'] === '1';
         // Exit if value has not changed.
-        if ($value === $old_value) {
+        if ($value === $old_value || $resetPlugin) {
             return $old_value;
         }
 
         $deleteData = isset($_POST['trackmage_delete_data']) && $_POST['trackmage_delete_data'] === '1';
-
         $client = Plugin::get_client();
         $url = Helper::get_endpoint();
 
@@ -202,7 +203,8 @@ class Admin {
         // Find and remove any activated integration and webhook, if any.
         $integration = get_option('trackmage_integration', '');
         $webhook = get_option('trackmage_webhook', '');
-        if (! empty($integration) && in_array($old_value, array_column('id', $workspaces), true)) {
+
+        if (! empty($integration) && in_array($old_value, array_map(function($ws){ return $ws['id'];}, $workspaces), true)) {
             try {
                 $client->getGuzzleClient()->delete('/workflows/'.$integration, [RequestOptions::QUERY => ['deleteData'=>$deleteData]]);
             } catch(\Exception $e){
@@ -283,6 +285,38 @@ class Admin {
             }
             if(!(isset($_POST['trackmage_delete_data']) && $_POST['trackmage_delete_data'] != 0) )
                 Helper::scheduleNextBackgroundTask();
+        }
+        return 0;
+    }
+
+    public function resetPluginSettings($value, $old_value){
+        $resetPlugin = $value === '1';
+        if($resetPlugin){
+            $logger     = Plugin::instance()->getLogger();
+            $deleteData = isset($_POST['trackmage_delete_data']) && $_POST['trackmage_delete_data'] === '1';
+            $logger->info('Run Reset all plugin settings and data', ['deleteData' => $deleteData]);
+            try{
+                $integration = get_option('trackmage_integration', '');
+                if(!empty($integration)){
+                    $client = Plugin::get_client();
+                    $client->getGuzzleClient()->delete('/workflows/' . $integration, [RequestOptions::QUERY => ['deleteData' => $deleteData]]);
+                }
+
+                $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
+                $backgroundTaskRepo->truncate();
+                $shipmentItemsRepo = Plugin::instance()->getShipmentRepo();
+                $shipmentItemsRepo->truncate();
+                $shipmentRepo = Plugin::instance()->getShipmentRepo();
+                $shipmentRepo->truncate();
+                Helper::clearTransients();
+                Helper::clearOptions();
+                set_transient( 'trackmage-wizard-notice', true );
+            }catch(\Exception $e){
+                $logger->error('Error during resetting: ' . $e->getMessage(), $e->getTrace());
+            }
+            $logger->info('Finish Reset all plugin settings and data');
+            wp_redirect(admin_url('admin.php?page=trackmage-settings'));
+            die();
         }
         return 0;
     }

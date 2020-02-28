@@ -162,6 +162,11 @@
       background: #f8f8f8;
       line-height: 2em;
 
+      .select2-selection{
+        &__rendered{
+          line-height: 13px !important;
+        }
+      }
       .items {
         &__row {
           margin-bottom: 6px;
