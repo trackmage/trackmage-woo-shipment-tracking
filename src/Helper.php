@@ -558,8 +558,9 @@ class Helper {
         $activeTask = $backgroundTaskRepo->findOneBy(['status'=>'processing']);
         if(isset($activeTask['id']))
             return false;
-        $nextTask = last($backgroundTaskRepo->getQuery('SELECT * FROM _TBL_ WHERE status="new" ORDER BY priority, id LIMIT 1'));
-        if($nextTask === false){
+        $nextTasks = $backgroundTaskRepo->getQuery('SELECT * FROM _TBL_ WHERE status="new" ORDER BY priority, id LIMIT 1');
+        $nextTask = is_array($nextTasks) && count($nextTasks) > 0 ? $nextTasks[0] : null;
+        if($nextTask === null){
             return false;
         }
         if(!wp_get_scheduled_event($nextTask->action, [ json_decode($nextTask->params) , $nextTask->id ])){
