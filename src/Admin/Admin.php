@@ -315,7 +315,7 @@ class Admin {
                 $logger->error('Error during resetting: ' . $e->getMessage(), $e->getTrace());
             }
             $logger->info('Finish Reset all plugin settings and data');
-            wp_redirect(admin_url('admin.php?page=trackmage-settings'));
+            wp_redirect(admin_url('admin.php?page=trackmage-wizard'));
             die();
         }
         return 0;
