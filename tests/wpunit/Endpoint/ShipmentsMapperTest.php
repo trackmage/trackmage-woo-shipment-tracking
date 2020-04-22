@@ -72,8 +72,8 @@ class ShipmentsMapperTest extends WPTestCase
                     'trackingStatus' => 'returned',
                     'originCarrier'  => 'DHL',
                     'workspace'      => '/workspaces/'.self::TM_WS_ID,
-                    'integration'    => '/workflows/' . self::INTEGRATION,
-                    'externalSyncId' => $wcShipmentId
+                    'externalSourceIntegration'    => '/workflows/' . self::INTEGRATION,
+                    'externalSourceSyncId' => $wcShipmentId
                 ],
             'event'         => 'update',
             'updatedFields' => [ 'trackingStatus', 'originCarrier', 'trackingNumber' ]
@@ -122,8 +122,8 @@ class ShipmentsMapperTest extends WPTestCase
                     'status'         => 'delivered',
                     'originCarrier'  => 'dhl',
                     'workspace'      => '/workspaces/'.self::TM_WS_ID,
-                    'integration'    => '/workflows/'.self::INTEGRATION,
-                    'externalSyncId' => $wcShipmentId
+                    'externalSourceIntegration'    => '/workflows/'.self::INTEGRATION,
+                    'externalSourceSyncId' => $wcShipmentId
                 ],
             'event'         => 'update',
             'updatedFields' => ['status', 'originCarrier' ]
@@ -164,8 +164,8 @@ class ShipmentsMapperTest extends WPTestCase
                     'status'         => 'delivered',
                     'originCarrier'  => 'dhl',
                     'workspace'      => '/workspaces/'.self::TM_WS_ID,
-                    'integration'    => '/workflows/'.self::INTEGRATION,
-                    'externalSyncId' => $wcShipmentId
+                    'externalSourceIntegration'    => '/workflows/XXXXXXXX',
+                    'externalSourceSyncId' => $wcShipmentId
                 ],
             'event'         => 'update',
             'updatedFields' => [ 'status', 'originCarrier' ],
@@ -206,8 +206,8 @@ class ShipmentsMapperTest extends WPTestCase
                     'status'         => 'delivered',
                     'originCarrier'  => 'dhl',
                     'workspace'      => '/workspaces/'.self::TM_WS_ID,
-                    'integration'    => '/workflows/'.self::INTEGRATION,
-                    'externalSyncId' => $wcShipmentId
+                    'externalSourceIntegration'    => '/workflows/'.self::INTEGRATION,
+                    'externalSourceSyncId' => $wcShipmentId
                 ],
             'event'         => 'update',
             'updatedFields' => [ 'status', 'originCarrier' ]

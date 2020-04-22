@@ -53,11 +53,10 @@ class OrderItemsMapper extends AbstractMapper {
             throw new InvalidArgumentException( 'Unable to handle order item because there is no TrackMage Order Id' );
         }
 
-        $orderItemId = isset( $this->data['externalSyncId'] ) ? $this->data['externalSyncId'] : '';
+        $orderItemId = isset( $this->data['externalSourceSyncId'] ) ? $this->data['externalSourceSyncId'] : '';
         if ( empty( $orderItemId ) ) {
-            throw new InvalidArgumentException( 'Unable to handle order item because there is no externalSyncId' );
+            throw new InvalidArgumentException( 'Unable to handle order item because there is no externalSourceSyncId' );
         }
-
 
         if($trackMageOrderItemId !== wc_get_order_item_meta($orderItemId, '_trackmage_order_item_id', true)) {
             throw new EndpointException( 'Unable to handle order item because TrackMage Order Item Id not found or does not match' );

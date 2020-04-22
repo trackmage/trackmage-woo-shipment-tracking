@@ -83,8 +83,8 @@ class OrderItemsMapperTest extends WPTestCase
                 "qty" => self::TEST_QTY,
                 "price" => self::PRICE,
                 "rowTotal" => self::TEST_QTY*self::PRICE,
-                "externalSyncId" => $wcOrderItemId,
-                "integration" => '/workflows/'.self::INTEGRATION,
+                "externalSourceSyncId" => $wcOrderItemId,
+                "externalSourceIntegration" => '/workflows/'.self::INTEGRATION,
                 "id" => self::TM_ORDER_ITEM_ID,
             ],
             "event" => "update",
@@ -121,8 +121,8 @@ class OrderItemsMapperTest extends WPTestCase
                 "qty" => self::TEST_QTY,
                 "price" => self::PRICE,
                 "rowTotal" => self::TEST_QTY*self::PRICE,
-                "externalSyncId" => $wcOrderItemId,
-                "integration" => '/workflows/'.self::INTEGRATION,
+                "externalSourceSyncId" => $wcOrderItemId,
+                "externalSourceIntegration" => '/workflows/XXXXXXXX',
                 "id" => self::TM_ORDER_ITEM_ID,
             ],
             "event" => "update",
@@ -155,8 +155,8 @@ class OrderItemsMapperTest extends WPTestCase
                 "qty" => self::TEST_QTY,
                 "price" => self::PRICE,
                 "rowTotal" => self::TEST_QTY*self::PRICE,
-                "externalSyncId" => $wcOrderItemId,
-                "integration" => '/workflows/'.self::INTEGRATION,
+                "externalSourceSyncId" => $wcOrderItemId,
+                "externalSourceIntegration" => '/workflows/'.self::INTEGRATION,
                 "id" => self::TM_ORDER_ITEM_ID,
             ],
             "event" => "update",
@@ -165,7 +165,7 @@ class OrderItemsMapperTest extends WPTestCase
 
         //WHEN unknown shipment item
         $wrongItem = $item;
-        $wrongItem['data']['externalSyncId'] = 99999;
+        $wrongItem['data']['externalSourceSyncId'] = 99999;
         //$wrongItem['data']['id'] = rand(1000,9999);
         $this->orderItemsMapper->handle($wrongItem);
     }
@@ -189,8 +189,8 @@ class OrderItemsMapperTest extends WPTestCase
                 "qty" => self::TEST_QTY,
                 "price" => self::PRICE,
                 "rowTotal" => self::TEST_QTY*self::PRICE,
-                "externalSyncId" => $wcOrderItemId,
-                "integration" => '/workflows/'.self::INTEGRATION,
+                "externalSourceSyncId" => $wcOrderItemId,
+                "externalSourceIntegration" => '/workflows/'.self::INTEGRATION,
                 "id" => self::TM_ORDER_ITEM_ID,
             ],
             "event" => "update",

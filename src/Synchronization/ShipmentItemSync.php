@@ -92,8 +92,8 @@ class ShipmentItemSync implements EntitySyncInterface
                             'shipment' => '/shipments/' . $trackmageShipmentId,
                             'orderItem' => '/order_items/'.$trackmageOrderItemId,
                             'qty' => (int)$shipmentItem['qty'],
-                            'externalSyncId' => (string)$shipmentItemId,
-                            'integration' => $this->integration,
+                            'externalSourceSyncId' => (string)$shipmentItemId,
+                            'externalSourceIntegration' => $this->integration,
                         ]
                     ]);
                     $result = json_decode( $response->getBody()->getContents(), true );
@@ -148,9 +148,9 @@ class ShipmentItemSync implements EntitySyncInterface
         }
         $query = [];
         $content = $response->getBody()->getContents();
-        if (false !== strpos($content, 'externalSyncId')) {
-            $query['externalSyncId'] = $shipmentItem['id'];
-            $query['integration'] = $this->integration;
+        if (false !== strpos($content, 'externalSourceSyncId')) {
+            $query['externalSourceSyncId'] = $shipmentItem['id'];
+            $query['externalSourceIntegration'] = $this->integration;
         } else {
             return null;
         }

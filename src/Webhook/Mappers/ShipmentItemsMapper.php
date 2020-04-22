@@ -52,9 +52,9 @@ class ShipmentItemsMapper extends AbstractMapper {
         if ( empty( $this->updatedFields ) ) {
             throw new InvalidArgumentException( 'Unable to handle shipment item because there are no updated fields' );
         }
-        $shipmentItemId = isset( $this->data['externalSyncId'] ) ? $this->data['externalSyncId'] : '';
+        $shipmentItemId = isset( $this->data['externalSourceSyncId'] ) ? $this->data['externalSourceSyncId'] : '';
         if ( empty( $shipmentItemId ) ) {
-            throw new InvalidArgumentException( 'Unable to handle shipment item because there is no externalSyncId' );
+            throw new InvalidArgumentException( 'Unable to handle shipment item because there is no externalSourceSyncId' );
         }
         $trackMageId = $this->data['id'];
         if ( empty( $trackMageId ) ) {

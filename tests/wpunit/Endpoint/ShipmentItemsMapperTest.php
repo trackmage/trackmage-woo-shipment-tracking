@@ -107,8 +107,8 @@ class ShipmentItemsMapperTest extends WPTestCase
                 "shipment" => "/shipments/".self::TM_SHIPMENT_ID,
                 "orderItem" => "/order_items/".self::TEST_TM_ORDER_ITEM_ID,
                 "qty" => self::TEST_QTY,
-                "externalSyncId" => $wcShipmentItemId,
-                "integration" => '/workflows/'.self::INTEGRATION,
+                "externalSourceSyncId" => $wcShipmentItemId,
+                "externalSourceIntegration" => '/workflows/'.self::INTEGRATION,
                 "id" => self::TM_SHIPMENT_ITEM_ID,
                 "workspace" => "/workspaces/".self::TM_WS_ID
             ],
@@ -167,8 +167,8 @@ class ShipmentItemsMapperTest extends WPTestCase
                 "shipment" => "/shipments/".self::TM_SHIPMENT_ID,
                 "orderItem" => "/order_items/".self::TM_ORDER_ITEM_ID,
                 "qty" => self::TEST_QTY,
-                "externalSyncId" => $wcShipmentItemId,
-                "integration" => '/workflows/'.self::INTEGRATION,
+                "externalSourceSyncId" => $wcShipmentItemId,
+                "externalSourceIntegration" => '/workflows/XXXXXXXX',
                 "id" => self::TM_SHIPMENT_ITEM_ID,
                 "workspace" => "/workspaces/".self::TM_WS_ID
             ],
@@ -215,8 +215,8 @@ class ShipmentItemsMapperTest extends WPTestCase
                 "shipment" => "/shipments/".self::TM_SHIPMENT_ID,
                 "orderItem" => "/order_items/".self::TM_ORDER_ITEM_ID,
                 "qty" => self::TEST_QTY,
-                "externalSyncId" => $wcShipmentItemId,
-                "integration" => '/workflows/'.self::INTEGRATION,
+                "externalSourceSyncId" => $wcShipmentItemId,
+                "externalSourceIntegration" => '/workflows/'.self::INTEGRATION,
                 "id" => self::TM_SHIPMENT_ITEM_ID,
                 "workspace" => "/workspaces/".self::TM_WS_ID
             ],
@@ -265,8 +265,8 @@ class ShipmentItemsMapperTest extends WPTestCase
                 "shipment" => "/shipments/".self::TM_SHIPMENT_ID,
                 "orderItem" => "/order_items/".self::TM_ORDER_ITEM_ID,
                 "qty" => self::TEST_QTY,
-                "externalSyncId" => $wcShipmentItemId,
-                "integration" => '/workflows/'.self::INTEGRATION,
+                "externalSourceSyncId" => $wcShipmentItemId,
+                "externalSourceIntegration" => '/workflows/'.self::INTEGRATION,
                 "id" => self::TM_SHIPMENT_ITEM_ID
             ],
             "event" => "update",

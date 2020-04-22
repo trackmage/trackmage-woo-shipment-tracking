@@ -71,8 +71,9 @@ class OrderSync implements EntitySyncInterface
                         'query' => ['ignoreWebhookId' => $webhookId],
                         'json' => [
                             'workspace' => '/workspaces/' . $workspace,
-                            'externalSyncId' => (string)$order_id,
-                            'integration' => $this->integration,
+                            'externalSourceSyncId' => (string)$order_id,
+                            'externalSourceIntegration' => $this->integration,
+                            'externalSourceUrl' => $order->get_edit_order_url(),
                             'orderNumber' => $order->get_order_number(),
                             'email' => $order->get_billing_email(),
                             'phoneNumber' => $order->get_billing_phone(),
@@ -168,9 +169,9 @@ class OrderSync implements EntitySyncInterface
         }
         $query = [];
         $content = $response->getBody()->getContents();
-        if (false !== strpos($content, 'externalSyncId')) {
-            $query['externalSyncId'] = $order->get_id();
-            $query['integration'] = $this->integration;
+        if (false !== strpos($content, 'externalSourceSyncId')) {
+            $query['externalSourceSyncId'] = $order->get_id();
+            $query['externalSourceIntegration'] = $this->integration;
         } else {
             return null;
         }

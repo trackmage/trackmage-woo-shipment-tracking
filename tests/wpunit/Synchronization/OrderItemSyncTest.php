@@ -109,8 +109,8 @@ class OrderItemSyncTest extends WPTestCase
             'qty' => self::QTY,
 //            'price' => self::PRICE, TODO: price is empty
             'rowTotal' => self::PRICE,
-            'externalSyncId' => $wcItemId,
-            'integration' => '/workflows/'.self::INTEGRATION,
+            'externalSourceSyncId' => $wcItemId,
+            'externalSourceIntegration' => '/workflows/'.self::INTEGRATION,
         ], $requests[0]['request']);
         //make sure that TM ID is saved to WC order item meta
         self::assertSame(self::TM_ORDER_ITEM_ID, wc_get_order_item_meta($wcItemId, '_trackmage_order_item_id', true));
@@ -182,14 +182,14 @@ class OrderItemSyncTest extends WPTestCase
         self::assertCount(1, $requests);
     }
 
-    public function testIfSameExistsItLookUpIdByExternalSyncId()
+    public function testIfSameExistsItLookUpIdByExternalSourceSyncId()
     {
         //GIVEN
         update_option('trackmage_sync_statuses', ['wc-completed']);
 
         $requests = [];
         $guzzleClient = $this->createClient([
-            $this->createJsonResponse(400, ['hydra:description' => 'externalSyncId: This value is already used.']),
+            $this->createJsonResponse(400, ['hydra:description' => 'externalSourceSyncId: This value is already used.']),
             $this->createJsonResponse(200, ['hydra:member' => [['id' => self::TM_ORDER_ITEM_ID]]]),
             $this->createJsonResponse(201, ['id' => self::TM_ORDER_ITEM_ID]),
         ], $requests);
@@ -209,7 +209,7 @@ class OrderItemSyncTest extends WPTestCase
         // make sure it updates the linked order item in TM
         $this->assertMethodsWereCalled($requests, [
             ['POST', '/order_items'],
-            ['GET', '/orders/'.self::TM_ORDER_ID.'/items', ['externalSyncId' => $wcItemId, 'integration' => '/workflows/'.self::INTEGRATION]],
+            ['GET', '/orders/'.self::TM_ORDER_ID.'/items', ['externalSourceSyncId' => $wcItemId, 'externalSourceIntegration' => '/workflows/'.self::INTEGRATION]],
             ['PUT', '/order_items/'.self::TM_ORDER_ITEM_ID],
         ]);
         //make sure that TM ID is saved to WC order item meta
