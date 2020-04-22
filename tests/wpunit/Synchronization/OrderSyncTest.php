@@ -95,8 +95,8 @@ class OrderSyncTest extends WPTestCase {
 
         $this->assertSubmittedJsonIncludes([
             'workspace' => '/workspaces/'.self::TM_WS_ID,
-            'externalSyncId' => (string) $wcId,
-            'integration' => '/workflows/'.self::INTEGRATION,
+            'externalSourceSyncId' => (string) $wcId,
+            'externalSourceIntegration' => '/workflows/'.self::INTEGRATION,
             'orderNumber' => $wcOrder->get_order_number(),
             'orderStatus' => ['code' => 'completed', 'title' => 'Completed'],
             'shippingAddress' => self::TEST_ADDRESS,
@@ -206,7 +206,7 @@ class OrderSyncTest extends WPTestCase {
 
         $requests = [];
         $guzzleClient = $this->createClient([
-            $this->createJsonResponse(400, ['hydra:description' => 'externalSyncId: This value is already used.']),
+            $this->createJsonResponse(400, ['hydra:description' => 'externalSourceSyncId: This value is already used.']),
             $this->createJsonResponse(200, ['hydra:member' => [['id' => self::TM_ORDER_ID]]]),
             $this->createJsonResponse(201, ['id' => self::TM_ORDER_ID]),
         ], $requests);
@@ -223,7 +223,7 @@ class OrderSyncTest extends WPTestCase {
         // make sure it updates the linked order in TM
         $this->assertMethodsWereCalled($requests, [
             ['POST', '/orders'],
-            ['GET', '/workspaces/'.self::TM_WS_ID.'/orders', ['externalSyncId' => (string) $wcId, 'integration' => '/workflows/'.self::INTEGRATION]],
+            ['GET', '/workspaces/'.self::TM_WS_ID.'/orders', ['externalSourceSyncId' => (string) $wcId, 'externalSourceIntegration' => '/workflows/'.self::INTEGRATION]],
             ['PUT', '/orders/'.self::TM_ORDER_ID],
         ]);
 

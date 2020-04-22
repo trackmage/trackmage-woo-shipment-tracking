@@ -75,8 +75,8 @@ class ShipmentSync implements EntitySyncInterface
                             'workspace' => '/workspaces/' . $workspace,
                             'trackingNumber' => $shipment['tracking_number'],
                             'originCarrier' => $shipment['carrier'] === 'auto' ? null : $shipment['carrier'],
-                            'externalSyncId' => (string)$shipmentId,
-                            'integration' => $this->integration,
+                            'externalSourceSyncId' => (string)$shipmentId,
+                            'externalSourceIntegration' => $this->integration,
                             'email' => $order->get_billing_email(),
                             'phoneNumber' => $order->get_billing_phone(),
                             'orders' => ['/orders/'.$trackmage_order_id],
@@ -136,9 +136,9 @@ class ShipmentSync implements EntitySyncInterface
         }
         $query = [];
         $content = $response->getBody()->getContents();
-        if (false !== strpos($content, 'externalSyncId')) {
-            $query['externalSyncId'] = $shipment['id'];
-            $query['integration'] = $this->integration;
+        if (false !== strpos($content, 'externalSourceSyncId')) {
+            $query['externalSourceSyncId'] = $shipment['id'];
+            $query['externalSourceIntegration'] = $this->integration;
         } else {
             return null;
         }

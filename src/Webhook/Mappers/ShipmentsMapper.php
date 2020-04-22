@@ -55,9 +55,9 @@ class ShipmentsMapper extends AbstractMapper {
             throw new InvalidArgumentException( 'Unable to handle shipment because there is no TrackMage Id' );
         }
 
-        $shipmentId = isset( $this->data['externalSyncId'] ) ? $this->data['externalSyncId'] : '';
+        $shipmentId = isset( $this->data['externalSourceSyncId'] ) ? $this->data['externalSourceSyncId'] : '';
         if ( empty( $shipmentId ) ) {
-            throw new InvalidArgumentException( 'Unable to handle shipment because there is no externalSyncId' );
+            throw new InvalidArgumentException( 'Unable to handle shipment because there is no externalSourceSyncId' );
         }
 
         $this->loadEntity( $shipmentId, $trackMageId );

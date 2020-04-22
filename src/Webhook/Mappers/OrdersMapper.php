@@ -65,23 +65,23 @@ class OrdersMapper extends AbstractMapper {
             throw new InvalidArgumentException( 'Unable to handle order because there are no updated fields' );
         }
 
-        $trackMageId = $this->data['id'];
+        $trackMageId = isset($this->data['id']) ? $this->data['id'] : '';
         if ( empty( $trackMageId ) ) {
             throw new InvalidArgumentException( 'Unable to handle order because there is no TrackMage Id' );
         }
 
-        $orderId = isset( $this->data['externalSyncId'] ) ? $this->data['externalSyncId'] : '';
+        $orderId = isset( $this->data['externalSourceSyncId'] ) ? $this->data['externalSourceSyncId'] : '';
         if ( empty( $orderId ) ) {
-            throw new InvalidArgumentException( 'Unable to handle order because there is no externalSyncId' );
+            throw new InvalidArgumentException( 'Unable to handle order because there is no externalSourceSyncId' );
         }
 
         $this->entity = wc_get_order( $orderId );
         $trackmage_order_id = get_post_meta( $orderId, '_trackmage_order_id', true );
 
         $this->validateData();
-
-        if($trackMageId !== $trackmage_order_id)
-            throw new EndpointException('Unable to handle order because TrackMageId is different');
+        if($trackMageId !== $trackmage_order_id) {
+            throw new EndpointException( 'Unable to handle order because TrackMageId is different' );
+        }
 
         try {
             foreach ($this->updatedFields as $field){

@@ -51,7 +51,7 @@ class AbstractMapper implements EntityMapperInterface {
      */
     protected function validateData(){
         // check source
-        if(!isset($this->data['integration']) || $this->data['integration'] !== $this->integration)
+        if(!isset($this->data['externalSourceIntegration']) || $this->data['externalSourceIntegration'] !== $this->integration)
             throw new InvalidArgumentException('Unable to handle because integration Id does not match');
 
         // check if entity is exist

@@ -102,8 +102,8 @@ class OrderItemSync implements EntitySyncInterface
                             'qty' => $item['quantity'],
                             'price' => $product->get_price(),
                             'rowTotal' => $item->get_total(),
-                            'externalSyncId' => (string)$orderItemId,
-                            'integration' => $this->integration,
+                            'externalSourceSyncId' => (string)$orderItemId,
+                            'externalSourceIntegration' => $this->integration,
                         ]
                     ]);
                     $result = json_decode( $response->getBody()->getContents(), true );
@@ -162,9 +162,9 @@ class OrderItemSync implements EntitySyncInterface
         }
         $query = [];
         $content = $response->getBody()->getContents();
-        if (false !== strpos($content, 'externalSyncId')) {
-            $query['externalSyncId'] = $item->get_id();
-            $query['integration'] = $this->integration;
+        if (false !== strpos($content, 'externalSourceSyncId')) {
+            $query['externalSourceSyncId'] = $item->get_id();
+            $query['externalSourceIntegration'] = $this->integration;
         } else {
             return null;
         }

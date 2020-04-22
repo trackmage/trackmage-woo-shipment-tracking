@@ -82,8 +82,8 @@ class ShipmentSyncTest extends WPTestCase
         ]);
         $this->assertSubmittedJsonIncludes([
             'workspace' => '/workspaces/'.self::TM_WS_ID,
-            'externalSyncId' => (string) $wcShipmentId,
-            'integration' => '/workflows/'.self::INTEGRATION,
+            'externalSourceSyncId' => (string) $wcShipmentId,
+            'externalSourceIntegration' => '/workflows/'.self::INTEGRATION,
             'trackingNumber' => self::TEST_TRACKING_NUMBER,
             'originCarrier' => self::TEST_CARRIER,
             'email' => $wcOrder->get_billing_email(),
@@ -214,7 +214,7 @@ class ShipmentSyncTest extends WPTestCase
 
         $requests = [];
         $guzzleClient = $this->createClient([
-            $this->createJsonResponse(400, ['hydra:description' => 'externalSyncId: This value is already used.']),
+            $this->createJsonResponse(400, ['hydra:description' => 'externalSourceSyncId: This value is already used.']),
             $this->createJsonResponse(200, ['hydra:member' => [['id' => self::TM_SHIPMENT_ID]]]),
             $this->createJsonResponse(201, ['id' => self::TM_SHIPMENT_ID]),
         ], $requests);
@@ -237,7 +237,7 @@ class ShipmentSyncTest extends WPTestCase
         // make sure it updates the linked shipment in TM
         $this->assertMethodsWereCalled($requests, [
             ['POST', '/shipments'],
-            ['GET', '/workspaces/'.self::TM_WS_ID.'/shipments', ['externalSyncId' => (string) $wcShipmentId, 'integration' => '/workflows/'.self::INTEGRATION,]],
+            ['GET', '/workspaces/'.self::TM_WS_ID.'/shipments', ['externalSourceSyncId' => (string) $wcShipmentId, 'externalSourceIntegration' => '/workflows/'.self::INTEGRATION,]],
             ['PUT', '/shipments/'.self::TM_SHIPMENT_ID],
         ]);
 

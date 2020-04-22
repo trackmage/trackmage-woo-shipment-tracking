@@ -179,8 +179,8 @@ class ShipmentItemSyncTest extends WPTestCase
             'shipment' => '/shipments/'.self::TM_SHIPMENT_ID,
             'orderItem' => '/order_items/'.self::TM_ORDER_ITEM_ID,
             'qty' => self::TEST_QTY,
-            'externalSyncId' => (string) $wcShipmentItemId,
-            'integration' => '/workflows/'.self::INTEGRATION,
+            'externalSourceSyncId' => (string) $wcShipmentItemId,
+            'externalSourceIntegration' => '/workflows/'.self::INTEGRATION,
         ], $requests[0]['request']);
         //make sure that TM ID is saved to WC shipment meta
         self::assertSame(self::TM_SHIPMENT_ITEM_ID, $this->shipmentItemRepo->find($wcShipmentItemId)['trackmage_id']);
@@ -281,7 +281,7 @@ class ShipmentItemSyncTest extends WPTestCase
         //GIVEN
         $requests = [];
         $guzzleClient = $this->createClient([
-            $this->createJsonResponse(400, ['hydra:description' => 'externalSyncId: This value is already used.']),
+            $this->createJsonResponse(400, ['hydra:description' => 'externalSourceSyncId: This value is already used.']),
             $this->createJsonResponse(200, ['hydra:member' => [['id' => self::TM_SHIPMENT_ITEM_ID]]]),
             $this->createJsonResponse(201, ['id' => self::TM_SHIPMENT_ITEM_ID]),
         ], $requests);
@@ -313,7 +313,7 @@ class ShipmentItemSyncTest extends WPTestCase
         // make sure it updates the linked shipment in TM
         $this->assertMethodsWereCalled($requests, [
             ['POST', '/shipment_items'],
-            ['GET', '/shipment_items', ['workspace.id' => self::TM_WS_ID, 'externalSyncId' => (string) $wcShipmentItemId, 'integration' => '/workflows/'.self::INTEGRATION]],
+            ['GET', '/shipment_items', ['workspace.id' => self::TM_WS_ID, 'externalSourceSyncId' => (string) $wcShipmentItemId, 'externalSourceIntegration' => '/workflows/'.self::INTEGRATION]],
             ['PUT', '/shipment_items/'.self::TM_SHIPMENT_ITEM_ID],
         ]);
 
