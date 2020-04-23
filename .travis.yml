@@ -35,6 +35,8 @@ addons:
     paths:
       - $(ls tests/_output/*.html | tr "\n" ":")
       - $(ls build/*.zip | tr "\n" ":")
+    target_paths:
+      - /${TRAVIS_REPO_SLUG}/${TRAVIS_BRANCH}
     permissions: public-read
 
 before_install:
