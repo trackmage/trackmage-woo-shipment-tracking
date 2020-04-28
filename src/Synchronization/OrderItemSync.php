@@ -9,6 +9,8 @@ use TrackMage\WordPress\Exception\SynchronizationException;
 use TrackMage\WordPress\Plugin;
 use WC_Order;
 use WC_Order_Item;
+use WC_Product;
+use WC_Product_Attribute;
 
 class OrderItemSync implements EntitySyncInterface
 {
@@ -20,9 +22,6 @@ class OrderItemSync implements EntitySyncInterface
     /** @var string|null */
     private $integration;
 
-    /**
-     * @param string|null $integration
-     */
     public function __construct($integration = null)
     {
         $this->integration = '/workflows/'.$integration;
@@ -89,8 +88,8 @@ class OrderItemSync implements EntitySyncInterface
         $client = Plugin::get_client();
         $guzzleClient = $client->getGuzzleClient();
 
-        $product = $item->get_product();
-
+        $product = $item->get_variation_id() > 0 ? wc_get_product($item->get_variation_id()) : $item->get_product();
+        $image = wp_get_attachment_image_url( $product->get_image_id(), 'thumbnail' );
         try {
             if (empty($trackmage_order_item_id)) {
                 try {
@@ -98,10 +97,14 @@ class OrderItemSync implements EntitySyncInterface
                         'query' => ['ignoreWebhookId' => $webhookId],
                         'json' => [
                             'order' => '/orders/' . $trackmage_order_id,
-                            'productName' => $item['name'],
+                            'productName' => $item->get_product()->get_name(),
+                            'productSku' => $product->get_sku(),
+                            'productOptions' => $this->getProductOptions($product),
+                            'imageUrl' => $image !== false ? $image : null,
                             'qty' => $item['quantity'],
                             'price' => $product->get_price(),
                             'rowTotal' => $item->get_total(),
+                            'externalProductId' => (string)$item->get_product()->get_id(),
                             'externalSourceSyncId' => (string)$orderItemId,
                             'externalSourceIntegration' => $this->integration,
                         ]
@@ -128,7 +131,11 @@ class OrderItemSync implements EntitySyncInterface
                     $guzzleClient->put('/order_items/'.$trackmage_order_item_id, [
                         'query' => ['ignoreWebhookId' => $webhookId],
                         'json' => [
-                            'productName' => $item['name'],
+                            'productName' => $item->get_product()->get_name(),
+                            'productSku' => $product->get_sku(),
+                            'productOptions' => $this->getProductOptions($product),
+                            'externalProductId' => (string)$item->get_product()->get_id(),
+                            'imageUrl' => $image !== false ? $image : null,
                             'qty' => $item['quantity'],
                             'price' => $product->get_price(),
                             'rowTotal' => $item->get_total(),
@@ -215,4 +222,24 @@ class OrderItemSync implements EntitySyncInterface
         wc_delete_order_item_meta( $id, '_trackmage_order_item_id');
         wc_delete_order_item_meta( $id, '_trackmage_hash');
     }
+
+    private function getProductOptions(WC_Product $product)
+    {
+        if ($product->get_type() !== 'variation') {
+            return array_map(function(WC_Product_Attribute $attr){
+                $options = $attr->get_options();
+                return isset($options[0]) ? $options[0] : '';
+            }, array_filter($product->get_attributes(), function(WC_Product_Attribute $attr){ return $attr->get_visible() && !$attr->get_variation() && count($attr->get_options()) > 0;}));
+        }
+        return $product->get_attributes();
+    }
+
+    private function getProductName(WC_Product $product)
+    {
+        if ($product->get_type() === 'variation' && $parent = wc_get_product($product->get_parent_id())) {
+            return $parent->get_name();
+        }
+        return $product->get_name();
+    }
+
 }
