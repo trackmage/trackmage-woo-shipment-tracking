@@ -78,6 +78,9 @@
           action: "trackmage_get_view",
           path: "meta-boxes/order-add-shipment-items-row.php"
         },
+        beforeSend: function() {
+          trackmageBlockUi($("#trackmage-shipment-tracking .inside"));
+        },
         success: function(response) {
           const row = $(response.data.html);
 
@@ -102,7 +105,10 @@
             "failure",
             true
           );
-        }
+        },
+        complete: function() {
+          trackmageUnblockUi($("#trackmage-shipment-tracking .inside"));
+        },
       });
     }
   );
@@ -168,11 +174,13 @@
               const qty = $(this)
                 .find('[name="qty"]')
                 .val();
-              items.push({
-                id: id,
-                order_item_id: orderItemId,
-                qty: qty
-              });
+              if(qty > 0) {
+                items.push({
+                  id: id,
+                  order_item_id: orderItemId,
+                  qty: qty
+                });
+              }
             });
 
             // Request data.
@@ -247,6 +255,9 @@
           security: params.metaBoxes.nonces.editShipment,
           orderId: params.metaBoxes.orderId
         },
+        beforeSend: function() {
+          trackmageBlockUi($("#trackmage-shipment-tracking .inside"));
+        },
         success: function(response) {
           if (!response.success) {
             toggleActionGroup("default");
@@ -260,7 +271,7 @@
 
           // Show the delete icon for all rows except the first one.
           $(html)
-            .find(".items__rows .items__row:not(:first-of-type) .items__delete")
+            .find(".items__rows .items__row .items__delete")
             .css("display", "block");
 
           // Append the HTML.
@@ -288,19 +299,13 @@
             $(itemQtyEl).val(item.qty);
 
             // Select product item.
-            const selectedProduct = new Option(
-              item.name,
-              item.order_item_id,
-              true,
-              true
-            );
-            $(itemProductEl)
-              .append(selectedProduct)
-              .trigger("change");
-            initSelectWooOrderItems(itemProductEl, params.metaBoxes.orderId);
-
+            itemProductEl.parent().append($('<span></span>').text(item.name)).append($('<input type="hidden" name="order_item_id">').val(item.order_item_id));
+            itemProductEl.remove();
             index++;
           });
+        },
+        complete: function() {
+          trackmageUnblockUi($("#trackmage-shipment-tracking .inside"));
         }
       });
     }
@@ -404,7 +409,6 @@
               ).is(":checked"),
               items: items
             };
-
             $.ajax({
               url: params.main.urls.ajax,
               method: "post",

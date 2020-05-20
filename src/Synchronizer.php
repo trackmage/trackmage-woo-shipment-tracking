@@ -6,13 +6,9 @@ use GuzzleHttp\Exception\RequestException;
 use Psr\Log\LoggerInterface;
 use Throwable;
 use TrackMage\WordPress\Exception\RuntimeException;
-use TrackMage\WordPress\Repository\ShipmentItemRepository;
-use TrackMage\WordPress\Repository\ShipmentRepository;
 use TrackMage\WordPress\Repository\BackgroundTaskRepository;
 use TrackMage\WordPress\Synchronization\OrderItemSync;
 use TrackMage\WordPress\Synchronization\OrderSync;
-use TrackMage\WordPress\Synchronization\ShipmentItemSync;
-use TrackMage\WordPress\Synchronization\ShipmentSync;
 
 class Synchronizer
 {
@@ -23,25 +19,16 @@ class Synchronizer
 
     private $orderSync;
     private $orderItemSync;
-    private $shipmentSync;
-    private $shipmentItemSync;
-    private $shipmentRepository;
-    private $shipmentItemRepository;
     private $backgroundTaskRepository;
 
     private $logger;
 
     public function __construct(LoggerInterface $logger, OrderSync $orderSync, OrderItemSync $orderItemSync,
-                                ShipmentSync $shipmentSync, ShipmentItemSync $shipmentItemSync,
-                                ShipmentRepository $shipmentRepository, ShipmentItemRepository $shipmentItemRepository, BackgroundTaskRepository $backgroundTaskRepository)
+                                BackgroundTaskRepository $backgroundTaskRepository)
     {
         $this->logger = $logger;
         $this->orderSync = $orderSync;
         $this->orderItemSync = $orderItemSync;
-        $this->shipmentSync = $shipmentSync;
-        $this->shipmentItemSync = $shipmentItemSync;
-        $this->shipmentRepository = $shipmentRepository;
-        $this->shipmentItemRepository = $shipmentItemRepository;
         $this->backgroundTaskRepository = $backgroundTaskRepository;
         $this->bindEvents();
     }
@@ -82,14 +69,6 @@ class Synchronizer
         add_action( 'woocommerce_update_order_item', [ $this, 'syncOrderItem' ], 10, 1 );
         add_action( 'woocommerce_delete_order_item', [ $this, 'deleteOrderItem' ], 10, 1 );
 
-        add_action( 'trackmage_new_shipment', [ $this, 'syncShipment' ], 10, 1 );
-        add_action( 'trackmage_update_shipment', [ $this, 'syncShipment' ], 10, 1 );
-        add_action( 'trackmage_delete_shipment', [ $this, 'deleteShipment' ], 10, 1 );
-
-        add_action( 'trackmage_new_shipment_item', [ $this, 'syncShipmentItem' ], 10, 1 );
-        add_action( 'trackmage_update_shipment_item', [ $this, 'syncShipmentItem' ], 10, 1 );
-        add_action( 'trackmage_delete_shipment_item', [ $this, 'deleteShipmentItem' ], 10, 1 );
-
         add_action( 'trackmage_bulk_orders_sync', [$this, 'bulkOrdersSync'], 10, 2);
         add_action( 'trackmage_delete_data', [$this, 'deleteData'], 10, 2);
 
@@ -118,20 +97,16 @@ class Synchronizer
         }
     }
 
-    public function syncOrder($orderId ) {
+    public function syncOrder($orderId, $forse = false ) {
         if ($this->disableEvents) {
             return;
         }
         try {
-            $this->orderSync->sync($orderId);
-
-            foreach ($this->shipmentRepository->findBy(['order_id' => $orderId]) as $shipment) {
-                $this->syncShipment($shipment['id']);
-            }
+            $this->orderSync->sync($orderId, $forse);
 
             $order = wc_get_order( $orderId );
             foreach ($order->get_items() as $item) {
-                $this->syncOrderItem($item->get_id());
+                $this->syncOrderItem($item->get_id(), $forse);
             }
         } catch (RuntimeException $e) {
             $this->logger->warning(self::TAG.'Unable to sync remote order', array_merge([
@@ -174,10 +149,6 @@ class Synchronizer
             $this->deleteOrderItem($item->get_id());
         }
 
-        foreach ($this->shipmentRepository->findBy(['order_id' => $orderId]) as $shipment) {
-            $this->deleteShipment($shipment['id']);
-        }
-
         try {
             $this->orderSync->delete($orderId);
         } catch (RuntimeException $e) {
@@ -198,11 +169,6 @@ class Synchronizer
         foreach ($order->get_items() as $item) {
             $this->unlinkOrderItem($item->get_id());
         }
-
-        foreach ($this->shipmentRepository->findBy(['order_id' => $orderId]) as $shipment) {
-            $this->shipmentSync->unlink($shipment['id']);
-        }
-
         try {
             $this->orderSync->unlink($orderId);
         } catch (RuntimeException $e) {
@@ -214,17 +180,13 @@ class Synchronizer
         }
     }
 
-    public function syncOrderItem($itemId )
+    public function syncOrderItem($itemId, $forse = false)
     {
         if ( $this->disableEvents) {
             return;
         }
         try {
-            $this->orderItemSync->sync($itemId);
-
-            foreach ($this->shipmentItemRepository->findBy(['order_item_id' => $itemId]) as $shipmentItem) {
-                $this->syncShipmentItem($shipmentItem['id']);
-            }
+            $this->orderItemSync->sync($itemId, $forse);
         } catch (RuntimeException $e) {
             $this->logger->warning(self::TAG.'Unable to sync remote order item', array_merge([
                 'item_id' => $itemId,
@@ -240,10 +202,6 @@ class Synchronizer
             return;
         }
         try {
-            foreach ($this->shipmentItemRepository->findBy(['order_item_id' => $itemId]) as $shipmentItem) {
-                $this->deleteShipmentItem($shipmentItem['id']);
-            }
-
             $this->orderItemSync->delete($itemId);
         } catch (RuntimeException $e) {
             $this->logger->warning(self::TAG.'Unable to delete remote order item', array_merge([
@@ -260,10 +218,6 @@ class Synchronizer
             return;
         }
         try{
-            foreach ($this->shipmentItemRepository->findBy(['order_item_id' => $itemId]) as $shipmentItem) {
-                $this->shipmentItemSync->unlink($shipmentItem['id']);
-            }
-
             $this->orderItemSync->unlink($itemId);
         } catch (RuntimeException $e) {
             $this->logger->warning(self::TAG.'Unable to unlink order item', [
@@ -273,70 +227,6 @@ class Synchronizer
             ]);
         }
 
-    }
-
-    public function syncShipment($shipment_id)
-    {
-        if ($this->disableEvents) {
-            return;
-        }
-        try {
-            $this->shipmentSync->sync($shipment_id);
-        } catch (RuntimeException $e) {
-            $this->logger->warning(self::TAG.'Unable to sync remote shipment', array_merge([
-                'shipment_id' => $shipment_id,
-                'exception' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ], $this->grabGuzzleData($e)));
-        }
-    }
-
-    public function deleteShipment($shipment_id)
-    {
-        if ($this->disableEvents) {
-            return;
-        }
-        try {
-            $this->shipmentSync->delete($shipment_id);
-        } catch (RuntimeException $e) {
-            $this->logger->warning(self::TAG.'Unable to delete remote shipment', array_merge([
-                'shipment_id' => $shipment_id,
-                'exception' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ], $this->grabGuzzleData($e)));
-        }
-    }
-
-    public function syncShipmentItem($shipment_item_id)
-    {
-        if ($this->disableEvents) {
-            return;
-        }
-        try {
-            $this->shipmentItemSync->sync($shipment_item_id);
-        } catch (RuntimeException $e) {
-            $this->logger->warning(self::TAG.'Unable to sync remote shipment item', array_merge([
-                'shipment_item_id' => $shipment_item_id,
-                'exception' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ], $this->grabGuzzleData($e)));
-        }
-    }
-
-    public function deleteShipmentItem($shipment_item_id)
-    {
-        if ($this->disableEvents) {
-            return;
-        }
-        try {
-            $this->shipmentItemSync->delete($shipment_item_id);
-        } catch (RuntimeException $e) {
-            $this->logger->warning(self::TAG.'Unable to delete remote shipment item', array_merge([
-                'shipment_item_id' => $shipment_item_id,
-                'exception' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ], $this->grabGuzzleData($e)));
-        }
     }
 
     /**

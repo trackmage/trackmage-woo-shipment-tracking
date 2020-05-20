@@ -56,3 +56,4 @@ $carriers = Helper::get_shipment_carriers();
         </div>
     </div>
 </div>
+<span class="spinner"></span>

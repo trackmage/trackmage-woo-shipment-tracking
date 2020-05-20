@@ -1,4 +1,29 @@
 #trackmage-shipment-tracking {
+  &.loading{
+    position: relative;
+    span.spinner {
+      visibility: visible;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      margin-top: -25px;
+      margin-left: -25px;
+      background-size: 50px;
+      width: 50px;
+      height: 50px;
+    }
+    &:after{
+      content: ' ';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      display: block;
+      background: rgba(0,0,0,0.3);
+      z-index: 65000;
+    }
+  }
   .inside {
     margin: 0;
     padding: 0;

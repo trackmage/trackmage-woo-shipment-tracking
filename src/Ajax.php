@@ -145,7 +145,7 @@ class Ajax {
         $order = wc_get_order($orderId);
         $orderItems = $order->get_items();
         $shipmentId = $_POST['id'];
-        $shipment = Helper::geShipmentWithJoinedItems($shipmentId);
+        $shipment = Helper::geShipmentWithJoinedItems($shipmentId, $orderId);
 
         if ($shipment) {
             try {
@@ -196,7 +196,6 @@ class Ajax {
         // Order data.
         $order               = wc_get_order($orderId);
         $orderItems          = $order->get_items();
-        $existingShipments   = Helper::getOrderShipmentsWithJoinedItems($orderId);
         $orderNotes          = [];
 
         try {
@@ -209,12 +208,33 @@ class Ajax {
                     return [
                         'order_item_id' => $item->get_id(),
                         'qty' => $item->get_quantity(),
-
                     ];
                 }, $orderItems);
+            } else {
+                $mergedItems = [];
+                foreach ($shipment['items'] as $item) {
+                    if(!empty($item['qty'])) {
+                        $orderItemId = $item['order_item_id'];
+                        if ( isset( $mergedItems[ $orderItemId ] ) ) {
+                            foreach ( $item as $key => $value ) {
+                                if ( $key === 'qty' ) {
+                                    $mergedItems[ $orderItemId ]['qty'] += (int) $value;
+                                } elseif ( ! empty( $value ) ) {
+                                    $mergedItems[ $orderItemId ][ $key ] = $value;
+                                }
+                            }
+                        } else {
+                            $mergedItems[ $orderItemId ]        = $item;
+                            $mergedItems[ $orderItemId ]['qty'] = (int) $mergedItems[ $orderItemId ]['qty'];
+                        }
+                    }
+                }
+                $shipment['items'] = array_values($mergedItems);
             }
 
-            Helper::validateShipment($shipment, $orderItems, $existingShipments);
+            $synchronizer = Plugin::instance()->getSynchronizer();
+            $synchronizer->syncOrder($orderId, true);
+
             $shipment = Helper::saveShipmentWithJoinedItems($shipment);
 
             $orderNotes = array_map(function(\WC_Order_Item $item) {
@@ -266,14 +286,35 @@ class Ajax {
             'items' => $_POST['items'],
         ];
 
-        $existingShipments = Helper::getOrderShipmentsWithJoinedItems($orderId);
+        //$existingShipments = Helper::getOrderShipmentsWithJoinedItems($orderId);
 
         // Order data.
         $order               = wc_get_order($orderId);
         $orderItems          = $order->get_items();
 
+        $mergedItems = [];
+        foreach ($shipment['items'] as $item) {
+            $orderItemId = $item['order_item_id'];
+            if ( isset( $mergedItems[ $orderItemId ] ) ) {
+                foreach ( $item as $key => $value ) {
+                    if ( $key === 'qty' ) {
+                        $mergedItems[ $orderItemId ]['qty'] += (int) $value;
+                    } elseif ( ! empty( $value ) ) {
+                        $mergedItems[ $orderItemId ][ $key ] = $value;
+                    }
+                }
+            } else {
+                $mergedItems[ $orderItemId ]        = $item;
+                $mergedItems[ $orderItemId ]['qty'] = (int) $mergedItems[ $orderItemId ]['qty'];
+            }
+        }
+        $shipment['items'] = array_values($mergedItems);
+
         try {
-            Helper::validateShipment($shipment, $orderItems, $existingShipments);
+            //Helper::validateShipment($shipment, $orderItems, $existingShipments);
+
+            $synchronizer = Plugin::instance()->getSynchronizer();
+            $synchronizer->syncOrder($orderId, true);
 
             // Update shipment details in the database.
             $shipment = Helper::saveShipmentWithJoinedItems($shipment);
@@ -315,7 +356,7 @@ class Ajax {
         $orderId = $_POST['orderId'];
         $shipmentId = $_POST['id'];
 
-        $shipment = Helper::geShipmentWithJoinedItems($shipmentId);
+        //$shipment = Helper::geShipmentWithJoinedItems($shipmentId);
         // Delete shipment record from the database.
         Helper::deleteShipment($shipmentId);
 
