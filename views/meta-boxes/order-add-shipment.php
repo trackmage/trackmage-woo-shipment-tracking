@@ -20,9 +20,10 @@ defined( 'WPINC' ) || exit;
                 <label class="trackmage-edit-row__field">
                     <div class="trackmage-edit-row__field-title"><?php _e('Carrier', 'trackmage'); ?></div>
                     <div class="trackmage-edit-row__field-wrap">
-                        <select name="carrier" data-placeholder="Select a carrier">
+                        <select name="carrier" data-placeholder="<?php _e('Select a carrier', 'trackmage');?>">
+                            <option value="auto"><?php _e('Select a carrier', 'trackmage');?></option>
                             <?php foreach ($carriers as $carrier ) : ?>
-                            <option value="<?php echo $carrier['code']; ?>"><?php echo $carrier['name']; ?></option>
+                                <option value="<?php echo $carrier['code']; ?>"><?php echo $carrier['name']; ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>

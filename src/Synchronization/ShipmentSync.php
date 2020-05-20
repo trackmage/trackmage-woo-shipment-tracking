@@ -4,6 +4,7 @@ namespace TrackMage\WordPress\Synchronization;
 
 use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\ResponseInterface;
+use TrackMage\Client\Swagger\ApiException;
 use TrackMage\WordPress\Exception\InvalidArgumentException;
 use TrackMage\WordPress\Exception\SynchronizationException;
 use TrackMage\WordPress\Plugin;
@@ -22,43 +23,20 @@ class ShipmentSync implements EntitySyncInterface
     /**
      * @param string|null $integration
      */
-    public function __construct(ShipmentRepository $shipmentRepo, $integration = null)
+    public function __construct($integration = null)
     {
-        $this->shipmentRepo = $shipmentRepo;
         $this->integration = '/workflows/'.$integration;
     }
 
-    /**
-     * @return ChangesDetector
-     */
-    private function getChangesDetector()
+    public function sync($shipment)
     {
-        if (null === $this->changesDetector) {
-            $detector = new ChangesDetector([
-                '[tracking_number]', '[carrier]',
-            ], function(array $shipment) {
-                return $shipment['hash'];
-            }, function(array $shipment, $hash) {
-                return $this->shipmentRepo->update(['hash' => $hash], ['id' => $shipment['id']]);
-            });
-            $this->changesDetector = $detector;
-        }
-
-        return $this->changesDetector;
-    }
-
-    public function sync($shipmentId)
-    {
-        $shipment = $this->shipmentRepo->find($shipmentId);
-        if ($shipment === null) {
-            throw new InvalidArgumentException('Unable to find shipment: '. $shipmentId);
+        if (empty($shipment)) {
+            throw new InvalidArgumentException('Shipment should not be empty');
         }
         $orderId = $shipment['order_id'];
         $order = wc_get_order($orderId);
-        $trackmage_id = $shipment['trackmage_id'];
-        if (!($this->canSyncOrder($order) && (empty($trackmage_id) || $this->getChangesDetector()->isChanged($shipment)))) {
-            return;
-        }
+        $trackmage_id = isset($shipment['id']) ? $shipment['id'] : null;
+
         $workspace = get_option('trackmage_workspace');
         $webhookId = get_option('trackmage_webhook', '');
 
@@ -70,125 +48,87 @@ class ShipmentSync implements EntitySyncInterface
         try {
             if (empty($trackmage_id)) {
                 try {
-                    $response = $guzzleClient->post('/shipments', [
-                        'json' => [
-                            'workspace' => '/workspaces/' . $workspace,
-                            'trackingNumber' => $shipment['tracking_number'],
-                            'originCarrier' => $shipment['carrier'] === 'auto' ? null : $shipment['carrier'],
-                            'externalSourceSyncId' => (string)$shipmentId,
-                            'externalSourceIntegration' => $this->integration,
-                            'email' => $order->get_billing_email(),
-                            'phoneNumber' => $order->get_billing_phone(),
-                            'orders' => ['/orders/'.$trackmage_order_id],
-                        ]
-                    ]);
-                    $result = json_decode( $response->getBody()->getContents(), true );
-                    $shipment = $this->shipmentRepo->update(['trackmage_id' => $result['id']], ['id' => $shipmentId]);
-                } catch (ClientException $e) {
-                    $response = $e->getResponse();
-                    if (null !== $response
-                        && null !== ($query = $this->matchSearchCriteriaFromValidationError($shipment, $response))
-                        && null !== ($data = $this->lookupByCriteria($query, $workspace))
-                    ) {
-                        $shipment = $this->shipmentRepo->update(['trackmage_id' => $data['id']], ['id' => $shipmentId]);
-                        $this->sync($shipmentId);
-                        return;
+                    $data = [
+                        'workspace' => '/workspaces/' . $workspace,
+                        'trackingNumber' => $shipment['tracking_number'] === '' ? null : $shipment['tracking_number'],
+                        'originCarrier' => $shipment['carrier'] === 'auto' ? null : $shipment['carrier'],
+                        'externalSourceIntegration' => $this->integration,
+                        'email' => $order->get_billing_email(),
+                        'phoneNumber' => $order->get_billing_phone(),
+                        'orders' => ['/orders/'.$trackmage_order_id],
+                    ];
+                    if(isset($shipment['items'])){
+                        $data['shipmentItems'] = $this->getShipmentItemsForSync($shipment['items'], $order->get_items());
                     }
-                    throw $e;
+                    $response = $guzzleClient->post('/shipments', [
+                        'headers' => [
+                            'Content-Type' => 'application/ld+json'
+                        ],
+                        'body' => \GuzzleHttp\json_encode($data)
+                    ]);
+                    return json_decode( $response->getBody()->getContents(), true );
+                } catch (ClientException $e) {
+                    $contents = $e->getResponse()->getBody()->getContents();
+                    $data = \json_decode($contents, true);
+                    throw new SynchronizationException($data['hydra:description'], $e->getCode(), $e);
                 }
             } else {
                 try {
-                    $guzzleClient->put('/shipments/'.$trackmage_id, [
-                        'query' => ['ignoreWebhookId' => $webhookId],
-                        'json' => [
-                            'trackingNumber' => $shipment['tracking_number'],
-                            'email' => $order->get_billing_email(),
-                            'phoneNumber' => $order->get_billing_phone(),
-                            'orders' => ['/orders/'.$trackmage_order_id],
-                        ]
-                    ]);
-                } catch (ClientException $e) {
-                    $response = $e->getResponse();
-                    if (null !== $response && 404 === $response->getStatusCode()) {
-                        $shipment = $this->shipmentRepo->update(['trackmage_id' => null], ['id' => $shipmentId]);
-                        $this->sync($shipmentId);
-                        return;
+                    $data = [
+                        'trackingNumber' => $shipment['tracking_number'],
+                        'email'          => $order->get_billing_email(),
+                        'phoneNumber'    => $order->get_billing_phone(),
+                        'orders'         => [ '/orders/' . $trackmage_order_id ],
+                    ];
+                    if ( isset( $shipment['items'] ) ) {
+                        $data['shipmentItems'] = $this->getShipmentItemsForSync( $shipment['items'], $order->get_items() );
                     }
-                    throw $e;
+                    $response = $guzzleClient->put( '/shipments/' . $trackmage_id, [
+                        'headers' => [
+                            'Content-Type' => 'application/ld+json'
+                        ],
+                        'body' => \GuzzleHttp\json_encode($data)
+                    ] );
+
+                    return json_decode( $response->getBody()->getContents(), true );
+                } catch (ClientException $e) {
+                    $contents = $e->getResponse()->getBody()->getContents();
+                    $data = \json_decode($contents, true);
+                    throw new SynchronizationException($data['hydra:description'], $e->getCode(), $e);
                 }
             }
-            $this->getChangesDetector()->lockChanges($shipment);
         } catch ( \Throwable $e ) {
             throw new SynchronizationException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
         }
     }
-
-
-    /**
-     * @param array $shipment
-     * @param ResponseInterface $response
-     * @return array|null
-     */
-    private function matchSearchCriteriaFromValidationError(array $shipment, ResponseInterface $response)
-    {
-        if (400 !== $response->getStatusCode()) {
-            return null;
-        }
-        $query = [];
-        $content = $response->getBody()->getContents();
-        if (false !== strpos($content, 'externalSourceSyncId')) {
-            $query['externalSourceSyncId'] = $shipment['id'];
-            $query['externalSourceIntegration'] = $this->integration;
-        } else {
-            return null;
-        }
-
-        return $query;
-    }
-
-    /**
-     * @param array $query
-     * @param string $workspace
-     * @return array|null
-     */
-    private function lookupByCriteria(array $query, $workspace)
-    {
-        $client = Plugin::get_client();
-        $guzzleClient = $client->getGuzzleClient();
-        $query['itemsPerPage'] = 1;
-        $response = $guzzleClient->get("/workspaces/{$workspace}/shipments", ['query' => $query]);
-        $content = $response->getBody()->getContents();
-        $data = json_decode($content, true);
-        return isset($data['hydra:member'][0]) ? $data['hydra:member'][0] : null;
-    }
-
 
     public function delete($id)
     {
         $client = Plugin::get_client();
         $guzzleClient = $client->getGuzzleClient();
-
-        $shipment = $this->shipmentRepo->find($id);
-
-        $trackmage_id = $shipment['trackmage_id'];
-        if (empty($trackmage_id)) {
-            return;
-        }
-        $webhookId = get_option('trackmage_webhook', '');
-
         try {
-            $guzzleClient->delete('/shipments/'.$trackmage_id, ['query' => ['ignoreWebhookId' => $webhookId]]);
+            $guzzleClient->delete('/shipments/'.$id);
         } catch ( ClientException $e ) {
             throw new SynchronizationException('Unable to delete shipment: '.$e->getMessage(), $e->getCode(), $e);
         } catch ( \Throwable $e ) {
             throw new SynchronizationException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
-        } finally {
-            $shipment = $this->shipmentRepo->update(['trackmage_id' => null], ['id' => $id]);
         }
     }
 
-    public function unlink($id)
-    {
-        $shipment = $this->shipmentRepo->update(['trackmage_id' => null, 'hash' => null ], ['id' => $id]);
+    private function getShipmentItemsForSync( array $items, array $orderItems ) {
+        return array_map(function($item) use ($orderItems){
+            $newItem = [];
+            $newItem['qty'] = (int)$item['qty'];
+            if (isset($item['id']) && !empty($item['id'])){
+                $newItem['@id'] = "/shipment_items/{$item['id']}";
+            }
+            $tmOrderItemId = wc_get_order_item_meta($item['order_item_id'], '_trackmage_order_item_id', true);
+            if (empty($tmOrderItemId)){
+                throw new SynchronizationException('Unable to sync shipment item because order item is not yet synced');
+            }
+            $newItem['orderItem'] = "/order_items/{$tmOrderItemId}";
+            return $newItem;
+        }, $items);
+
     }
 }

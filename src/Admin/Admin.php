@@ -239,6 +239,7 @@ class Admin {
             'username' => $username,
             'password' => $password,
             'enabled' => true,
+            'entity' => 'orders',
             'integration' => [
                 'title' => get_bloginfo('name'),
                 'workspace' => '/workspaces/' . $value,
@@ -304,10 +305,6 @@ class Admin {
 
                 $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
                 $backgroundTaskRepo->truncate();
-                $shipmentItemsRepo = Plugin::instance()->getShipmentRepo();
-                $shipmentItemsRepo->truncate();
-                $shipmentRepo = Plugin::instance()->getShipmentRepo();
-                $shipmentRepo->truncate();
                 Helper::clearTransients();
                 Helper::clearOptions();
                 set_transient( 'trackmage-wizard-notice', true );

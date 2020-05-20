@@ -94,6 +94,7 @@ class OrdersMapper extends AbstractMapper {
                     }
                 }
             }
+            $this->entity->add_order_note("Order was updated from TrackMage");
         }catch (\Throwable $e){
             throw new EndpointException('An error happened during updating order from TrackMage: '.$e->getMessage(), $e->getCode(), $e);
         }

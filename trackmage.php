@@ -122,7 +122,7 @@ if (!defined('TRACKMAGE_APP_DOMAIN')) {
 add_action('plugins_loaded', 'trackMageInit');
 register_activation_hook(__FILE__, 'trackMageActivate');
 register_deactivation_hook(__FILE__, 'trackMageDeactivate');
-//register_uninstall_hook( __FILE__, 'trackMageUninstall');
+register_uninstall_hook( __FILE__, 'trackMageUninstall');
 
 /**
  * trackMageActivate
@@ -140,6 +140,7 @@ function trackMageActivate() {
             $plugin->getLogger()->critical("Unable to create table {$repository->getTable()}: {$e->getMessage()}");
         }
     }
+    $plugin->dropOldTables();
     if(!get_transient('trackmage-wizard-notice'))
         set_transient( 'trackmage-wizard-notice', true );
 }
@@ -179,5 +180,6 @@ function trackMageUninstall(){
             Plugin::instance()->getLogger()->critical("Unable to drop table {$repository->getTable()}: {$e->getMessage()}");
         }
     }
+    Plugin::instance()->dropOldTables();
     Helper::clearTransients();
 }
