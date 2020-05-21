@@ -143,7 +143,6 @@ class Plugin {
             try {
                 $client_id = isset( $config['client_id'] ) ? $config['client_id'] : get_option( 'trackmage_client_id', '' );
                 $client_secret = isset( $config['client_secret'] ) ? $config['client_secret'] : get_option( 'trackmage_client_secret', '' );
-
                 self::$client = new TrackMageClient( $client_id, $client_secret );
                 self::$client->setHost( TRACKMAGE_API_DOMAIN );
             } catch( ApiException $e ) {
@@ -311,7 +310,7 @@ class Plugin {
     public function getShipmentItemSync()
     {
         if (null === $this->shipmentItemSync) {
-            $this->shipmentItemSync = new ShipmentItemSync($this->getIntegrationId());
+            $this->shipmentItemSync = new ShipmentItemSync();
         }
         return $this->shipmentItemSync;
     }

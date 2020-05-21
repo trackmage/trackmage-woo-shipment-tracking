@@ -78,7 +78,6 @@ class ShipmentSync implements EntitySyncInterface
                         'trackingNumber' => $shipment['tracking_number'],
                         'email'          => $order->get_billing_email(),
                         'phoneNumber'    => $order->get_billing_phone(),
-                        'orders'         => [ '/orders/' . $trackmage_order_id ],
                     ];
                     if ( isset( $shipment['items'] ) ) {
                         $data['shipmentItems'] = $this->getShipmentItemsForSync( $shipment['items'], $order->get_items() );

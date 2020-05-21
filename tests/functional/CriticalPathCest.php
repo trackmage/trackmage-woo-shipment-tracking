@@ -13,11 +13,12 @@ class CriticalPathCest
 
         $I->loginAsAdmin();
         $I->haveTransientInDatabase('trackmage-wizard-notice', false);
-        $I->amOnAdminPage('/admin.php?page=trackmage-settings');
-
         $I->haveOptionInDatabase('trackmage_workspace', '0');
 
+        $I->amOnAdminPage('/admin.php?page=trackmage-settings');
+
         $I->see('Workspace');
+
         $I->selectOption('Workspace', "fake_primary_{$I->getFlavorSlug()}_ws1");
 
         $workspaceId = $I->grabValueFrom('select[name=trackmage_workspace]');
