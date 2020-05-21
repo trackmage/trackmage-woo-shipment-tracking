@@ -5,7 +5,7 @@ language: php
 matrix:
   include:
     - php: '5.6'
-      env: WORDPRESS_VERSION="5.2.2" WOOCOMMERCE_VERSION="3.8.1" PHP_VERSION="5.6" DEPLOY_STAGE="true" ZIP_BUILD="true"
+      env: WORDPRESS_VERSION="5.2.2" WOOCOMMERCE_VERSION="3.8.1" PHP_VERSION="5.6" ZIP_BUILD="true"
     - php: '5.6'
       env: WORDPRESS_VERSION="4.9.10" WOOCOMMERCE_VERSION="3.6.5" PHP_VERSION="5.6"
     - php: '7.2'
@@ -62,14 +62,3 @@ before_script:
 
 script:
   - make ci_script
-
-before_deploy:
-  - make build
-
-deploy:
-  provider: script
-  script: SERVER=51.15.103.205 PORT=48022 make deploy; SERVER=51.15.103.205 PORT=48042 make deploy
-  skip_cleanup: true
-  on:
-    all_branches: true
-    condition: $DEPLOY_STAGE = "true"
