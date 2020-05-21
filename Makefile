@@ -136,7 +136,7 @@ ci_script: export BUILD_FLAVOR = PHP${PHP_VERSION}WP${WORDPRESS_VERSION}WC${WOOC
 ci_script:
 	vendor/bin/codecept run unit
 	vendor/bin/codecept run wpunit
-	vendor/bin/codecept run functional
+#	vendor/bin/codecept run functional
 
 # Restarts the project containers.
 ci_docker_restart:
