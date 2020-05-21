@@ -240,124 +240,12 @@ class Helper {
 
     /**
      * @param int $shipmentId
-     * @param array $items
-     * @return array
-     */
-    public static function saveShipmentItems($shipmentId, $items)
-    {
-        $shipmentItemRepo = Plugin::instance()->getShipmentItemsRepo();
-
-        //load existing shipment items before we create new ones
-        $existingItems = $shipmentItemRepo->findBy(['shipment_id' => $shipmentId]);
-
-        $items = array_map(function($item) use ($shipmentId, $shipmentItemRepo) {
-            if (null !== $itemId = self::parseId($item)) {
-                unset($item['id']);
-                $item = $shipmentItemRepo->update($item, ['id' => $itemId]);
-                do_action('trackmage_update_shipment_item', $itemId);
-            } else {
-                $item['shipment_id'] = $shipmentId;
-                $item = $shipmentItemRepo->insert($item);
-                do_action('trackmage_new_shipment_item', $item['id']);
-            }
-            if ($item === null) {
-                throw new RuntimeException('Unable to save shipment item');
-            }
-            return $item;
-        }, $items);
-
-        //delete removed items
-        $itemsIds = array_column($items, 'id');
-        foreach ($existingItems as $existingItem) {
-            $existingItemId = $existingItem['id'];
-            if (in_array($existingItemId, $itemsIds, true)) {
-                continue;
-            }
-            do_action('trackmage_delete_shipment_item', $existingItemId);
-            $shipmentItemRepo->delete(['id' => $existingItemId]);
-        }
-
-        return $items;
-    }
-
-    /**
-     * @param int $shipmentId
      */
     public static function deleteShipment($shipmentId)
     {
         $shipmentRepo = Plugin::instance()->getShipmentRepo();
         do_action('trackmage_delete_shipment', $shipmentId);
         $shipmentRepo->delete($shipmentId);
-    }
-
-    /**
-     * @param array $data
-     * @param string $idField
-     * @return int|null
-     */
-    public static function parseId(array $data, $idField = 'id')
-    {
-        if (isset($data[$idField]) && is_numeric($data[$idField])) {
-            return (int) $data[$idField];
-        }
-        return null;
-    }
-
-    /**
-     * @param array $shipment
-     * @param array $orderItems
-     * @param array $existingShipments
-     * @return void
-     */
-    public static function validateShipment(array $shipment, array $orderItems, array $existingShipments)
-    {
-        $items = $shipment['items'];
-
-        // Check carrier.
-        if (!empty($shipment['tracking_number']) && empty($shipment['carrier'])) {
-            throw new InvalidArgumentException(__('Carrier cannot be left empty.', 'trackmage'));
-        }
-
-        // Check if no items added.
-        if (!is_array($items) || empty($items)) {
-            throw new InvalidArgumentException(__('No items added.', 'trackmage'));
-        }
-
-        foreach ($items as $item) {
-            // Check if any of the selected items no longer exists.
-            if (!array_key_exists($item['order_item_id'], $orderItems)) {
-                throw new InvalidArgumentException(__('Order item does not exist.', 'trackmage'));
-            }
-        }
-
-        foreach ($items as $item) {
-            // Check if any of the items has non-positive quantities.
-            if (0 >= $item['qty']) {
-                throw new InvalidArgumentException(__('Item quantity must be a positive integer.', 'trackmage'));
-            }
-
-            // Check the available quantities for each item.
-            $totalQty = $orderItems[$item['order_item_id']]->get_quantity();
-            $usedQty = 0;
-            foreach ($existingShipments as $existingShipment) {
-                // Exclude the quantities of the items in the current shipment.
-                if (isset($shipment['id']) &&  $existingShipment['id'] === $shipment['id']) {
-                    continue;
-                }
-
-                foreach ($existingShipment['items'] as $existingItem) {
-                    if ((string)$item['order_item_id'] === (string)$existingItem['order_item_id']) {
-                        $usedQty += (int)$existingItem['qty'];
-                    }
-                }
-            }
-            $availQty = $totalQty - $usedQty;
-
-            // Check the available quantities of each item.
-            if ($availQty < $item['qty']) {
-                throw new InvalidArgumentException(__('No available quantity.', 'trackmage'));
-            }
-        }
     }
 
     public static function getOrderStatuses() {
@@ -630,7 +518,7 @@ class Helper {
         return $credentialsIsValid && $workspace !== 0;
     }
 
-    private static function mapOrderItemsToShipmentItem(array $orderItems, array $shipmentItems) {
+    public static function mapOrderItemsToShipmentItem(array $orderItems, array $shipmentItems) {
         return array_map(function($shipmentItem) use ($orderItems){
             $tmOrderItem = explode('/', $shipmentItem['orderItem']);
             $tmOrderItemId = end($tmOrderItem);
