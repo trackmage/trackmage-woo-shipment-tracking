@@ -1,6 +1,6 @@
 === TrackMage Wordpress Plugin ===
-Contributors: karser,harbuzniak,uxcodeone
-Tags: e-commerce, shipment, tracking, track, trackmage
+Contributors: karser,harbuzniak
+Tags: woocommerce, shipping, tracking, order, status, delivery, shipment tracking, order tracking, order status, carrier, carriers, woocommerce order tracking
 Requires at least: 4.9.1
 Tested up to: 5.4
 Requires PHP: 5.6
@@ -51,5 +51,5 @@ With TrackMage you can analyze your carrier’s performance across all channels 
 == Changelog ==
 
 = 1.0.0 =
-*Release Date - !!!!!!*
+*Release Date - 25.05.2020*
 * Initial Release *
