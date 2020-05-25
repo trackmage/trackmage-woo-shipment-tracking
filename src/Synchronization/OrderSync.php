@@ -3,6 +3,7 @@
 namespace TrackMage\WordPress\Synchronization;
 
 use GuzzleHttp\Exception\ClientException;
+use phpDocumentor\Reflection\Types\Boolean;
 use Psr\Http\Message\ResponseInterface;
 use TrackMage\WordPress\Exception\SynchronizationException;
 use TrackMage\WordPress\Helper;
@@ -52,9 +53,9 @@ class OrderSync implements EntitySyncInterface
         return $this->changesDetector;
     }
 
-    public function sync($order_id ) {
+    public function sync($order_id, $forse = false ) {
         $order = wc_get_order( $order_id );
-        if (!$this->canSyncOrder($order) || !$this->getChangesDetector()->isChanged(new ArrayAccessDecorator($order))) {
+        if (!$forse && (!$this->canSyncOrder($order) || !$this->getChangesDetector()->isChanged(new ArrayAccessDecorator($order)))) {
             return;
         }
         $workspace = get_option( 'trackmage_workspace' );
@@ -88,6 +89,7 @@ class OrderSync implements EntitySyncInterface
                     $trackmage_order_id = $result['id'];
                     add_post_meta( $order_id, '_trackmage_order_id', $trackmage_order_id, true )
                         || update_post_meta($order_id, '_trackmage_order_id', $trackmage_order_id);
+                    $order->add_order_note(__( 'Order was created in TrackMage', 'trackmage' ), false, true);
                 } catch (ClientException $e) {
                     $response = $e->getResponse();
                     if (null !== $response
@@ -115,6 +117,7 @@ class OrderSync implements EntitySyncInterface
                             'total' => (string)$order->get_total(),
                         ]
                     ]);
+                    $order->add_order_note(__( 'Order was updated in TrackMage', 'trackmage' ), false, true);
                 } catch (ClientException $e) {
                     $response = $e->getResponse();
                     if (null !== $response && 404 === $response->getStatusCode()) {
@@ -126,6 +129,7 @@ class OrderSync implements EntitySyncInterface
                 }
             }
             $this->getChangesDetector()->lockChanges(new ArrayAccessDecorator($order));
+
         } catch ( \Throwable $e ) {
             throw new SynchronizationException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
         }

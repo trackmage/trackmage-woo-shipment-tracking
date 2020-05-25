@@ -63,7 +63,7 @@ class OrderItemSync implements EntitySyncInterface
         return null;
     }
 
-    public function sync($orderItemId)
+    public function sync($orderItemId, $forse = false)
     {
         $orderId = wc_get_order_id_by_order_item_id($orderItemId);
         $order = wc_get_order($orderId);
@@ -74,7 +74,7 @@ class OrderItemSync implements EntitySyncInterface
 
         $trackmage_order_item_id = wc_get_order_item_meta( $orderItemId, '_trackmage_order_item_id', true );
 
-        if (!($this->canSyncOrder($order) && (empty($trackmage_order_item_id) || $this->getChangesDetector()->isChanged($item)))) {
+        if (!$forse && (!($this->canSyncOrder($order) && (empty($trackmage_order_item_id) || $this->getChangesDetector()->isChanged($item))))) {
             return;
         }
 
@@ -113,6 +113,7 @@ class OrderItemSync implements EntitySyncInterface
                     $trackmage_order_item_id = $result['id'];
                     wc_add_order_item_meta($orderItemId, '_trackmage_order_item_id', $trackmage_order_item_id, true )
                         || wc_update_order_item_meta($orderItemId, '_trackmage_order_item_id', $trackmage_order_item_id);
+                    $order->add_order_note(sprintf( __( 'Order Item %s was created in TrackMage', 'trackmage' ), $product->get_sku()), false, true);
                 } catch (ClientException $e) {
                     $response = $e->getResponse();
                     if (null !== $response
@@ -141,6 +142,7 @@ class OrderItemSync implements EntitySyncInterface
                             'rowTotal' => $item->get_total(),
                         ]
                     ]);
+                    $order->add_order_note(sprintf( __( 'Order Item %s was updated in TrackMage', 'trackmage' ), $product->get_sku()), false, true);
                 } catch (ClientException $e) {
                     $response = $e->getResponse();
                     if (null !== $response && 404 === $response->getStatusCode()) {

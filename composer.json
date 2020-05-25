@@ -1,12 +1,13 @@
 {
 	"name": "trackmage/trackmage-wordpress-plugin",
 	"type": "wordpress-plugin",
+    "version": "1.0.0",
 	"description": "Official WordPress plugin for TrackMage",
 	"keywords": [
 		"trackmage"
 	],
 	"homepage": "https://github.com/trackmage/trackmage-wordpress-plugin",
-	"license": "GPL-2.0-or-later",
+	"license": "GPL-3.0-or-later",
 	"require": {
 		"ext-json": "*",
 		"brightnucleus/config": "^0.4",

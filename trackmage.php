@@ -1,27 +1,45 @@
 <?php
 /**
- * TrackMage for WordPress
+ * TrackMage Wordpress Plugin
  *
- * Easily integrate TrackMage with WordPress.
+ * TrackMage Wordpress Plugin connects your WooCommerce store to TrackMage.
  *
  * @package TrackMage\WordPress
  * @author  TrackMage
  *
- * @license GPL-2.0-or-later
+ * @license GPL-3.0-or-later
  *
  * @wordpress-plugin
- * Plugin Name:       TrackMage for WordPress
+ * Plugin Name:       TrackMage Wordpress Plugin
  * Plugin URI:        https://github.com/trackmage/trackmage-wordpress-plugin
- * Description:       Easily integrate TrackMage with WordPress.
- * Version:           0.1.0
+ * Description:       TrackMage Wordpress Plugin connects your WooCommerce store to TrackMage.
+ * Version:           1.0.0
  * Author:            TrackMage
  * Author URI:        https://trackmage.com
  * Text Domain:       trackmage
- * License:           GPL-2.0-or-later
- * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
+ * License:           GPL-3.0-or-later
+ * License URI:       http://www.gnu.org/licenses/gpl-3.0.txt
  * GitHub Plugin URI: https://github.com/trackmage/trackmage-wordpress-plugin
  * Requires PHP:      5.6
- * Requires WP:       4.7
+ * Requires WP:       4.9.1
+ * WC requires at least: 3.8.0
+ * WC tested up to: 4.1.0
+ *
+ * Copyright (c) 2019-2020 TrackMage
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *
  */
 
 use BrightNucleus\Config\ConfigFactory;
@@ -122,7 +140,7 @@ if (!defined('TRACKMAGE_APP_DOMAIN')) {
 add_action('plugins_loaded', 'trackMageInit');
 register_activation_hook(__FILE__, 'trackMageActivate');
 register_deactivation_hook(__FILE__, 'trackMageDeactivate');
-//register_uninstall_hook( __FILE__, 'trackMageUninstall');
+register_uninstall_hook( __FILE__, 'trackMageUninstall');
 
 /**
  * trackMageActivate
@@ -140,6 +158,7 @@ function trackMageActivate() {
             $plugin->getLogger()->critical("Unable to create table {$repository->getTable()}: {$e->getMessage()}");
         }
     }
+    $plugin->dropOldTables();
     if(!get_transient('trackmage-wizard-notice'))
         set_transient( 'trackmage-wizard-notice', true );
 }
@@ -179,5 +198,6 @@ function trackMageUninstall(){
             Plugin::instance()->getLogger()->critical("Unable to drop table {$repository->getTable()}: {$e->getMessage()}");
         }
     }
+    Plugin::instance()->dropOldTables();
     Helper::clearTransients();
 }

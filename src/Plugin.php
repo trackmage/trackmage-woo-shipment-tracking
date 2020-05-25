@@ -120,7 +120,6 @@ class Plugin {
         add_action('before_delete_post', function ($postId) {
             $type = get_post_type($postId);
             if ($type === 'shop_order'){
-
                 foreach ($this->getShipmentRepo()->findBy(['order_id' => $postId]) as $shipment) {
                     Helper::deleteShipment($shipment['id']);
                 }
@@ -144,7 +143,6 @@ class Plugin {
             try {
                 $client_id = isset( $config['client_id'] ) ? $config['client_id'] : get_option( 'trackmage_client_id', '' );
                 $client_secret = isset( $config['client_secret'] ) ? $config['client_secret'] : get_option( 'trackmage_client_secret', '' );
-
                 self::$client = new TrackMageClient( $client_id, $client_secret );
                 self::$client->setHost( TRACKMAGE_API_DOMAIN );
             } catch( ApiException $e ) {
@@ -162,7 +160,7 @@ class Plugin {
     {
         if ($this->synchronizer === null) {
             $this->synchronizer = new Synchronizer($this->getLogger(), $this->getOrderSync(), $this->getOrderItemSync(),
-                $this->getShipmentSync(), $this->getShipmentItemSync(), $this->getShipmentRepo(), $this->getShipmentItemsRepo(), $this->getBackgroundTaskRepo());
+                $this->getBackgroundTaskRepo());
         }
 
         return $this->synchronizer;
@@ -174,8 +172,7 @@ class Plugin {
     public function getEndpoint()
     {
         if($this->endpoint === null){
-            $this->endpoint = new Endpoint($this->getLogger(), $this->getOrdersMapper(), $this->getShipmentsMapper(),
-                $this->getOrderItemsMapper(), $this->getShipmentItemsMapper());
+            $this->endpoint = new Endpoint($this->getLogger(), $this->getOrdersMapper());
         }
 
         return $this->endpoint;
@@ -226,8 +223,7 @@ class Plugin {
      */
     public function getShipmentRepo() {
         if($this->shipmentRepo === null) {
-            $dropOnDeactivate = $this->getConfigKey('dropOnDeactivate');
-            $this->shipmentRepo = new ShipmentRepository($this->wpdb, $dropOnDeactivate);
+            $this->shipmentRepo = new ShipmentRepository($this->getShipmentSync());
         }
         return $this->shipmentRepo;
     }
@@ -237,8 +233,7 @@ class Plugin {
      */
     public function getShipmentItemsRepo() {
         if($this->shipmentItemRepo === null) {
-            $dropOnDeactivate = $this->getConfigKey('dropOnDeactivate');
-            $this->shipmentItemRepo = new ShipmentItemRepository($this->wpdb, $dropOnDeactivate);
+            $this->shipmentItemRepo = new ShipmentItemRepository($this->getShipmentItemSync());
         }
         return $this->shipmentItemRepo;
     }
@@ -279,7 +274,7 @@ class Plugin {
      * @return EntityRepositoryInterface[]
      */
     public function getRepos() {
-        return [$this->getLogRepo(), $this->getShipmentRepo(), $this->getShipmentItemsRepo(), $this->getBackgroundTaskRepo()];
+        return [$this->getLogRepo(), $this->getBackgroundTaskRepo()];
     }
 
     public function getIntegrationId()
@@ -299,6 +294,28 @@ class Plugin {
     }
 
     /**
+     * @return ShipmentSync
+     */
+    public function getShipmentSync()
+    {
+        if (null === $this->shipmentSync) {
+            $this->shipmentSync = new ShipmentSync($this->getIntegrationId());
+        }
+        return $this->shipmentSync;
+    }
+
+    /**
+     * @return ShipmentItemSync
+     */
+    public function getShipmentItemSync()
+    {
+        if (null === $this->shipmentItemSync) {
+            $this->shipmentItemSync = new ShipmentItemSync();
+        }
+        return $this->shipmentItemSync;
+    }
+
+    /**
      * @return OrderItemSync
      */
     public function getOrderItemSync()
@@ -310,30 +327,8 @@ class Plugin {
     }
 
     /**
-     * @return ShipmentSync
+     * @return OrdersMapper
      */
-    public function getShipmentSync()
-    {
-        if (null === $this->shipmentSync) {
-            $this->shipmentSync = new ShipmentSync($this->getShipmentRepo(), $this->getIntegrationId());
-        }
-        return $this->shipmentSync;
-    }
-
-    /**
-     * @return ShipmentItemSync
-     */
-    public function getShipmentItemSync()
-    {
-        if (null === $this->shipmentItemSync) {
-            $this->shipmentItemSync = new ShipmentItemSync($this->getShipmentItemsRepo(), $this->getShipmentRepo(), $this->getIntegrationId());
-        }
-        return $this->shipmentItemSync;
-    }
-
-    /**
- * @return OrdersMapper
- */
     public function getOrdersMapper()
     {
         if (null === $this->ordersMapper) {
@@ -343,35 +338,12 @@ class Plugin {
         return $this->ordersMapper;
     }
 
-    /**
-     * @return OrderItemsMapper
-     */
-    public function getOrderItemsMapper()
-    {
-        if (null === $this->orderItemsMapper) {
-            $this->orderItemsMapper = new OrderItemsMapper($this->getIntegrationId());
+    public function dropOldTables(){
+        $oldTables = ['trackmage_shipment_item', 'trackmage_shipment'];
+        foreach ($oldTables as $oldTable){
+            $tableName = $this->wpdb->prefix.$oldTable;
+            $this->wpdb->query("DROP TABLE IF EXISTS `{$tableName}`");
         }
-
-        return $this->orderItemsMapper;
     }
 
-    /**
-     * @return ShipmentsMapper
-     */
-    public function getShipmentsMapper() {
-        if (null === $this->shipmentsMapper) {
-            $this->shipmentsMapper = new ShipmentsMapper($this->getShipmentRepo(), $this->getIntegrationId());
-        }
-        return $this->shipmentsMapper;
-    }
-
-    /**
-     * @return ShipmentItemsMapper
-     */
-    public function getShipmentItemsMapper() {
-        if (null === $this->shipmentItemsMapper) {
-            $this->shipmentItemsMapper = new ShipmentItemsMapper($this->getShipmentItemsRepo(), $this->getIntegrationId());
-        }
-        return $this->shipmentItemsMapper;
-    }
 }

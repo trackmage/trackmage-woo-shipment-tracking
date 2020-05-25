@@ -8,6 +8,8 @@ use GuzzleMockTrait;
 use TrackMage\WordPress\Plugin;
 use TrackMage\WordPress\Repository\ShipmentRepository;
 use TrackMage\WordPress\Synchronization\ShipmentSync;
+use WC_Product_Simple;
+use WC_Product_Variation;
 
 class ShipmentSyncTest extends WPTestCase
 {
@@ -15,6 +17,7 @@ class ShipmentSyncTest extends WPTestCase
     const INTEGRATION = 'tm-integration-id';
     const TM_SHIPMENT_ID = '1010';
     const TM_ORDER_ID = '1110';
+    const TM_ORDER_ITEM_ID = '11100111';
     const TM_WS_ID = '1001';
     const TM_WEBHOOK_ID = '0110';
     const TEST_TRACKING_NUMBER = 'TN-ABC';
@@ -29,6 +32,12 @@ class ShipmentSyncTest extends WPTestCase
     /** @var ShipmentSync */
     private $shipmentSync;
 
+    /** @var WC_Product_Simple */
+    private static $product;
+
+    /** @var WC_Product_Variation */
+    private static $productVariation;
+
     public static function _setUpBeforeClass() {
         parent::_setUpBeforeClass();
 
@@ -36,13 +45,33 @@ class ShipmentSyncTest extends WPTestCase
         $synchronizer->setDisableEvents(true);
 
         WC()->init();
+
+        $product = new WC_Product_Simple();
+        $product->set_name('TEST PRODUCT');
+        $product->set_sku('TEST_SKU');
+        $product->set_price(100);
+        $product->save();
+        self::$product = $product;
+
+        //programmatically create a shipment in WC
+        $variation_data =  array(
+            'attributes' => array(
+                'size'  => 'M',
+                'color' => 'Green',
+            ),
+            'sku'           => 'VARIANT_SKU',
+            'regular_price' => '100',
+            'sale_price'    => '',
+            'stock_qty'     => 10,
+        );
+        self::$productVariation = self::createProductVariation(self::$product->get_id(), $variation_data);
+
         add_option('trackmage_webhook', self::TM_WEBHOOK_ID);
     }
 
     protected function _before()
     {
-        $this->shipmentRepo = Plugin::instance()->getShipmentRepo();
-        $this->shipmentSync = new ShipmentSync($this->shipmentRepo, self::INTEGRATION);
+        $this->shipmentSync = new ShipmentSync(self::INTEGRATION);
     }
 
     public function testNewShipmentGetsPosted()
@@ -57,81 +86,53 @@ class ShipmentSyncTest extends WPTestCase
         ], $requests);
         $this->initPlugin($guzzleClient);
 
-        //programmatically create a shipment in WC
+        //programmatically create an order in WC
+        $wcOrder = wc_create_order(['status' => 'completed']);
+        $wcItemId = $wcOrder->add_product(self::$productVariation, 5);
+
         $wcOrder = wc_create_order(['status' => 'completed']);
         $wcOrder->set_billing_email('email@email.test');
         $wcOrder->set_billing_phone('+123456789');
         $wcOrder->save();
         $wcOrderId = $wcOrder->get_id();
         add_post_meta( $wcOrderId, '_trackmage_order_id', self::TM_ORDER_ID );
+        wc_add_order_item_meta($wcItemId, '_trackmage_order_item_id', self::TM_ORDER_ITEM_ID);
 
-        $wcShipment = $this->shipmentRepo->insert([
+        $wcShipment = [
             'order_id' => $wcOrderId,
             'tracking_number' => self::TEST_TRACKING_NUMBER,
             'carrier' => self::TEST_CARRIER,
-        ]);
-        $wcShipmentId = $wcShipment['id'];
+            'items' => [
+                ['order_item_id' => $wcItemId, 'qty' => 2],
+            ]
+        ];
 
         //WHEN
-        $this->shipmentSync->sync($wcShipmentId);
+        $this->shipmentSync->sync($wcShipment);
 
         //THEN
         //check this shipment is sent to TM
         $this->assertMethodsWereCalled($requests, [
             ['POST', '/shipments'],
         ]);
-        $this->assertSubmittedJsonIncludes([
+
+        $data = \GuzzleHttp\json_encode([
             'workspace' => '/workspaces/'.self::TM_WS_ID,
-            'externalSourceSyncId' => (string) $wcShipmentId,
-            'externalSourceIntegration' => '/workflows/'.self::INTEGRATION,
             'trackingNumber' => self::TEST_TRACKING_NUMBER,
             'originCarrier' => self::TEST_CARRIER,
+            'externalSourceIntegration' => '/workflows/'.self::INTEGRATION,
             'email' => $wcOrder->get_billing_email(),
             'phoneNumber' => $wcOrder->get_billing_phone(),
             'orders' => ['/orders/'.self::TM_ORDER_ID],
-        ], $requests[0]['request']);
-        //make sure that TM ID is saved to WC shipment meta
-        self::assertSame(self::TM_SHIPMENT_ID, $this->shipmentRepo->find($wcShipmentId)['trackmage_id']);
+            'shipmentItems' => [
+                ['qty'=>2, 'orderItem'=>"/order_items/".self::TM_ORDER_ITEM_ID]
+            ]
+        ]);
+        $requestData = (string)$requests[0]['request']->getBody()->getContents();
+        $this->assertEquals($data, $requestData);
     }
 
-    public function testNewShipmentWithAutoCarrierSubmitsNull()
-    {
-        //GIVEN
-        update_option('trackmage_sync_statuses', ['wc-completed']);
-        add_option('trackmage_workspace', self::TM_WS_ID);
-
-        $requests = [];
-        $guzzleClient = $this->createClient([
-            $this->createJsonResponse(201, ['id' => self::TM_SHIPMENT_ID]),
-        ], $requests);
-        $this->initPlugin($guzzleClient);
-
-        //programmatically create a shipment in WC
-        $wcOrder = wc_create_order(['status' => 'completed']);
-        $wcOrderId = $wcOrder->get_id();
-        add_post_meta( $wcOrderId, '_trackmage_order_id', self::TM_ORDER_ID );
-
-        $wcShipment = $this->shipmentRepo->insert([
-            'order_id' => $wcOrderId,
-            'tracking_number' => self::TEST_TRACKING_NUMBER,
-            'carrier' => 'auto',
-        ]);
-        $wcShipmentId = $wcShipment['id'];
-
-        //WHEN
-        $this->shipmentSync->sync($wcShipmentId);
-
-        //THEN
-        //check this shipment is sent to TM
-        $this->assertMethodsWereCalled($requests, [
-            ['POST', '/shipments'],
-        ]);
-        $this->assertSubmittedJsonIncludes([
-            'originCarrier' => null,
-        ], $requests[0]['request']);
-    }
-
-    public function testAlreadySyncedShipmentSendsUpdateToTrackMage()
+    public function testAlreadyExistsShipmentSendsUpdateToTrackMage()
     {
         //GIVEN
         add_option('trackmage_workspace', self::TM_WS_ID);
@@ -149,139 +150,33 @@ class ShipmentSyncTest extends WPTestCase
         $wcOrder->save();
         $wcOrderId = $wcOrder->get_id();
         add_post_meta( $wcOrderId, '_trackmage_order_id', self::TM_ORDER_ID );
-        $wcShipment = $this->shipmentRepo->insert([
+        $wcShipment = [
+            'id' => self::TM_SHIPMENT_ID,
             'order_id' => $wcOrderId,
             'tracking_number' => self::TEST_TRACKING_NUMBER,
             'carrier' => self::TEST_CARRIER,
-            'trackmage_id' => self::TM_SHIPMENT_ID,
-        ]);
-        $wcShipmentId = $wcShipment['id'];
+        ];
 
         //WHEN
-        $this->shipmentSync->sync($wcShipmentId);
+        $this->shipmentSync->sync($wcShipment);
 
         //THEN
         // make sure it updates the linked shipment in TM
         $this->assertMethodsWereCalled($requests, [
-            ['PUT', '/shipments/'.self::TM_SHIPMENT_ID, ['ignoreWebhookId' => self::TM_WEBHOOK_ID]],
+            ['PUT', '/shipments/'.self::TM_SHIPMENT_ID],
         ]);
-        $this->assertSubmittedJsonIncludes([
+
+        $data = \GuzzleHttp\json_encode([
             'trackingNumber' => self::TEST_TRACKING_NUMBER,
             'email' => $wcOrder->get_billing_email(),
-            'phoneNumber' => $wcOrder->get_billing_phone(),
-            'orders' => ['/orders/'.self::TM_ORDER_ID],
-        ], $requests[0]['request']);
+            'phoneNumber' => $wcOrder->get_billing_phone()
+        ]);
+        $requestData = (string)$requests[0]['request']->getBody()->getContents();
+        $this->assertEquals($data, $requestData);
     }
 
 
-    public function testAlreadySyncedShipmentIsNotSentTwice()
-    {
-        //GIVEN
-        add_option('trackmage_workspace', self::TM_WS_ID);
-
-        $requests = [];
-        $guzzleClient = $this->createClient([
-            $this->createJsonResponse(200, ['id' => self::TM_SHIPMENT_ID]),
-        ], $requests);
-        $this->initPlugin($guzzleClient);
-
-        // pre-create shipment in TM
-        $wcOrder = wc_create_order(['status' => 'completed']);
-        $wcOrderId = $wcOrder->get_id();
-        $wcShipment = $this->shipmentRepo->insert([
-            'order_id' => $wcOrderId,
-            'tracking_number' => self::TEST_TRACKING_NUMBER,
-            'carrier' => self::TEST_CARRIER,
-            'trackmage_id' => self::TM_SHIPMENT_ID,
-        ]);
-        $wcShipmentId = $wcShipment['id'];
-
-        //WHEN
-        $this->shipmentSync->sync($wcShipmentId);
-        $this->shipmentSync->sync($wcShipmentId);
-
-        //THEN
-        $this->assertMethodsWereCalled($requests, [
-            ['PUT', '/shipments/'.self::TM_SHIPMENT_ID],
-        ]);
-        self::assertCount(1, $requests);
-    }
-
-    public function testIfSameExistsItLookUpIdByExternalSyncId()
-    {
-        //GIVEN
-        add_option('trackmage_workspace', self::TM_WS_ID);
-
-        $requests = [];
-        $guzzleClient = $this->createClient([
-            $this->createJsonResponse(400, ['hydra:description' => 'externalSourceSyncId: This value is already used.']),
-            $this->createJsonResponse(200, ['hydra:member' => [['id' => self::TM_SHIPMENT_ID]]]),
-            $this->createJsonResponse(201, ['id' => self::TM_SHIPMENT_ID]),
-        ], $requests);
-        $this->initPlugin($guzzleClient);
-
-        // pre-create shipment in WC
-        $wcOrder = wc_create_order(['status' => 'completed']);
-        $wcOrderId = $wcOrder->get_id();
-        $wcShipment = $this->shipmentRepo->insert([
-            'order_id' => $wcOrderId,
-            'tracking_number' => self::TEST_TRACKING_NUMBER,
-            'carrier' => self::TEST_CARRIER,
-        ]);
-        $wcShipmentId = $wcShipment['id'];
-
-        //WHEN
-        $this->shipmentSync->sync($wcShipmentId);
-
-        //THEN
-        // make sure it updates the linked shipment in TM
-        $this->assertMethodsWereCalled($requests, [
-            ['POST', '/shipments'],
-            ['GET', '/workspaces/'.self::TM_WS_ID.'/shipments', ['externalSourceSyncId' => (string) $wcShipmentId, 'externalSourceIntegration' => '/workflows/'.self::INTEGRATION,]],
-            ['PUT', '/shipments/'.self::TM_SHIPMENT_ID],
-        ]);
-
-        self::assertSame(self::TM_SHIPMENT_ID, $this->shipmentRepo->find($wcShipmentId)['trackmage_id']);
-    }
-
-    public function testAlreadySyncedButDeletedShipmentGetsPostedOnceAgain()
-    {
-        //GIVEN
-        add_option('trackmage_workspace', self::TM_WS_ID);
-
-        $requests = [];
-        $guzzleClient = $this->createClient([
-            $this->createJsonResponse(404),
-            $this->createJsonResponse(201, ['id' => self::TM_SHIPMENT_ID]),
-        ], $requests);
-        $this->initPlugin($guzzleClient);
-
-        // pre-create shipment in WC linked to not existing TM id
-        $wcOrder = wc_create_order(['status' => 'completed']);
-        $wcOrderId = $wcOrder->get_id();
-        $wcShipment = $this->shipmentRepo->insert([
-            'order_id' => $wcOrderId,
-            'tracking_number' => self::TEST_TRACKING_NUMBER,
-            'carrier' => self::TEST_CARRIER,
-            'trackmage_id' => '1111',
-        ]);
-        $wcShipmentId = $wcShipment['id'];
-
-        //WHEN
-        $this->shipmentSync->sync($wcShipmentId);
-
-        //THEN
-        // make sure it updates the linked shipment in TM
-        $this->assertMethodsWereCalled($requests, [
-            ['PUT', '/shipments/1111'],
-            ['POST', '/shipments'],
-        ]);
-
-        self::assertSame(self::TM_SHIPMENT_ID, $this->shipmentRepo->find($wcShipmentId)['trackmage_id']);
-    }
-
-
-    public function testAlreadySyncedShipmentSendsDelete()
+    public function testShipmentSendsDelete()
     {
         //GIVEN
         add_option('trackmage_workspace', self::TM_WS_ID);
@@ -295,47 +190,16 @@ class ShipmentSyncTest extends WPTestCase
         // pre-create shipment in WC
         $wcOrder = wc_create_order(['status' => 'completed']);
         $wcOrderId = $wcOrder->get_id();
-        $wcShipment = $this->shipmentRepo->insert([
-            'order_id' => $wcOrderId,
-            'tracking_number' => self::TEST_TRACKING_NUMBER,
-            'carrier' => self::TEST_CARRIER,
-            'trackmage_id' => self::TM_SHIPMENT_ID,
-        ]);
-        $wcShipmentId = $wcShipment['id'];
 
         //WHEN
-        $this->shipmentSync->delete($wcShipmentId);
+        $this->shipmentSync->delete(self::TM_SHIPMENT_ID);
 
         //THEN
         $this->assertMethodsWereCalled($requests, [
-            ['DELETE', '/shipments/'.self::TM_SHIPMENT_ID, ['ignoreWebhookId' => self::TM_WEBHOOK_ID]],
+            ['DELETE', '/shipments/'.self::TM_SHIPMENT_ID],
         ]);
-        self::assertNull($this->shipmentRepo->find($wcShipmentId)['trackmage_id']);
     }
 
-    public function testNotSyncedShipmentIgnoresDelete()
-    {
-        //GIVEN
-        $requests = [];
-        $guzzleClient = $this->createClient([], $requests);
-        $this->initPlugin($guzzleClient);
-
-        // pre-create shipment in WC
-        $wcOrder = wc_create_order(['status' => 'completed']);
-        $wcOrderId = $wcOrder->get_id();
-        $wcShipment = $this->shipmentRepo->insert([
-            'order_id' => $wcOrderId,
-            'tracking_number' => self::TEST_TRACKING_NUMBER,
-            'carrier' => self::TEST_CARRIER,
-        ]);
-        $wcShipmentId = $wcShipment['id'];
-
-        //WHEN
-        $this->shipmentSync->delete($wcShipmentId);
-
-        //THEN
-        self::assertCount(0, $requests);
-    }
 
     private function initPlugin(ClientInterface $guzzleClient = null)
     {

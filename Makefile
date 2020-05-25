@@ -18,10 +18,20 @@ AIRPLANE_MODE_VERSION ?= "0.2.4"
 PHP_VERSION ?= "5.6"
 PROJECT := $(shell basename ${CURDIR})
 
+ifneq (${TRAVIS_PULL_REQUEST_BRANCH},)
+  BRANCH := ${TRAVIS_PULL_REQUEST_BRANCH}
+else ifneq ($(TRAVIS_BRANCH),)
+  BRANCH := ${TRAVIS_BRANCH}
+else
+  BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+endif
+BRANCH_SLUG = $(shell echo $(BRANCH) | sed -e s@/@-@g )
+PLUGIN_NAME_WITH_BRANCH := ${TEST_PLUGIN_NAME}-${BRANCH_SLUG}
+
 
 .PHONY: wp_dump \
 	build  \
-	deploy  \
+	comment  \
 	ci_before_install  \
 	ci_before_script \
 	ci_docker_restart \
@@ -81,6 +91,9 @@ build:
 		&& npm ci && npm run build && rm -rf node_modules/)
 	if [ "${ZIP_BUILD}" = true ]; then \
 		(cd ${BUILD_FOLDER} && rm -rf ${TEST_PLUGIN_NAME}.zip && zip -qq -r ${TEST_PLUGIN_NAME}.zip ${TEST_PLUGIN_NAME}); \
+		(cd ${BUILD_FOLDER}; mv ${TEST_PLUGIN_NAME} ${PLUGIN_NAME_WITH_BRANCH}; \
+			rm -rf ${PLUGIN_NAME_WITH_BRANCH}.zip && zip -qq -r ${PLUGIN_NAME_WITH_BRANCH}.zip ${PLUGIN_NAME_WITH_BRANCH}; \
+			mv ${PLUGIN_NAME_WITH_BRANCH} ${TEST_PLUGIN_NAME}); \
 	fi
 
 ci_install: build
@@ -136,7 +149,10 @@ ci_script: export BUILD_FLAVOR = PHP${PHP_VERSION}WP${WORDPRESS_VERSION}WC${WOOC
 ci_script:
 	vendor/bin/codecept run unit
 	vendor/bin/codecept run wpunit
-	vendor/bin/codecept run functional
+#	vendor/bin/codecept run functional
+	if [ "${ZIP_BUILD}" = true ]; then \
+		make comment; \
+	fi
 
 # Restarts the project containers.
 ci_docker_restart:
@@ -185,11 +201,10 @@ wp_dump:
 	docker run -it --rm --volumes-from wpbrowser_wp --network container:wpbrowser_wp wordpress:cli-php${PHP_VERSION} wp db export \
 		/project/tests/_data/dump.sql
 
-deploy: export SSHPASS = ${STAGE_SSH_PASS}
-deploy: export TRAVIS_BRANCH ?= master
-deploy: export BRANCH_SLUG = $${TRAVIS_BRANCH//\//-}
-deploy: export DEPLOY_DIR = "/var/www/html/wp-content/plugins/${TEST_PLUGIN_NAME}-${BRANCH_SLUG}"
-deploy:
-	echo "Deploying to ${DEPLOY_DIR}" ${SERVER}:${PORT}
-	cd ${BUILD_PLUGIN_FOLDER} && tar zcf - . | sshpass -e ssh -oStrictHostKeyChecking=no www-data@${SERVER} -p ${PORT} "\
-		rm -rf ${DEPLOY_DIR} && mkdir ${DEPLOY_DIR} && cd ${DEPLOY_DIR} && cat | tar zx"
+comment: export BUILD_URL = https://travis-uploaded-artifacts.s3-us-west-2.amazonaws.com/${TRAVIS_REPO_SLUG}/${TRAVIS_PULL_REQUEST_BRANCH}/build/${PLUGIN_NAME_WITH_BRANCH}.zip
+comment: export COMMENT = Download build ${BUILD_URL}
+comment:
+	echo "COMMENT: ${COMMENT} TRAVIS_PULL_REQUEST: ${TRAVIS_PULL_REQUEST}"
+	if [ "${TRAVIS_PULL_REQUEST}" != false ] ; then \
+		curl -H "Authorization: token ${GITHUB_TOKEN}" -X POST -d "{\"body\": \"${COMMENT}\"}" "https://api.github.com/repos/${TRAVIS_REPO_SLUG}/issues/${TRAVIS_PULL_REQUEST}/comments"; \
+	fi

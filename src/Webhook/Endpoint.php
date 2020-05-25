@@ -37,16 +37,12 @@ class Endpoint {
 	 *
 	 * @since 0.1.0
 	 */
-	public function __construct(LoggerInterface $logger, OrdersMapper $orders_mapper, ShipmentsMapper $shipments_mapper,
-                                OrderItemsMapper $order_items_mapper, ShipmentItemsMapper $shipment_items_mapper)
+	public function __construct(LoggerInterface $logger, OrdersMapper $orders_mapper)
     {
 
 	    $this->logger = $logger;
 
 		$this->updaters[] = $orders_mapper;
-		$this->updaters[] = $shipments_mapper;
-		$this->updaters[] = $order_items_mapper;
-		$this->updaters[] = $shipment_items_mapper;
 
 		$this->bindEvents();
 	}
@@ -140,8 +136,6 @@ class Endpoint {
                 $updater->handle($item);
             }
         }catch (RuntimeException $e){
-            //http_response_code( 400);
-            //die( 'Error during processing data: ' . $e->getCode(). ' '.$e->getMessage() );
             $this->logger->warning(self::TAG.'Unable to process mapper', [
                 'exception' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
