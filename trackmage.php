@@ -1,5 +1,6 @@
 <?php
 /**
+ * karser/trackmage-wordpress-plugin
  * TrackMage Wordpress Plugin
  *
  * TrackMage Wordpress Plugin connects your WooCommerce store to TrackMage.
