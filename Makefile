@@ -18,6 +18,16 @@ AIRPLANE_MODE_VERSION ?= "0.2.4"
 PHP_VERSION ?= "5.6"
 PROJECT := $(shell basename ${CURDIR})
 
+ifneq (${TRAVIS_PULL_REQUEST_BRANCH},)
+  BRANCH := ${TRAVIS_PULL_REQUEST_BRANCH}
+else ifneq ($(TRAVIS_BRANCH),)
+  BRANCH := ${TRAVIS_BRANCH}
+else
+  BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+endif
+BRANCH_SLUG = $(shell echo $(BRANCH) | sed -e s@/@-@g )
+PLUGIN_NAME_WITH_BRANCH := ${TEST_PLUGIN_NAME}-${BRANCH_SLUG}
+
 
 .PHONY: wp_dump \
 	build  \
@@ -81,6 +91,9 @@ build:
 		&& npm ci && npm run build && rm -rf node_modules/)
 	if [ "${ZIP_BUILD}" = true ]; then \
 		(cd ${BUILD_FOLDER} && rm -rf ${TEST_PLUGIN_NAME}.zip && zip -qq -r ${TEST_PLUGIN_NAME}.zip ${TEST_PLUGIN_NAME}); \
+		(cd ${BUILD_FOLDER}; mv ${TEST_PLUGIN_NAME} ${PLUGIN_NAME_WITH_BRANCH}; \
+			rm -rf ${PLUGIN_NAME_WITH_BRANCH}.zip && zip -qq -r ${PLUGIN_NAME_WITH_BRANCH}.zip ${PLUGIN_NAME_WITH_BRANCH}; \
+			mv ${PLUGIN_NAME_WITH_BRANCH} ${TEST_PLUGIN_NAME}); \
 	fi
 
 ci_install: build
@@ -188,8 +201,8 @@ wp_dump:
 	docker run -it --rm --volumes-from wpbrowser_wp --network container:wpbrowser_wp wordpress:cli-php${PHP_VERSION} wp db export \
 		/project/tests/_data/dump.sql
 
-comment: export BUILD_URL = https://travis-uploaded-artifacts.s3-us-west-2.amazonaws.com/${TRAVIS_REPO_SLUG}/${TRAVIS_PULL_REQUEST_BRANCH}/build/trackmage-wordpress-plugin.zip
-comment: export COMMENT = Download build: ${BUILD_URL}
+comment: export BUILD_URL = https://travis-uploaded-artifacts.s3-us-west-2.amazonaws.com/${TRAVIS_REPO_SLUG}/${TRAVIS_PULL_REQUEST_BRANCH}/build/${PLUGIN_NAME_WITH_BRANCH}.zip
+comment: export COMMENT = Download build ${BUILD_URL}
 comment:
 	echo "COMMENT: ${COMMENT} TRAVIS_PULL_REQUEST: ${TRAVIS_PULL_REQUEST}"
 	if [ "${TRAVIS_PULL_REQUEST}" != false ] ; then \
