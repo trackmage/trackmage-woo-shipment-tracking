@@ -521,4 +521,18 @@
       }
     }
   );
+
+  /*
+   * Block UI if click edit address.
+   */
+  $(document).on(
+    "click",
+    "#order_data a.edit_address",
+    function(e){
+      trackmageBlockUi($("#trackmage-shipment-tracking .inside"));
+      if ($('#trackmage-shipment-tracking h2 .blocked-shipments').length < 1) {
+        $("#trackmage-shipment-tracking h2").append('<span class="blocked-shipments" style="color: #f00; margin-left: 10px;"> - '+params.main.i18n.cannot_edit+'</span>');
+      }
+    }
+  );
 })(jQuery, window, document);
