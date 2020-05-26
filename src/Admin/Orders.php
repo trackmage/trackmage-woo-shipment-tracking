@@ -18,20 +18,17 @@ use TrackMage\WordPress\Plugin;
  * @since 0.1.0
  */
 class Orders {
-
-    private $synchronizer;
-
     /**
      * The constructor.
      *
      * @since 0.1.0
      */
-    public function __construct(Synchronizer $synchronizer) {
-        $this->synchronizer = $synchronizer;
+    public function __construct() {
         add_filter( 'wc_order_statuses', [ $this, 'order_statuses' ], PHP_INT_MAX, 1 );
         add_filter( 'woocommerce_hidden_order_itemmeta', [ $this, 'hide_order_itemmeta' ], 10, 1 );
         add_filter( 'wc_order_is_editable', [ $this, 'custom_status_orders_are_editable' ], 20, 2 );
         add_filter( 'init', [ $this, 'register_order_statuses' ] );
+
         if (Helper::canSync()) {
             add_action( 'add_meta_boxes', [ $this, 'add_meta_box' ] );
             add_action( 'save_post', [ $this, 'save_meta_box' ] );

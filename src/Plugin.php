@@ -200,7 +200,7 @@ class Plugin {
         // Initialize classes.
         new Admin;
         new Wizard;
-        new Orders($this->getSynchronizer());
+        new Orders();
 
 
         $this->getEndpoint();

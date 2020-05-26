@@ -197,7 +197,9 @@ class Ajax {
         $order               = wc_get_order($orderId);
         $orderItems          = $order->get_items();
         $orderNotes          = [];
-
+        if (!$order->is_editable()){
+            throw new \Exception(__('Order is not editable. You cannot add shipment.','trackmage'));
+        }
         try {
             if ($addAllOrderItems) {
                 if (! empty($existingShipments)) {
@@ -292,6 +294,10 @@ class Ajax {
         $order               = wc_get_order($orderId);
         $orderItems          = $order->get_items();
 
+        if (!$order->is_editable()){
+            throw new \Exception(__('Order is not editable. You cannot edit shipment.','trackmage'));
+        }
+
         $mergedItems = [];
         foreach ($shipment['items'] as $item) {
             $orderItemId = $item['order_item_id'];
@@ -365,6 +371,10 @@ class Ajax {
         $orderItems          = $order->get_items();
 
         $order->add_order_note( sprintf( __( 'Shipment %s was deleted', 'trackmage' ), $shipment['tracking_number']), false, true );
+
+        if (!$order->is_editable()){
+            throw new \Exception(__('Order is not editable. You cannot delete shipment.','trackmage'));
+        }
 
         try {
             // Get HTML to return.

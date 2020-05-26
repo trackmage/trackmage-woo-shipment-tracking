@@ -8,6 +8,7 @@ use TrackMage\WordPress\Helper;
 defined('WPINC') || exit;
 
 $order = wc_get_order($orderId);
+if($order->get_status() !== 'auto-draft'){
 $orderItems = $order->get_items();
 $shipments = Helper::getOrderShipmentsWithJoinedItems($orderId);
 $carriers = Helper::get_shipment_carriers();
@@ -57,3 +58,8 @@ $carriers = Helper::get_shipment_carriers();
     </div>
 </div>
 <span class="spinner"></span>
+<?php } else { ?>
+<div class="shipments">
+    <p style="margin-left: 12px;"><strong><?php _e('You cannot add shipments to draft orders.', 'trackmage');?></strong></p>
+</div>
+<?php } ?>
