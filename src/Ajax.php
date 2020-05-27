@@ -197,10 +197,12 @@ class Ajax {
         $order               = wc_get_order($orderId);
         $orderItems          = $order->get_items();
         $orderNotes          = [];
-        if (!$order->is_editable()){
-            throw new \Exception(__('Order is not editable. You cannot add shipment.','trackmage'));
-        }
+
         try {
+//            if (!$order->is_editable()){
+//                throw new \Exception(__('Order is not editable. You cannot add shipment.','trackmage'));
+//            }
+
             if ($addAllOrderItems) {
                 if (! empty($existingShipments)) {
                     throw new \Exception(__('Other shipments have already been created, please delete them first or uncheck “Add all order items”.','trackmage'));
@@ -288,36 +290,31 @@ class Ajax {
             'items' => $_POST['items'],
         ];
 
-        //$existingShipments = Helper::getOrderShipmentsWithJoinedItems($orderId);
-
         // Order data.
         $order               = wc_get_order($orderId);
         $orderItems          = $order->get_items();
-
-        if (!$order->is_editable()){
-            throw new \Exception(__('Order is not editable. You cannot edit shipment.','trackmage'));
-        }
-
-        $mergedItems = [];
-        foreach ($shipment['items'] as $item) {
-            $orderItemId = $item['order_item_id'];
-            if ( isset( $mergedItems[ $orderItemId ] ) ) {
-                foreach ( $item as $key => $value ) {
-                    if ( $key === 'qty' ) {
-                        $mergedItems[ $orderItemId ]['qty'] += (int) $value;
-                    } elseif ( ! empty( $value ) ) {
-                        $mergedItems[ $orderItemId ][ $key ] = $value;
-                    }
-                }
-            } else {
-                $mergedItems[ $orderItemId ]        = $item;
-                $mergedItems[ $orderItemId ]['qty'] = (int) $mergedItems[ $orderItemId ]['qty'];
-            }
-        }
-        $shipment['items'] = array_values($mergedItems);
-
         try {
-            //Helper::validateShipment($shipment, $orderItems, $existingShipments);
+//            if (!$order->is_editable()){
+//                throw new \Exception(__('Order is not editable. You cannot edit shipment.','trackmage'));
+//            }
+
+            $mergedItems = [];
+            foreach ($shipment['items'] as $item) {
+                $orderItemId = $item['order_item_id'];
+                if ( isset( $mergedItems[ $orderItemId ] ) ) {
+                    foreach ( $item as $key => $value ) {
+                        if ( $key === 'qty' ) {
+                            $mergedItems[ $orderItemId ]['qty'] += (int) $value;
+                        } elseif ( ! empty( $value ) ) {
+                            $mergedItems[ $orderItemId ][ $key ] = $value;
+                        }
+                    }
+                } else {
+                    $mergedItems[ $orderItemId ]        = $item;
+                    $mergedItems[ $orderItemId ]['qty'] = (int) $mergedItems[ $orderItemId ]['qty'];
+                }
+            }
+            $shipment['items'] = array_values($mergedItems);
 
             $synchronizer = Plugin::instance()->getSynchronizer();
             $synchronizer->syncOrder($orderId, true);
@@ -372,9 +369,9 @@ class Ajax {
 
         $order->add_order_note( sprintf( __( 'Shipment %s was deleted', 'trackmage' ), $shipment['tracking_number']), false, true );
 
-        if (!$order->is_editable()){
-            throw new \Exception(__('Order is not editable. You cannot delete shipment.','trackmage'));
-        }
+//        if (!$order->is_editable()){
+//            throw new \Exception(__('Order is not editable. You cannot delete shipment.','trackmage'));
+//        }
 
         try {
             // Get HTML to return.

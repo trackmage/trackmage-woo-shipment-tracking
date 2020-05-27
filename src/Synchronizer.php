@@ -98,7 +98,14 @@ class Synchronizer
     }
 
     public function syncOrder($orderId, $forse = false ) {
+        $this->logger->info(self::TAG.'Try to sync order.', [
+            'order_id' => $orderId,
+            'forse' => $forse
+        ]);
         if ($this->disableEvents) {
+            $this->logger->info(self::TAG.'Events are disabled. Sync is skipped.', [
+                'order_id' => $orderId,
+            ]);
             return;
         }
         try {

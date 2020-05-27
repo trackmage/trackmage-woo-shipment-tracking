@@ -123,7 +123,6 @@ class Plugin {
                 foreach ($this->getShipmentRepo()->findBy(['order_id' => $postId]) as $shipment) {
                     Helper::deleteShipment($shipment['id']);
                 }
-
             }
         }, 10, 1);
     }
@@ -197,13 +196,12 @@ class Plugin {
     public function init(ConfigInterface $config) {
         $this->processConfig( $config );
 
+        $this->getSynchronizer();
+        $this->getEndpoint();
         // Initialize classes.
         new Admin;
         new Wizard;
         new Orders();
-
-
-        $this->getEndpoint();
 
         $initClasses = [
             'Ajax',
