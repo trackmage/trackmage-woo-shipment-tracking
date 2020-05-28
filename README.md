@@ -1,9 +1,9 @@
-[![Build Status](https://travis-ci.org/trackmage/trackmage-wordpress-plugin.svg?branch=master)](https://travis-ci.org/trackmage/trackmage-wordpress-plugin)
+[![Build Status](https://travis-ci.org/trackmage/trackmage-woo-shipment-tracking.svg?branch=master)](https://travis-ci.org/trackmage/trackmage-woo-shipment-tracking)
 
-# trackmage-wordpress-plugin
-TrackMage Wordpress Plugin
+# trackmage-woo-shipment-tracking
+TrackMage integrates shipments tracking into your WooCommerce store.
 
-[Download](https://travis-uploaded-artifacts.s3-us-west-2.amazonaws.com/trackmage/trackmage-wordpress-plugin/master/build/trackmage-wordpress-plugin.zip)
+[Download](https://travis-uploaded-artifacts.s3-us-west-2.amazonaws.com/trackmage/trackmage-woo-shipment-tracking/master/build/trackmage-woo-shipment-tracking.zip)
 
 ## Local development
 ```

@@ -1,7 +1,7 @@
 <?php
 /**
  * Created by Yevhenii Harbuzniak
- * trackmage-wordpress-plugin
+ * trackmage-woo-shipment-tracking
  */
 ?>
 

@@ -1,6 +1,6 @@
-=== TrackMage Wordpress Plugin ===
-Contributors: karser,harbuzniak
-Tags: woocommerce, shipping, tracking, order, status, delivery, shipment tracking, order tracking, order status, carrier, carriers, woocommerce order tracking
+=== TrackMage - Woo Shipment Tracking ===
+Contributors: trackmage,karser,harbuzniak
+Tags: shipping, tracking, order, status, delivery, shipment tracking, order tracking, order status, carrier, carriers
 Requires at least: 4.9.1
 Tested up to: 5.4
 Requires PHP: 5.6
@@ -8,7 +8,7 @@ Stable tag: 1.0.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-TrackMage Wordpress Plugin connects your WooCommerce store to TrackMage.
+TrackMage integrates shipments tracking into your WooCommerce store.
 
 == Description ==
 
@@ -19,6 +19,8 @@ Trackmage is a shipment tracking system that shows your customers where their pa
 = FOR EVERY ECOMMERCE STORE OWNER =
 
 It works for all types of eCommerce store owners with different shipment volumes - from dropshippers who ship several parcels a month to sellers with thousands of parcels and multiple suppliers.
+
+No Strings Attached, No Credit Card Required. There is Forever Free plan with 100 Parcels Per Month.
 
 TrackMage supports 597 carriers and tracks your parcels (inbound and outbound) from the US, Europe, Asia and literally all shipping companies in the world.
 

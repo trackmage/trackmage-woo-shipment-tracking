@@ -1,4 +1,4 @@
-TrackMage for WordPress
+TrackMage - WooCommerce Shipment Tracking
 
 Copyright (c) 2020 OPTDEAL LIMITED
 

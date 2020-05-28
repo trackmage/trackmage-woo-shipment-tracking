@@ -22,4 +22,4 @@ modules:
 #            plugins: [] #All plugins are already installed by Makefile
             activatePlugins:
                 - woocommerce/woocommerce.php
-                - trackmage-wordpress-plugin/trackmage.php
+                - trackmage-woo-shipment-tracking/trackmage.php

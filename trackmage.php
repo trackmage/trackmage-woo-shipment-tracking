@@ -1,25 +1,15 @@
 <?php
 /**
- * TrackMage Wordpress Plugin
- *
- * TrackMage Wordpress Plugin connects your WooCommerce store to TrackMage.
- *
- * @package TrackMage\WordPress
- * @author  TrackMage
- *
- * @license GPL-3.0-or-later
- *
- * @wordpress-plugin
- * Plugin Name:       TrackMage Wordpress Plugin
- * Plugin URI:        https://github.com/trackmage/trackmage-wordpress-plugin
- * Description:       TrackMage Wordpress Plugin connects your WooCommerce store to TrackMage.
+ * Plugin Name:       TrackMage - Woo Shipment Tracking
+ * Plugin URI:        https://github.com/trackmage/trackmage-woo-shipment-tracking
+ * Description:       TrackMage integrates shipments tracking into your WooCommerce store.
  * Version:           1.0.0
  * Author:            TrackMage
  * Author URI:        https://trackmage.com
- * Text Domain:       trackmage
+ * Text Domain:       trackmage-woo-shipment-tracking
  * License:           GPL-3.0-or-later
  * License URI:       http://www.gnu.org/licenses/gpl-3.0.txt
- * GitHub Plugin URI: https://github.com/trackmage/trackmage-wordpress-plugin
+ * GitHub Plugin URI: https://github.com/trackmage/trackmage-woo-shipment-tracking
  * Requires PHP:      5.6
  * Requires WP:       4.9.1
  * WC requires at least: 3.8.0
@@ -27,19 +17,8 @@
  *
  * Copyright (c) 2019-2020 TrackMage
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- *
+ * License: GNU General Public License v3.0
+ * License URI: http://www.gnu.org/licenses/gpl-3.0.html
  */
 
 use BrightNucleus\Config\ConfigFactory;
