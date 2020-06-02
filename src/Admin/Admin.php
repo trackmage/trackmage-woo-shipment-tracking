@@ -125,8 +125,15 @@ class Admin {
      * @since 0.1.0
      */
     public function test_credentials() {
-        $credentials = Helper::check_credentials($_POST['clientId'], $_POST['clientSecret']);
-
+        if(!isset($_POST['clientId'], $_POST['clientSecret'])){
+            wp_send_json_error([
+                'status' => 'error',
+                'errors' => [
+                    __('Values should not be empty', 'trackmage'),
+                ]
+            ]);
+        }
+        $credentials = Helper::check_credentials(sanitize_key($_POST['clientId']), sanitize_key($_POST['clientSecret']));
         if (Helper::CREDENTIALS_INVALID === $credentials) {
             wp_send_json_error([
                 'status' => 'error',
@@ -284,8 +291,9 @@ class Admin {
                     'priority' => 10
                 ]);
             }
-            if(!(isset($_POST['trackmage_delete_data']) && $_POST['trackmage_delete_data'] != 0) )
+            if(!(isset($_POST['trackmage_delete_data']) && (int) $_POST['trackmage_delete_data'] !== 0) ){
                 Helper::scheduleNextBackgroundTask();
+            }
         }
         return 0;
     }

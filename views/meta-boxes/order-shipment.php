@@ -9,11 +9,11 @@
 defined( 'WPINC' ) || exit;
 
 $carrierKey = array_search($shipment['originCarrier'], array_column($carriers, 'code'), true);
-$carrier = $carrierKey ? $carriers[$carrierKey]['name'] : __('No Info', 'trackmage');
+$carrier = $carrierKey ? esc_attr($carriers[$carrierKey]['name']) : __('No Info', 'trackmage');
 ?>
 <tr class="shipment" data-id="<?php echo $shipment['id']; ?>">
     <td class="shipment__tracking-number">
-        <a href=""><?php echo $shipment['trackingNumber'] !== null ? $shipment['trackingNumber'] : __('No Info', 'trackmage'); ?></a>
+        <a href=""><?php echo $shipment['trackingNumber'] !== null ? esc_attr($shipment['trackingNumber']) : __('No Info', 'trackmage'); ?></a>
     </td>
     <td class="shipment__status"><?php echo $shipment['trackingStatus'] !== null ? ucwords(str_replace('_',' ', $shipment['trackingStatus'])) : __('No Info', 'trackmage')?></td>
     <td class="shipment__carrier">
@@ -22,7 +22,7 @@ $carrier = $carrierKey ? $carriers[$carrierKey]['name'] : __('No Info', 'trackma
     <td class="shipment__items">
         <ul>
             <?php foreach ($shipment['items'] as $item): ?>
-            <li><a href=""><?php echo $orderItems[$item['order_item_id']]->get_name(); ?></a> &times; <?php echo $item['qty']; ?></li>
+            <li><a href=""><?php echo esc_attr($orderItems[$item['order_item_id']]->get_name()); ?></a> &times; <?php echo esc_attr($item['qty']); ?></li>
             <?php endforeach; ?>
         </ul>
     </td>

@@ -14,7 +14,7 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 // Current tab.
-$tab = isset( $_GET['tab'] ) && '' !== $_GET['tab'] ? $_GET['tab'] : 'general';
+$tab = isset( $_GET['tab'] ) && !empty($_GET['tab']) ? sanitize_key($_GET['tab']) : 'general';
 
 // Display error messages, if any.
 settings_errors();

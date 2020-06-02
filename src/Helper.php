@@ -289,7 +289,7 @@ class Helper {
         $headers = array();
 
         foreach ( $_SERVER as $name => $value ) {
-            if ( substr( $name, 0, 5 ) == 'HTTP_' ) {
+            if ( strpos( $name, 'HTTP_' ) === 0 ) {
                 $headers[ str_replace( ' ', '-', ucwords( strtolower( str_replace( '_', ' ', substr( $name, 5 ) ) ) ) ) ] = $value;
             }
         }
@@ -310,12 +310,14 @@ class Helper {
     /**
      * Prints out CSS classes if a condition is met.
      *
+     * @param boolean $condition The condition to check against (default: false).
+     * @param string $class Classes to print out (default: '').
+     * @param bool $leading_space Whether to add a leading space (default: false).
+     * @param bool $echo Whether to echo or return the output (default: false).
+     *
+     * @return string
      * @since 0.1.0
      *
-     * @param boolean $condition     The condition to check against (default: false).
-     * @param string  $class         Classes to print out (default: '').
-     * @param bool    $leading_space Whether to add a leading space (default: false).
-     * @param bool    $echo          Whether to echo or return the output (default: false).
      */
     public static function add_css_class( $condition = false, $class = '', $leading_space = false, $echo = false ) {
         if ( $condition ) {

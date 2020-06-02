@@ -21,7 +21,7 @@ $workspaces = Helper::get_workspaces(true);
                     <option value=""><?php _e( '— Select —', 'trackmage' ); ?></option>
                     <?php if($workspaces):?>
                         <?php foreach ( $workspaces as $ws ) : ?>
-                            <option value="<?php echo $ws['id']; ?>" <?php selected( $ws['id'], $workspace ); ?>><?php echo $ws['title']; ?></option>
+                            <option value="<?php echo esc_attr($ws['id']); ?>" <?php selected( $ws['id'], $workspace ); ?>><?php echo esc_attr($ws['title']); ?></option>
                         <?php endforeach; ?>
                     <?php endif;?>
                 </select>
