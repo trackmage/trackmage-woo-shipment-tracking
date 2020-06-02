@@ -15,7 +15,6 @@ use TrackMage\WordPress\Webhook\Mappers\OrderItemsMapper;
 use TrackMage\WordPress\Webhook\Mappers\ShipmentsMapper;
 use TrackMage\WordPress\Webhook\Mappers\ShipmentItemsMapper;
 use Psr\Log\LoggerInterface;
-use Throwable;
 
 /**
  * Webhook callback URL.
@@ -78,7 +77,7 @@ class Endpoint {
         }
 		global $wp;
 
-		if ( ! empty( $_GET['trackmage'] ) ) {
+		if ( isset($_GET['trackmage']) && !empty( $_GET['trackmage'] ) ) {
 			$wp->query_vars['trackmage'] = sanitize_key( wp_unslash( $_GET['trackmage'] ) );
 		}
 

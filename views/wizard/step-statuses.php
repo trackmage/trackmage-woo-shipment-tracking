@@ -21,7 +21,7 @@ $sync_statuses = (array) get_option( 'trackmage_sync_statuses', [] );
                     <?php if($sync_statuses):?>
                         <?php foreach ( $sync_statuses as $slug ): ?>
                             <?php if ( isset( $statuses[ $slug ] ) ) : ?>
-                                <option value="<?php echo $slug; ?>" selected><?php echo $statuses[ $slug ]['name']; ?></option>
+                                <option value="<?php echo esc_attr($slug); ?>" selected><?php echo esc_attr($statuses[ $slug ]['name']); ?></option>
                             <?php endif; ?>
                         <?php endforeach; ?>
                     <?php endif;?>

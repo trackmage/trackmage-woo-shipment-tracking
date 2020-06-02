@@ -68,7 +68,7 @@ class Orders {
             update_post_meta(
                 $post_id,
                 'trackmage_carrier',
-                $_POST['trackmage_carrier']
+                sanitize_key($_POST['trackmage_carrier'])
             );
         }
 
@@ -76,7 +76,7 @@ class Orders {
             update_post_meta(
                 $post_id,
                 'trackmage_tracking_number',
-                $_POST['trackmage_tracking_number']
+                sanitize_title($_POST['trackmage_tracking_number'])
             );
         }
     }

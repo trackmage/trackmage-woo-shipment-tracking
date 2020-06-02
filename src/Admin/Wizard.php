@@ -15,7 +15,6 @@ use TrackMage\WordPress\Helper;
 
 class Wizard {
 
-
     /**
      * Admin page identifier.
      *
@@ -26,7 +25,11 @@ class Wizard {
     const AJAX_PAGE_CONTENT_ENDPOINT = 'get_step_content';
     const AJAX_PAGE_PROCESS_ENDPOINT = 'process_step';
 
-    private $_steps;
+    const STEPS = [
+        [ 'code' => 'credentials', 'title' => 'API Credentials', 'icon' => ''],
+        [ 'code' => 'workspace', 'title' => 'Workspace', 'icon' => ''],
+        [ 'code' => 'statuses', 'title' => 'Sync statuses', 'icon' => '']
+    ];
     /**
      * The constructor.
      *
@@ -41,13 +44,6 @@ class Wizard {
         if ( ! ( $this->isWizardPage() && current_user_can( 'manage_options' ) ) ) {
             return;
         }
-
-        $this->_steps = [
-            [ 'code' => 'credentials', 'title' => __('API Credentials','trackmage'), 'icon' => ''],
-            [ 'code' => 'workspace', 'title' => __('Workspace','trackmage'), 'icon' => ''],
-            [ 'code' => 'statuses', 'title' => __('Sync statuses','trackmage'), 'icon' => '']
-            //[ 'code' => 'finish', 'title' => __('Finish','trackmage'), 'icon' => '']
-        ];
 
         // Register the page for the wizard.
         add_action( 'admin_menu', [ $this, 'addWizardPage' ] );
@@ -111,7 +107,7 @@ class Wizard {
                 'ajax' => admin_url('admin-ajax.php'),
                 'completed' => admin_url('?page=trackmage-settings')
             ],
-            'steps' => $this->_steps,
+            'steps' => array_map(function ($step){ $step['title'] = __($step['title'], 'trackmage'); return $step;} , self::STEPS),
             'i18n' => [
                 'noSelect'     => __('— Select —', 'trackmage'),
                 'success'      => __('Success', 'trackmage'),
@@ -164,7 +160,8 @@ class Wizard {
             wp_die(-1);
         }
 
-        $step = $_POST['step'];
+        $availableSteps = array_column(self::STEPS, 'code');
+        $step = isset($_POST['step']) && in_array($step = sanitize_key($_POST['step']), $availableSteps, true) ? $step : $availableSteps[0];
         $data = '';
         if(file_exists(TRACKMAGE_VIEWS_DIR . "wizard/step-{$step}.php")) {
             ob_start();
@@ -178,11 +175,12 @@ class Wizard {
     }
 
     public function processNextStep(){
-        $step = $_POST['step'];
+        $availableSteps = $availableSteps = array_column(self::STEPS, 'code');
+        $step = isset($_POST['step']) && in_array($step = sanitize_key($_POST['step']), $availableSteps, true) ? $step : $availableSteps[0];
         switch ($step){
             case 'credentials':
-                $clientId = trim($_POST['trackmage_client_id']);
-                $clientSecret = trim($_POST['trackmage_client_secret']);
+                $clientId = isset($_POST['trackmage_client_id']) ? sanitize_key($_POST['trackmage_client_id']) : '';
+                $clientSecret = isset($_POST['trackmage_client_secret']) ? sanitize_key($_POST['trackmage_client_secret']) : '';
                 $credentials = Helper::check_credentials($clientId, $clientSecret);
 
                 if (Helper::CREDENTIALS_INVALID === $credentials) {
@@ -219,7 +217,15 @@ class Wizard {
                 ]);
                 break;
             case 'workspace':
-                $workspaceId = $_POST['trackmage_workspace'];
+                $workspaceId = isset($_POST['trackmage_workspace']) ? sanitize_key($_POST['trackmage_workspace']) : '';
+                if(empty($workspaceId)) {
+                    wp_send_json_error([
+                        'status' => 'error',
+                        'errors' => [
+                            __('Please select workspace','trackmage')
+                        ]
+                    ]);
+                }
                 try {
                     update_option( 'trackmage_workspace', $workspaceId );
                 }catch (\Exception $e){
@@ -235,7 +241,7 @@ class Wizard {
                 ]);
                 break;
             case 'statuses':
-                $statuses = $_POST['trackmage_sync_statuses'];
+                $statuses = isset($_POST['trackmage_sync_statuses']) && is_array($_POST['trackmage_sync_statuses']) ? $_POST['trackmage_sync_statuses'] : [];
                 try {
                     update_option( 'trackmage_sync_statuses', $statuses );
                 }catch (\Exception $e){
@@ -284,7 +290,6 @@ class Wizard {
     }
 
     public function showAdminNotice(){
-
         /* Check transient, if available display notice */
         if( $this->_shouldShowNotification() ){
             $message = sprintf(
@@ -296,7 +301,6 @@ class Wizard {
             ?>
             <div class="updated notice is-dismissible">
                 <h3><?php echo  sprintf(
-                    /* translators: %s expands to TrackMage. */
                         __( 'First-time %s configuration', 'trackmage' ),
                         'TrackMage'
                     );?></h3>

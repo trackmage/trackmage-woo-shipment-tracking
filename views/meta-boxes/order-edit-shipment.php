@@ -18,17 +18,17 @@ $carriers = Helper::get_shipment_carriers();
         <fieldset class="trackmage-edit-row__col">
             <legend class="trackmage-edit-row__legend"><?php _e('Edit Shipment', 'trackmage'); ?></legend>
             <div class="trackmage-edit-row__fields">
-                <input type="hidden" name="id" value="<?php echo $shipment['id']; ?>" />
+                <input type="hidden" name="id" value="<?php echo esc_attr($shipment['id']); ?>" />
                 <label class="trackmage-edit-row__field">
                     <div class="trackmage-edit-row__field-title"><?php _e('Tracking Number', 'trackmage'); ?></div>
-                    <div class="trackmage-edit-row__field-wrap"><input type="text" name="tracking_number" value="<?php echo $shipment['trackingNumber']; ?>" /></div>
+                    <div class="trackmage-edit-row__field-wrap"><input type="text" name="tracking_number" value="<?php echo esc_attr($shipment['trackingNumber']); ?>" /></div>
                 </label>
                 <label class="trackmage-edit-row__field">
                     <div class="trackmage-edit-row__field-title"><?php _e('Carrier', 'trackmage'); ?></div>
                     <div class="trackmage-edit-row__field-wrap">
                         <select name="carrier" data-placeholder="Select a carrier">
                             <?php foreach ($carriers as $carrier ) : ?>
-                            <option value="<?php echo $carrier['code']; ?>"><?php echo $carrier['name']; ?></option>
+                            <option value="<?php echo esc_attr($carrier['code']); ?>"><?php echo esc_attr($carrier['name']); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>

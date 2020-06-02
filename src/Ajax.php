@@ -9,8 +9,6 @@
 
 namespace TrackMage\WordPress;
 
-use TrackMage\WordPress\Repository\ShipmentRepository;
-
 defined('WPINC') || exit;
 
 /**
@@ -91,9 +89,14 @@ class Ajax {
      * @return void
      */
     public static function getOrderItems() {
-        $orderId = $_POST['orderId'];
+        if( !isset($_POST['orderId']) || ( isset( $_POST['orderId'] ) && ! is_int( $_POST['orderId'] ) ) ) {
+            wp_send_json([]);
+        }
+        $orderId = absint($_POST['orderId']);
         $order = wc_get_order($orderId);
-
+        if(!$order) {
+            wp_send_json([]);
+        }
         $results = [];
 
         foreach ($order->get_items() as $id => $item) {
@@ -113,8 +116,11 @@ class Ajax {
      * @param $path string The relative view path.
      */
     public static function getView() {
-        $path = $_POST['path'];
-
+        if(!isset($_POST['path']) || (isset($_POST['path']) && empty($_POST['path']))){
+            wp_send_json_error(['error' => esc_attr__('View file was not found','trackmage')]);
+        }
+        $path = sanitize_file_name( $_POST['path'] );
+        $html = '';
         try {
             // Get HTML to return.
             ob_start();
@@ -141,13 +147,17 @@ class Ajax {
             wp_die(-1);
         }
 
-        $orderId = $_POST['orderId'];
+        if( ! isset( $_POST['orderId'], $_POST['id'] ) || ( isset( $_POST['orderId'] ) && ! is_int( $_POST['orderId'] ) ) || ( isset( $_POST['id'] ) && empty( $_POST['id'] ) ) ) {
+            wp_send_json_error();
+        }
+        $orderId = absint($_POST['orderId']);
         $order = wc_get_order($orderId);
         $orderItems = $order->get_items();
-        $shipmentId = $_POST['id'];
+        $shipmentId = sanitize_key($_POST['id']);
         $shipment = Helper::geShipmentWithJoinedItems($shipmentId, $orderId);
 
         if ($shipment) {
+            $html = '';
             try {
                 // Get HTML to return.
                 ob_start();
@@ -159,8 +169,8 @@ class Ajax {
 
             wp_send_json_success([
                 'html' => $html,
-                'tracking_number' => $shipment['tracking_number'],
-                'carrier' => $shipment['carrier'],
+                'tracking_number' => esc_textarea($shipment['tracking_number']),
+                'carrier' => esc_textarea($shipment['carrier']),
                 'items' => array_map(function($item) use ($orderItems) {
                     return array_merge($item, ['name' => $orderItems[$item['order_item_id']]['name']]);
                 }, $shipment['items']),
@@ -183,14 +193,21 @@ class Ajax {
         }
 
         // Request data.
-        $orderId = $_POST['orderId'];
-        $addAllOrderItems = $_POST['addAllOrderItems'] === 'true' ? true : false;
+        if( !isset($_POST['orderId']) || ( isset( $_POST['orderId'] ) && ! is_int( $_POST['orderId'] ) ) ) {
+            wp_send_json([]);
+        }
+        $orderId = absint($_POST['orderId']);
+        $addAllOrderItems = isset($_POST['addAllOrderItems']) && $_POST['addAllOrderItems'] === 'true';
+
+        $trackingNumber = isset($_POST['trackingNumber']) ? sanitize_title($_POST['trackingNumber']) : '';
+        $carrier = isset($_POST['carrier']) ? sanitize_key($_POST['carrier']) : '';
+        $shipmentItems = isset($_POST['items']) && is_array($_POST['items']) ? $_POST['items'] : [];
 
         $shipment = [
-            'order_id' => $_POST['orderId'],
-            'tracking_number' => $_POST['trackingNumber'],
-            'carrier' => $_POST['carrier'],
-            'items' => $_POST['items'],
+            'order_id' => $orderId,
+            'tracking_number' => $trackingNumber,
+            'carrier' => $carrier,
+            'items' => $shipmentItems,
         ];
 
         // Order data.
@@ -199,10 +216,6 @@ class Ajax {
         $orderNotes          = [];
 
         try {
-//            if (!$order->is_editable()){
-//                throw new \Exception(__('Order is not editable. You cannot add shipment.','trackmage'));
-//            }
-
             if ($addAllOrderItems) {
                 if (! empty($existingShipments)) {
                     throw new \Exception(__('Other shipments have already been created, please delete them first or uncheck “Add all order items”.','trackmage'));
@@ -217,8 +230,8 @@ class Ajax {
             } else {
                 $mergedItems = [];
                 foreach ($shipment['items'] as $item) {
-                    if(!empty($item['qty'])) {
-                        $orderItemId = $item['order_item_id'];
+                    if(isset($item['qty']) && !empty($item['qty'])) {
+                        $orderItemId = absint($item['order_item_id']);
                         if ( isset( $mergedItems[ $orderItemId ] ) ) {
                             foreach ( $item as $key => $value ) {
                                 if ( $key === 'qty' ) {
@@ -280,27 +293,33 @@ class Ajax {
         }
 
         // Request data.
-        $orderId = $_POST['orderId'];
+        if( !isset($_POST['orderId'], $_POST['id']) || (isset($_POST['orderId']) && !is_int($_POST['orderId'])) || empty($_POST['id'])) {
+            wp_send_json([]);
+        }
+        $orderId = absint($_POST['orderId']);
+        $addAllOrderItems = isset($_POST['addAllOrderItems']) && $_POST['addAllOrderItems'] === 'true';
+
+        $trackingNumber = isset($_POST['trackingNumber']) ? sanitize_title($_POST['trackingNumber']) : '';
+        $carrier = isset($_POST['carrier']) ? sanitize_key($_POST['carrier']) : '';
+        $shipmentItems = isset($_POST['items']) && is_array($_POST['items']) ? $_POST['items'] : [];
+
+        $shipmentId = sanitize_key($_POST['id']);
 
         $shipment = [
-            'id' => $_POST['id'],
-            'order_id' => $_POST['orderId'],
-            'tracking_number' => $_POST['trackingNumber'],
-            'carrier' => $_POST['carrier'],
-            'items' => $_POST['items'],
+            'id' => $shipmentId,
+            'order_id' => $orderId,
+            'tracking_number' => $trackingNumber,
+            'carrier' => $carrier,
+            'items' => $shipmentItems,
         ];
 
         // Order data.
         $order               = wc_get_order($orderId);
         $orderItems          = $order->get_items();
         try {
-//            if (!$order->is_editable()){
-//                throw new \Exception(__('Order is not editable. You cannot edit shipment.','trackmage'));
-//            }
-
             $mergedItems = [];
             foreach ($shipment['items'] as $item) {
-                $orderItemId = $item['order_item_id'];
+                $orderItemId = absint($item['order_item_id']);
                 if ( isset( $mergedItems[ $orderItemId ] ) ) {
                     foreach ( $item as $key => $value ) {
                         if ( $key === 'qty' ) {
@@ -356,8 +375,11 @@ class Ajax {
         }
 
         // Request data.
-        $orderId = $_POST['orderId'];
-        $shipmentId = $_POST['id'];
+        if( !isset($_POST['orderId'], $_POST['id']) || (isset($_POST['orderId']) && !is_int($_POST['orderId'])) || empty($_POST['id'])) {
+            wp_send_json([]);
+        }
+        $orderId = absint($_POST['orderId']);
+        $shipmentId = sanitize_key($_POST['id']);
 
         //$shipment = Helper::geShipmentWithJoinedItems($shipmentId);
         // Delete shipment record from the database.
@@ -367,11 +389,7 @@ class Ajax {
         $order               = wc_get_order($orderId);
         $orderItems          = $order->get_items();
 
-        $order->add_order_note( sprintf( __( 'Shipment %s was deleted', 'trackmage' ), $shipment['tracking_number']), false, true );
-
-//        if (!$order->is_editable()){
-//            throw new \Exception(__('Order is not editable. You cannot delete shipment.','trackmage'));
-//        }
+        $order->add_order_note( sprintf( __( 'Shipment %s was deleted', 'trackmage' ), $shipmentId), false, true );
 
         try {
             // Get HTML to return.
@@ -408,11 +426,11 @@ class Ajax {
             wp_die(-1);
         }
 
-        $name = $_POST['name'];
-        $current_slug = $_POST['currentSlug'];
-        $slug = $_POST['slug'];
-        $alias = $_POST['alias'];
-        $is_custom = '1' === $_POST['isCustom'] ? true : false;
+        $name = isset($_POST['name']) ? sanitize_title($_POST['name']) : '';
+        $current_slug = isset($_POST['currentSlug']) ? sanitize_key($_POST['currentSlug']) : '';
+        $slug = isset($_POST['slug']) ? sanitize_key($_POST['slug']) : '';
+        $alias = isset($_POST['alias']) ? sanitize_title($_POST['alias']) : '';
+        $is_custom = isset($_POST['isCustom']) && '1' === $_POST['isCustom'];
 
         $custom_statuses = get_option('trackmage_custom_order_statuses', []);
         $modified_statuses = get_option('trackmage_modified_order_statuses', []);
@@ -425,15 +443,15 @@ class Ajax {
         $errors = [];
 
         if (empty ($name)) {
-            array_push($errors, __('Status name cannot be empty.', 'trackmage'));
+            $errors[] = __('Status name cannot be empty.', 'trackmage');
         }
 
         if (empty ($slug)) {
-            array_push($errors, __('Status slug cannot be empty.', 'trackmage'));
+            $errors[] = __('Status slug cannot be empty.', 'trackmage');
         }
 
         if ($current_slug !== $slug && isset($get_statuses[$slug])) {
-            array_push($errors, sprintf(__('The slug <em>“%1$s”</em> is already used by another status.', 'trackmage'), $slug));
+            $errors[] = sprintf(__('The slug <em>“%1$s”</em> is already used by another status.', 'trackmage'), $slug);
         }
 
         if ($is_custom && $current_slug !== $slug) {
@@ -441,7 +459,7 @@ class Ajax {
         }
 
         if (! $is_custom && $current_slug !== $slug) {
-            array_push($errors, __('The slug of core statuses and statuses created by other plugins and themes cannot be changed.', 'trackmage'));
+            $errors[] = __('The slug of core statuses and statuses created by other plugins and themes cannot be changed.', 'trackmage');
         }
 
         if ($is_custom) {
@@ -451,11 +469,11 @@ class Ajax {
         }
 
         if (! empty($alias)
-            && in_array($alias, $status_aliases)
+            && in_array($alias, $status_aliases, true)
             && isset($status_aliases[$current_slug])
             && $alias !== $status_aliases[$current_slug])
         {
-            array_push($errors, sprintf(__('The alias <em>“%1$s”</em> is already assigned to another status.', 'trackmage'), $aliases[$alias]));
+            $errors[] = sprintf(__('The alias <em>“%1$s”</em> is already assigned to another status.', 'trackmage'), $aliases[$alias]);
         } else {
             $status_aliases[$slug] = $alias;
         }
@@ -496,9 +514,9 @@ class Ajax {
             wp_die(-1);
         }
 
-        $name  = $_POST['name'];
-        $slug  = strtolower('wc-' . $_POST['slug']);
-        $alias = $_POST['alias'];
+        $name  = isset($_POST['name']) ? sanitize_title($_POST['name']) : '';
+        $slug  = isset($_POST['slug']) ? strtolower('wc-' . sanitize_key($_POST['slug'])) : '';
+        $alias = isset($_POST['alias']) ? sanitize_title($_POST['alias']) : '';
 
         $custom_statuses = get_option('trackmage_custom_order_statuses', []);
         $status_aliases = get_option('trackmage_order_status_aliases', []);
@@ -509,19 +527,19 @@ class Ajax {
         $errors = [];
 
         if (empty ($name)) {
-            array_push($errors, __('Status name cannot be empty.', 'trackmage'));
+            $errors[] = __('Status name cannot be empty.', 'trackmage');
         }
 
-        if  (empty($_POST['slug'])) {
+        if  (empty($_POST['slug']) && !empty($name)) {
             $slug = 'wc-' . preg_replace('#\s+#', '-', strtolower($name));
         }
 
         if (isset($get_statuses[$slug])) {
-            array_push($errors, sprintf(__('The slug <em>“%1$s”</em> is already used by another status.', 'trackmage'), $slug));
+            $errors[] = sprintf(__('The slug <em>“%1$s”</em> is already used by another status.', 'trackmage'), $slug);
         }
 
-        if (! empty($alias) && in_array($alias, $status_aliases)) {
-            array_push($errors, sprintf(__('The alias <em>“%1$s”</em> is already assigned to another status.', 'trackmage'), $aliases[$alias]));
+        if (! empty($alias) && in_array($alias, $status_aliases, true)) {
+            $errors[] = sprintf(__('The alias <em>“%1$s”</em> is already assigned to another status.', 'trackmage'), $aliases[$alias]);
         } else if (! empty($alias)) {
             $status_aliases[$slug] = $alias;
         }
@@ -563,8 +581,8 @@ class Ajax {
             wp_die(-1);
         }
 
-        $slug = $_POST['slug'];
-        $name  = $_POST['name'];
+        $slug = isset($_POST['slug']) ? sanitize_key($_POST['slug']) : '';
+        $name = isset($_POST['name']) ? sanitize_title($_POST['name']) : '';
         $custom_statuses = get_option('trackmage_custom_order_statuses', []);
         $status_aliases = get_option('trackmage_order_status_aliases', []);
 
@@ -572,11 +590,11 @@ class Ajax {
         $errors = [];
 
         if (empty ($slug)) {
-            array_push($errors, __('Could not delete the selected status.', 'trackmage'));
+            $errors[] = __('Could not delete the selected status.', 'trackmage');
         }
 
         if (! array_key_exists($slug, $custom_statuses)) {
-            array_push($errors, __('Core statuses and statuses created by other plugins and themes cannot be deleted.', 'trackmage'));
+            $errors[] = __('Core statuses and statuses created by other plugins and themes cannot be deleted.', 'trackmage');
         }
 
         if (! empty($errors)) {
@@ -585,8 +603,7 @@ class Ajax {
             ]);
         }
 
-        unset($custom_statuses[$slug]);
-        unset($status_aliases[$slug]);
+        unset( $custom_statuses[ $slug ], $status_aliases[ $slug ] );
 
         update_option('trackmage_custom_order_statuses', $custom_statuses);
         update_option('trackmage_order_status_aliases', $status_aliases);

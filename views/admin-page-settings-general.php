@@ -81,7 +81,7 @@ $isInSync = Helper::isBulkSynchronizationInProcess();
                             <option value="0"><?php _e( '— Select —', 'trackmage' ); ?></option>
                             <?php if($workspaces):?>
                                 <?php foreach ( $workspaces as $ws ) : ?>
-                                    <option value="<?php echo $ws['id']; ?>" <?php selected( $ws['id'], $workspace ); ?>><?php echo $ws['title']; ?></option>
+                                    <option value="<?php echo esc_attr($ws['id']); ?>" <?php selected( $ws['id'], $workspace ); ?>><?php echo esc_attr($ws['title']); ?></option>
                                 <?php endforeach; ?>
                             <?php endif;?>
                         </select>
@@ -110,7 +110,7 @@ $isInSync = Helper::isBulkSynchronizationInProcess();
                     <select name="trackmage_sync_statuses[]" id="trackmage_sync_statuses" multiple>
                         <?php foreach ( $sync_statuses as $slug ): ?>
                             <?php if ( isset( $statuses[ $slug ] ) ) : ?>
-                                <option value="<?php echo $slug; ?>" selected><?php echo $statuses[ $slug ]['name']; ?></option>
+                                <option value="<?php echo esc_attr($slug); ?>" selected><?php echo esc_attr($statuses[ $slug ]['name']); ?></option>
                             <?php endif; ?>
                         <?php endforeach; ?>
                     </select>

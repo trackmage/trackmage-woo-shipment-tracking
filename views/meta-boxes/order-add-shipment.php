@@ -23,7 +23,7 @@ defined( 'WPINC' ) || exit;
                         <select name="carrier" data-placeholder="<?php _e('Select a carrier', 'trackmage');?>">
                             <option value="auto"><?php _e('Select a carrier', 'trackmage');?></option>
                             <?php foreach ($carriers as $carrier ) : ?>
-                                <option value="<?php echo $carrier['code']; ?>"><?php echo $carrier['name']; ?></option>
+                                <option value="<?php echo esc_attr($carrier['code']); ?>"><?php echo esc_attr($carrier['name']); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
