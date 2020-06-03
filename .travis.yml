@@ -28,7 +28,7 @@ cache:
   directories:
     - $HOME/.composer/cache/files
     - $HOME/.npm
-    - $TRAVIS_BUILD_DIR/vendor
+#    - $TRAVIS_BUILD_DIR/vendor
 
 addons:
   hosts:
