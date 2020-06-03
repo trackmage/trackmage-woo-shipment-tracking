@@ -89,7 +89,7 @@ class Ajax {
      * @return void
      */
     public static function getOrderItems() {
-        if( !isset($_POST['orderId']) || ( isset( $_POST['orderId'] ) && ! is_int( $_POST['orderId'] ) ) ) {
+        if( !isset($_POST['orderId']) || ( isset( $_POST['orderId'] ) && ! is_numeric( $_POST['orderId'] ) ) ) {
             wp_send_json([]);
         }
         $orderId = absint($_POST['orderId']);
@@ -147,7 +147,7 @@ class Ajax {
             wp_die(-1);
         }
 
-        if( ! isset( $_POST['orderId'], $_POST['id'] ) || ( isset( $_POST['orderId'] ) && ! is_int( $_POST['orderId'] ) ) || ( isset( $_POST['id'] ) && empty( $_POST['id'] ) ) ) {
+        if( ! isset( $_POST['orderId'], $_POST['id'] ) || ( isset( $_POST['orderId'] ) && ! is_numeric( $_POST['orderId'] ) ) || ( isset( $_POST['id'] ) && empty( $_POST['id'] ) ) ) {
             wp_send_json_error();
         }
         $orderId = absint($_POST['orderId']);
@@ -193,7 +193,7 @@ class Ajax {
         }
 
         // Request data.
-        if( !isset($_POST['orderId']) || ( isset( $_POST['orderId'] ) && ! is_int( $_POST['orderId'] ) ) ) {
+        if( !isset($_POST['orderId']) || ( isset( $_POST['orderId'] ) && ! is_numeric( $_POST['orderId'] ) ) ) {
             wp_send_json([]);
         }
         $orderId = absint($_POST['orderId']);
@@ -293,7 +293,7 @@ class Ajax {
         }
 
         // Request data.
-        if( !isset($_POST['orderId'], $_POST['id']) || (isset($_POST['orderId']) && !is_int($_POST['orderId'])) || empty($_POST['id'])) {
+        if( !isset($_POST['orderId'], $_POST['id']) || (isset($_POST['orderId']) && !is_numeric($_POST['orderId'])) || empty($_POST['id'])) {
             wp_send_json([]);
         }
         $orderId = absint($_POST['orderId']);
@@ -375,7 +375,7 @@ class Ajax {
         }
 
         // Request data.
-        if( !isset($_POST['orderId'], $_POST['id']) || (isset($_POST['orderId']) && !is_int($_POST['orderId'])) || empty($_POST['id'])) {
+        if( !isset($_POST['orderId'], $_POST['id']) || (isset($_POST['orderId']) && !is_numeric($_POST['orderId'])) || empty($_POST['id'])) {
             wp_send_json([]);
         }
         $orderId = absint($_POST['orderId']);
