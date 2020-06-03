@@ -18,6 +18,7 @@
 	"require-dev": {
 		"ext-intl": "*",
 		"automattic/vipwpcs": "^2.0",
+		"composer/composer": "^1.9.0 <1.10.7",
 		"dealerdirect/phpcodesniffer-composer-installer": "^0.5.0",
 		"phpcompatibility/phpcompatibility-wp": "*",
 		"phpunit/phpunit": "^5.7",
