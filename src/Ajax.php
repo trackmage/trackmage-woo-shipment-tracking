@@ -124,7 +124,7 @@ class Ajax {
         try {
             // Get HTML to return.
             ob_start();
-            include  TRACKMAGE_VIEWS_DIR . $path;
+            include  TRACKMAGE_VIEWS_DIR . 'meta-boxes/' . $path;
             $html = ob_get_clean();
         } catch (\Exception $e) {
             wp_send_json_error(['error' => $e->getMessage()]);
@@ -203,11 +203,19 @@ class Ajax {
         $carrier = isset($_POST['carrier']) ? sanitize_key($_POST['carrier']) : '';
         $shipmentItems = isset($_POST['items']) && is_array($_POST['items']) ? $_POST['items'] : [];
 
+        $shipmentItems = array_map(function($item) {
+            $sanitizedItem = [];
+            $sanitizedItem['id'] = isset($item['id']) ? sanitize_key($item['id']) : null;
+            $sanitizedItem['order_item_id'] = isset($item['order_item_id']) && is_numeric($item['order_item_id']) ? absint($item['order_item_id']) : null;
+            $sanitizedItem['qty'] = isset($item['qty']) && is_numeric($item['qty']) ? absint($item['qty']) : 0;
+            return $sanitizedItem;
+        }, $shipmentItems);
+
         $shipment = [
             'order_id' => $orderId,
             'tracking_number' => $trackingNumber,
             'carrier' => $carrier,
-            'items' => $shipmentItems,
+            'items' => array_filter($shipmentItems, function($item){ return null !== $item['order_item_id'] && $item['qty'] > 0;})
         ];
 
         // Order data.
@@ -297,11 +305,18 @@ class Ajax {
             wp_send_json([]);
         }
         $orderId = absint($_POST['orderId']);
-        $addAllOrderItems = isset($_POST['addAllOrderItems']) && $_POST['addAllOrderItems'] === 'true';
 
         $trackingNumber = isset($_POST['trackingNumber']) ? sanitize_title($_POST['trackingNumber']) : '';
         $carrier = isset($_POST['carrier']) ? sanitize_key($_POST['carrier']) : '';
         $shipmentItems = isset($_POST['items']) && is_array($_POST['items']) ? $_POST['items'] : [];
+
+        $shipmentItems = array_map(function($item) {
+            $sanitizedItem = [];
+            $sanitizedItem['id'] = isset($item['id']) ? sanitize_key($item['id']) : null;
+            $sanitizedItem['order_item_id'] = isset($item['order_item_id']) && is_numeric($item['order_item_id']) ? absint($item['order_item_id']) : null;
+            $sanitizedItem['qty'] = isset($item['qty']) && is_numeric($item['qty']) ? absint($item['qty']) : 0;
+            return $sanitizedItem;
+        }, $shipmentItems);
 
         $shipmentId = sanitize_key($_POST['id']);
 
@@ -310,7 +325,7 @@ class Ajax {
             'order_id' => $orderId,
             'tracking_number' => $trackingNumber,
             'carrier' => $carrier,
-            'items' => $shipmentItems,
+            'items' => array_filter($shipmentItems, function($item){ return null !== $item['order_item_id'] && $item['qty'] > 0;})
         ];
 
         // Order data.
@@ -381,7 +396,6 @@ class Ajax {
         $orderId = absint($_POST['orderId']);
         $shipmentId = sanitize_key($_POST['id']);
 
-        //$shipment = Helper::geShipmentWithJoinedItems($shipmentId);
         // Delete shipment record from the database.
         Helper::deleteShipment($shipmentId);
 

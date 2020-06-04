@@ -76,7 +76,7 @@
         method: "post",
         data: {
           action: "trackmage_get_view",
-          path: "meta-boxes/order-add-shipment-items-row.php"
+          path: "order-add-shipment-items-row.php"
         },
         beforeSend: function() {
           trackmageBlockUi($("#trackmage-shipment-tracking .inside"));
