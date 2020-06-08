@@ -42,6 +42,11 @@ addons:
     permissions: public-read
 
 before_install:
+  # workaround for travis ipv6 timeout issue
+  - sudo sh -c "echo 'precedence ::ffff:0:0/96 100' >> /etc/gai.conf"
+  - echo '{"ipv6":true,"fixed-cidr-v6":"2001:db8:1::/64"}' | sudo tee /etc/docker/daemon.json
+  - sudo service docker restart
+  - composer config -g repo.packagist composer https://packagist.phpcomposer.com
   # Disable services enabled by default
   - sudo /etc/init.d/mysql stop
   - sudo /etc/init.d/postgresql stop
@@ -64,3 +69,14 @@ before_script:
 
 script:
   - make ci_script
+
+before_deploy:
+  - make build
+
+deploy:
+  provider: script
+  script: bin/deploy.sh
+  skip_cleanup: true
+  on:
+    tags: true
+    condition: $ZIP_BUILD = "true"

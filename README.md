@@ -38,11 +38,10 @@ make docker_down
 make down
 ```
 
-Deployment on stage server
+Manual deployment to wordpress.org
 ```
 make build
-export STAGE_SSH_PASS=<password>
-make deploy
+TRAVIS=true WP_ORG_USERNAME=trackmage WP_ORG_PASSWORD= TRAVIS_TAG=v1.0.0 bin/deploy.sh
 ```
 
 Docs:
