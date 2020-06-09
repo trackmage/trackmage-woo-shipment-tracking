@@ -4,7 +4,7 @@ Tags: shipping, tracking, order, status, delivery, shipment tracking, order trac
 Requires at least: 4.9.1
 Tested up to: 5.4
 Requires PHP: 5.6
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -37,6 +37,16 @@ TrackMage also offers pre-configured email notifications for all of the typical 
 
 With TrackMage you can analyze your carrier’s performance across all channels and use that data to cut the costs.
 
+== Screenshots ==
+
+1. Integrate TrackingPage into your Woocommerce store
+2. Setup email notification when parcel is available for pickup
+3. After your customer has received their order ask them to leave a review
+4. After your customer has received their order ask them to leave a review
+5. Use analytics to monitor your carriers performance
+6. Create shipments from Woocommerce order
+7. Manage your all shipments in TrackMage
+
 == Installation ==
 
 = Minimum Requirements =
@@ -52,6 +62,8 @@ With TrackMage you can analyze your carrier’s performance across all channels 
 
 == Changelog ==
 
+= 1.0.1 =
+* Added Screenshots
+
 = 1.0.0 =
-*Release Date - 25.05.2020*
-* Initial Release *
+* Initial Release
