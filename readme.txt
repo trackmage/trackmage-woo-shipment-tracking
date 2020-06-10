@@ -4,7 +4,7 @@ Tags: shipping, tracking, order, status, delivery, shipment tracking, order trac
 Requires at least: 4.9.1
 Tested up to: 5.4
 Requires PHP: 5.6
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -61,6 +61,9 @@ With TrackMage you can analyze your carrier’s performance across all channels 
 3. Go through the Onboarding wizard in the Plugin
 
 == Changelog ==
+
+= 1.0.2 =
+* Fixed php version
 
 = 1.0.1 =
 * Added Screenshots

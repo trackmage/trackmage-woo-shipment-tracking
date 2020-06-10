@@ -14,8 +14,6 @@ use TrackMage\WordPress\Admin\Admin;
 use TrackMage\WordPress\Admin\Wizard;
 use TrackMage\WordPress\Admin\Orders;
 use TrackMage\WordPress\Webhook\Endpoint;
-use BrightNucleus\Config\ConfigInterface;
-use BrightNucleus\Config\ConfigTrait;
 use TrackMage\Client\TrackMageClient;
 use TrackMage\Client\Swagger\ApiException;
 use TrackMage\WordPress\Repository\EntityRepositoryInterface;
@@ -27,10 +25,7 @@ use TrackMage\WordPress\Synchronization\OrderItemSync;
 use TrackMage\WordPress\Synchronization\OrderSync;
 use TrackMage\WordPress\Synchronization\ShipmentItemSync;
 use TrackMage\WordPress\Synchronization\ShipmentSync;
-use TrackMage\WordPress\Webhook\Mappers\OrderItemsMapper;
 use TrackMage\WordPress\Webhook\Mappers\OrdersMapper;
-use TrackMage\WordPress\Webhook\Mappers\ShipmentItemsMapper;
-use TrackMage\WordPress\Webhook\Mappers\ShipmentsMapper;
 
 /**
  * Main plugin class.
@@ -38,9 +33,6 @@ use TrackMage\WordPress\Webhook\Mappers\ShipmentsMapper;
  * @since   0.1.0
  */
 class Plugin {
-
-    use ConfigTrait;
-
     /** @var ShipmentRepository|null */
     private $shipmentRepo;
 
@@ -70,6 +62,8 @@ class Plugin {
 
     private $wpdb;
 
+    private $dropOnDeactivate = true;
+
     /**
      * Static instance of the plugin.
      *
@@ -95,15 +89,6 @@ class Plugin {
 
     /** @var OrdersMapper|null */
     private $ordersMapper;
-
-    /** @var OrderItemsMapper|null */
-    private $orderItemsMapper;
-
-    /** @var ShipmentsMapper|null */
-    private $shipmentsMapper;
-
-    /** @var ShipmentItemsMapper|null */
-    private $shipmentItemsMapper;
 
     /**
      * @param \wpdb $wpdb
@@ -193,9 +178,7 @@ class Plugin {
      *
      * @since 0.1.0
      */
-    public function init(ConfigInterface $config) {
-        $this->processConfig( $config );
-
+    public function init() {
         $this->getSynchronizer();
         $this->getEndpoint();
         // Initialize classes.
@@ -241,8 +224,7 @@ class Plugin {
      */
     public function getLogRepo() {
         if($this->logRepo === null) {
-            $dropOnDeactivate = $this->getConfigKey('dropOnDeactivate');
-            $this->logRepo = new LogRepository($this->wpdb, $dropOnDeactivate);
+            $this->logRepo = new LogRepository($this->wpdb, $this->dropOnDeactivate);
         }
         return $this->logRepo;
     }
@@ -252,8 +234,7 @@ class Plugin {
      */
     public function getBackgroundTaskRepo() {
         if($this->backgroundTaskRepo === null) {
-            $dropOnDeactivate = $this->getConfigKey('dropOnDeactivate');
-            $this->backgroundTaskRepo = new BackgroundTaskRepository($this->wpdb, $dropOnDeactivate);
+            $this->backgroundTaskRepo = new BackgroundTaskRepository($this->wpdb, $this->dropOnDeactivate);
         }
         return $this->backgroundTaskRepo;
     }

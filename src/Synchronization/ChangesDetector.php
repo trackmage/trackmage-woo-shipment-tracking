@@ -3,7 +3,6 @@
 namespace TrackMage\WordPress\Synchronization;
 
 use ArrayAccess;
-use Symfony\Component\PropertyAccess\PropertyAccessor;
 use TrackMage\WordPress\Exception\InvalidArgumentException;
 
 class ChangesDetector
@@ -11,9 +10,6 @@ class ChangesDetector
     private $fields;
     private $getStoredHashCallback;
     private $storeHashCallback;
-
-    /** @var PropertyAccessor|null */
-    private $propertyAccessor;
 
     /**
      * @param array $fields Tracked fields
@@ -55,22 +51,25 @@ class ChangesDetector
     private function calculateHash($entity)
     {
         $items = array_map(function($field) use($entity) {
-            $accessor = $this->getPropertyAccessor();
-            return $accessor->isReadable($entity, $field) ? $accessor->getValue($entity, $field) : '';
+            return $this->getPropertyValue($entity, $field);
         }, $this->fields);
 
         return md5(implode(',', $items));
     }
 
     /**
-     * @return PropertyAccessor
+     * @param array|ArrayAccess $entity
+     * @param string $field
+     * @return string
      */
-    private function getPropertyAccessor()
+    private function getPropertyValue($entity, $field)
     {
-        if (null === $this->propertyAccessor) {
-            $this->propertyAccessor = new PropertyAccessor();
+        if (1 === preg_match('/\[(.+?)\]/', $field, $matches)
+            && null !== ($value = $matches[1]) && isset($entity[$value])
+        ) {
+            return $entity[$value];
         }
-        return $this->propertyAccessor;
+        return '';
     }
 
     private function checkArrayAccessible($var)
