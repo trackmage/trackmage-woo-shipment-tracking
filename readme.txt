@@ -64,6 +64,7 @@ With TrackMage you can analyze your carrier’s performance across all channels 
 
 = 1.0.2 =
 * Fixed php version
+* Minor bugfixes and enhancements
 
 = 1.0.1 =
 * Added Screenshots

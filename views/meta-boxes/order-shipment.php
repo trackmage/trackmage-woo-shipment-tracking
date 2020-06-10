@@ -27,11 +27,11 @@ $carrier = $carrierKey ? esc_attr($carriers[$carrierKey]['name']) : __('No Info'
         </ul>
     </td>
     <td class="shipment__actions">
-        <?php if($shipment['shippedAt'] === null):?>
         <div class="shipment__actions__wrap">
-            <a class="shipment__actions__action shipment__actions__action--edit"></a>
+            <?php if($shipment['shippedAt'] === null):?>
+                <a class="shipment__actions__action shipment__actions__action--edit"></a>
+            <?php endif; ?>
             <a class="shipment__actions__action shipment__actions__action--delete"></a>
         </div>
-        <?php endif; ?>
     </td>
 </tr>

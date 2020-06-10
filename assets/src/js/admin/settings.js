@@ -6,54 +6,6 @@
 
   let somethingChanged = false;
 
-  let confirmDialog = function(container, okBtnCallback = null, dialogTitle = 'Confirm Changes', okBtnTitle = 'OK'){
-      let defer = $.Deferred();
-      let buttons = {};
-      buttons[okBtnTitle] = function() {
-        let canClose = (okBtnCallback !== null)? okBtnCallback() : true;
-        if(canClose){
-          defer.resolve("yes");
-          $(this).attr('yesno', true);
-          $(this).dialog("close");
-        }
-      };
-      buttons["Cancel"] = function() {
-        $(this).dialog('close');
-      };
-      $(container).dialog({
-        title: dialogTitle,
-        dialogClass: 'wp-dialog',
-        autoOpen: true,
-        draggable: false,
-        width: $(window).width() > 600 ? 600 : $(window).width(),
-        height: 'auto',
-        modal: true,
-        resizable: false,
-        closeOnEscape: true,
-        position: {
-          my: "center",
-          at: "center",
-          of: window
-        },
-        buttons: buttons,
-        open: function () {
-          $('.ui-widget-overlay').bind('click', function () {
-            $(container).dialog('close');
-          })
-        },
-        create: function () {
-          $('.ui-dialog-titlebar-close').addClass('ui-button');
-        },
-        close: function () {
-          if ($(this).attr('yesno') === undefined) {
-            defer.resolve("no");
-          }
-          $(this).dialog('destroy');
-        },
-      });
-      return defer.promise();
-  };
-
   $(document).ready(function() {
     $('#trackmage_workspace,  #trackmage_sync_statuses').on('change',function() {
       somethingChanged = true;
@@ -289,7 +241,7 @@
     let sync_statuses = $('#trackmage_sync_statuses').val();
     let differences = sync_statuses? sync_statuses.filter(value => -1 === params.settings.sync_statuses.indexOf(value)): [];
     if(params.settings.workspace !== "0" && params.settings.workspace != workspace){ // check if workspace is changed
-      confirmDialog(
+      window.trackmageConfirmDialog(
         '#change-workspace-dialog',
         function(){
                       if(!$('#agree_to_change_cb').is(':checked')) {
@@ -309,7 +261,7 @@
         });
       return false;
     }else if(params.settings.workspace == "0" && workspace != "0" || (differences.length > 0 || !sync_statuses) && params.settings.workspace != "0"){ // check if workspace is set first time || sync statuses were changed and workspace is set
-      confirmDialog(
+      window.trackmageConfirmDialog(
         '#trigger-sync-dialog',
         function(){
           return true;
@@ -330,7 +282,7 @@
   });
 
   $("button#btn-trigger-sync").on('click', function(e){
-    confirmDialog(
+    window.trackmageConfirmDialog(
       '#trigger-sync-dialog',
       function(){
         return true;
@@ -349,7 +301,7 @@
   });
 
   $("button#btn-reset-plugin").on('click', function(e){
-    confirmDialog(
+    window.trackmageConfirmDialog(
       '#reset-dialog',
       function(){
           if(!$('#agree_reset').is(':checked')) {

@@ -79,6 +79,9 @@ class ShipmentSync implements EntitySyncInterface
                         'email'          => $order->get_billing_email(),
                         'phoneNumber'    => $order->get_billing_phone(),
                     ];
+                    if (isset($shipment['carrier'])) {
+                        $data['originCarrier'] = $shipment['carrier'] === 'auto' ? null : $shipment['carrier'];
+                    }
                     if ( isset( $shipment['items'] ) ) {
                         $data['shipmentItems'] = $this->getShipmentItemsForSync( $shipment['items'], $order->get_items() );
                     }

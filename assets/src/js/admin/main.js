@@ -98,6 +98,54 @@
     $(el).unblock();
   };
 
+  window.trackmageConfirmDialog = function(container, okBtnCallback = null, dialogTitle = 'Confirm Changes', okBtnTitle = 'OK'){
+    let defer = $.Deferred();
+    let buttons = {};
+    buttons[okBtnTitle] = function() {
+      let canClose = (okBtnCallback !== null)? okBtnCallback() : true;
+      if(canClose){
+        defer.resolve("yes");
+        $(this).attr('yesno', true);
+        $(this).dialog("close");
+      }
+    };
+    buttons["Cancel"] = function() {
+      $(this).dialog('close');
+    };
+    $(container).dialog({
+      title: dialogTitle,
+      dialogClass: 'wp-dialog',
+      autoOpen: true,
+      draggable: false,
+      width: $(window).width() > 600 ? 600 : $(window).width(),
+      height: 'auto',
+      modal: true,
+      resizable: false,
+      closeOnEscape: true,
+      position: {
+        my: "center",
+        at: "center",
+        of: window
+      },
+      buttons: buttons,
+      open: function () {
+        $('.ui-widget-overlay').bind('click', function () {
+          $(container).dialog('close');
+        })
+      },
+      create: function () {
+        $('.ui-dialog-titlebar-close').addClass('ui-button');
+      },
+      close: function () {
+        if ($(this).attr('yesno') === undefined) {
+          defer.resolve("no");
+        }
+        $(this).dialog('destroy');
+      },
+    });
+    return defer.promise();
+  };
+
   /**
    * On document ready.
    */
