@@ -57,6 +57,10 @@ $carriers = Helper::get_shipment_carriers();
         </div>
     </div>
 </div>
+<div id="delete-shipment-confirm-dialog" class="hidden">
+    <textarea style="width: 100%;" id="delete-shipment-reason" placeholder="<?php _e('Please enter the reason. It\'s required', 'trackamge');?>" rows="4"></textarea>
+    <p class="description hidden"><?php _e('Reason should not be empty', 'trackmage');?></p>
+</div>
 <span class="spinner"></span>
 <?php } else { ?>
 <div class="shipments">

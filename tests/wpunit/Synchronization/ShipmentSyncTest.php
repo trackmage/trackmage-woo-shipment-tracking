@@ -169,7 +169,8 @@ class ShipmentSyncTest extends WPTestCase
         $data = \GuzzleHttp\json_encode([
             'trackingNumber' => self::TEST_TRACKING_NUMBER,
             'email' => $wcOrder->get_billing_email(),
-            'phoneNumber' => $wcOrder->get_billing_phone()
+            'phoneNumber' => $wcOrder->get_billing_phone(),
+            'originCarrier' => self::TEST_CARRIER
         ]);
         $requestData = (string)$requests[0]['request']->getBody()->getContents();
         $this->assertEquals($data, $requestData);

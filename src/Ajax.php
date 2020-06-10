@@ -225,10 +225,6 @@ class Ajax {
 
         try {
             if ($addAllOrderItems) {
-                if (! empty($existingShipments)) {
-                    throw new \Exception(__('Other shipments have already been created, please delete them first or uncheck “Add all order items”.','trackmage'));
-                }
-
                 $shipment['items'] = array_map(function(\WC_Order_Item $item) {
                     return [
                         'order_item_id' => $item->get_id(),
@@ -393,6 +389,10 @@ class Ajax {
         if( !isset($_POST['orderId'], $_POST['id']) || (isset($_POST['orderId']) && !is_numeric($_POST['orderId'])) || empty($_POST['id'])) {
             wp_send_json([]);
         }
+        $reason = '';
+        if( !isset($_POST['reason']) || empty($reason = sanitize_textarea_field($_POST['reason']))){
+            wp_send_json_error(['message' => __('You should add reason to delete shipment', 'trackmage')]);
+        }
         $orderId = absint($_POST['orderId']);
         $shipmentId = sanitize_key($_POST['id']);
 
@@ -403,7 +403,11 @@ class Ajax {
         $order               = wc_get_order($orderId);
         $orderItems          = $order->get_items();
 
-        $order->add_order_note( sprintf( __( 'Shipment %s was deleted', 'trackmage' ), $shipmentId), false, true );
+        /** @var \WP_User $user */
+        $user = wp_get_current_user();
+        $userName = null !== $user ? $user->user_login : 'unknown';
+
+        $order->add_order_note( sprintf( __( 'Shipment %s was deleted by %s. Reason: %s.', 'trackmage' ), $shipmentId, $userName, $reason), false, true );
 
         try {
             // Get HTML to return.

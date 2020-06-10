@@ -401,3 +401,90 @@
     min-width: 80px !important;
   }
 }
+.woocommerce-page {
+  .ui-dialog-titlebar {
+    background: #fcfcfc !important;
+    border: none !important;
+    border-bottom: 1px solid #dfdfdf !important;
+    height: 36px !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    line-height: 2 !important;
+    padding: 0 36px 0 16px !important;
+    border-radius: 0 !important;
+  }
+
+  .ui-button {
+    display: inline-block !important;
+    text-decoration: none !important;
+    font-size: 13px !important;
+    line-height: 2 !important;
+    height: 28px !important;
+    margin: 0 !important;
+    padding: 0 10px 1px !important;
+    cursor: pointer !important;
+    border-width: 1px !important;
+    border-style: solid !important;
+    -webkit-appearance: none !important;
+    border-radius: 3px !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+    color: #555 !important;
+    border-color: #cccccc !important;
+    background: #f7f7f7 !important;
+    box-shadow: 0 1px 0 #cccccc !important;
+    vertical-align: top !important;
+
+    &.ui-dialog-titlebar-close {
+      background: none !important;
+      border: none !important;
+      box-shadow: none !important;
+      color: #666 !important;
+      cursor: pointer !important;
+      display: block !important;
+      padding: 0 !important;
+      position: absolute !important;
+      top: 0 !important;
+      right: 0 !important;
+      width: 36px !important;
+      height: 36px !important;
+      text-align: center !important;
+      border-radius: 0 !important;
+      text-decoration: none !important;
+      font-size: 13px !important;
+      line-height: 2 !important;
+      margin: 0 !important;
+      box-sizing: border-box !important;
+    }
+  }
+
+  .ui-dialog-content {
+    padding: 16px !important;
+    overflow: auto !important;
+    width: 95% !important;
+    &.error{
+      margin: 0 !important;
+      input, textarea{
+        border-color: #f00 !important;
+      }
+      p.description{
+        color: #f00 !important;
+      }
+    }
+  }
+
+  .ui-dialog-buttonpane {
+    background: #fcfcfc !important;
+    border-top: 1px solid #dfdfdf !important;
+    padding: 16px !important;
+
+    .ui-button {
+      margin-left: 15px !important;
+      &:hover, &:focus {
+        background: #fafafa !important;
+        border-color: #999 !important;
+        color: #23282d !important;
+      }
+    }
+  }
+}
