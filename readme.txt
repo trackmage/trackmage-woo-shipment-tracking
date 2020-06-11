@@ -16,11 +16,12 @@ This plugin connects your WooCommerce store to TrackMage. It automatically impor
 
 Trackmage is a shipment tracking system that shows your customers where their parcels are, helps provide support and gets reviews on autopilot.
 
+No Strings Attached, No Credit Card Required - Try TrackMage now.
+And btw, if you are just starting out, there is Forever Free plan with 100 Parcels Per Month.
+
 = FOR EVERY ECOMMERCE STORE OWNER =
 
 It works for all types of eCommerce store owners with different shipment volumes - from dropshippers who ship several parcels a month to sellers with thousands of parcels and multiple suppliers.
-
-No Strings Attached, No Credit Card Required. There is Forever Free plan with 100 Parcels Per Month.
 
 TrackMage supports 597 carriers and tracks your parcels (inbound and outbound) from the US, Europe, Asia and literally all shipping companies in the world.
 

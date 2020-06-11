@@ -1,9 +1,61 @@
+<a href="#">
+  <div align="center">
+    <img src="https://user-images.githubusercontent.com/1675033/84406764-a7091300-ac12-11ea-8250-774a8f0697fe.jpg" width='128'/>
+  </div>
+</a>
+<h1 align="center">Trackmage - WooCommerce shipment tracking plugin for WordPress</h1>
+
 [![Build Status](https://travis-ci.org/trackmage/trackmage-woo-shipment-tracking.svg?branch=master)](https://travis-ci.org/trackmage/trackmage-woo-shipment-tracking)
 
-# trackmage-woo-shipment-tracking
-TrackMage integrates shipments tracking into your WooCommerce store.
+[Download plugin from WordPress.org](https://wordpress.org/plugins/trackmage-woo-shipment-tracking/)
+[Download latest master build](https://travis-uploaded-artifacts.s3-us-west-2.amazonaws.com/trackmage/trackmage-woo-shipment-tracking/master/build/trackmage-woo-shipment-tracking.zip)
+<hr>
+<p align="center">
+  Your Beautiful, Branded, Highly Customizable TrackMage <b>Tracking Page</b>.
+  <br><br>
+  <a href='#'>
+    <img src = "https://user-images.githubusercontent.com/1675033/84408463-d3be2a00-ac14-11ea-8ab1-df0302e00a32.png" width="700" alt="tracking page"/>
+  </a>
+</p>
+<hr>
 
-[Download](https://travis-uploaded-artifacts.s3-us-west-2.amazonaws.com/trackmage/trackmage-woo-shipment-tracking/master/build/trackmage-woo-shipment-tracking.zip)
+<p align="center">
+  Provide your customers with <b>proactive</b> email updates.
+  TrackMage has pre-configured <b>email notifications</b> for all of the typical shipment statuses and related events.
+  <br><br>
+  <a href='#'>
+    <img src = "https://user-images.githubusercontent.com/1675033/84408630-0b2cd680-ac15-11ea-8e7c-091d7cf7858c.png" width="700" alt="Available for pickup email"/>
+  </a>
+</p>
+<hr>
+
+<p align="center">
+  When your customer receives their package, the system will automatically ask them to <b>leave a review</b>.
+  <br><br>
+  <a href='#'>
+    <img src = "https://user-images.githubusercontent.com/1675033/84408771-39121b00-ac15-11ea-8a32-f80a3dbc2405.png" width="700" alt="Leave a review email"/>
+  </a>
+</p>
+<hr>
+
+<p align="center">
+  Depending on how high their <b>review score</b> was, your customer support team will be notified and you will be able to <b>react accordingly</b>.
+  <br><br>
+  <a href='#'>
+    <img src = "https://user-images.githubusercontent.com/1675033/84408942-7676a880-ac15-11ea-8374-511ca13dbc51.png" width="700" alt="Leave a review on tracking page"/>
+  </a>
+</p>
+<hr>
+
+<p align="center">
+ No Strings Attached, No Credit Card Required - <a href="https://s.trackmage.com/ef2424">Try TrackMage now</a>.
+ <br>
+ <br>
+ And btw, if you are just starting out, there is <b>Forever Free plan with 100 Parcels Per Month</b>.
+</p>
+<hr>
+
+
 
 ## Local development
 ```
