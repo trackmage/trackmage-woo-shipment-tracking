@@ -185,6 +185,7 @@ class Plugin {
         new Admin;
         new Wizard;
         new Orders();
+        new TrackingInfo();
 
         $initClasses = [
             'Ajax',

@@ -12,7 +12,6 @@ namespace TrackMage\WordPress\Admin;
 
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\RequestOptions;
-use MongoDB\Driver\Exception\Exception;
 use TrackMage\WordPress\Plugin;
 use TrackMage\WordPress\Helper;
 use TrackMage\Client\Swagger\ApiException;
