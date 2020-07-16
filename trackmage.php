@@ -11,9 +11,10 @@
  * License URI:       http://www.gnu.org/licenses/gpl-3.0.txt
  * GitHub Plugin URI: https://github.com/trackmage/trackmage-woo-shipment-tracking
  * Requires PHP:      5.6
- * Requires WP:       4.9.1
+ * Requires at least: 4.9.1
+ * Tested up to: 5.4.2
  * WC requires at least: 3.8.0
- * WC tested up to: 4.2.0
+ * WC tested up to: 4.3.0
  *
  * Copyright (c) 2019-2020 TrackMage
  *

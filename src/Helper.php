@@ -166,6 +166,55 @@ class Helper {
     }
 
     /**
+     * @param \WC_Order $order
+     * @return string|null
+     */
+    public static function getOrderTrackingPageLink($order)
+    {
+        $order_id = $order->get_id();
+        $link = get_post_meta( $order_id, '_trackmage_tracking_page_link', true );
+        if (!is_string($link) || $link === '') {
+            $email = $order->get_billing_email();
+            $link = Helper::getTrackingPageLink(['email' => $email]);
+            add_post_meta($order_id, '_trackmage_tracking_page_link', $link, true)
+                || update_post_meta($order_id, '_trackmage_tracking_page_link', $link);
+        }
+        return $link;
+    }
+
+    /**
+     * @return string|null
+     */
+    public static function getTrackingPageLink( array $filter) {
+        if(empty($filter)) {
+            return null;
+        }
+        $client = Plugin::get_client();
+        $workspaceId = get_option('trackmage_workspace');
+
+        try {
+            $response = $client->getGuzzleClient()->get( '/workspaces/' . $workspaceId );
+            $contents = $response->getBody()->getContents();
+            $data = json_decode( $contents, true );
+            $trackingPageId = isset($data['defaultTrackingPage']) ? explode('/tracking_pages/', $data['defaultTrackingPage'])[1] : null;
+            if ($trackingPageId === null || $trackingPageId === '') {
+                error_log(sprintf('defaultTrackingPage is empty for workspace %s', $workspaceId));
+                return null;
+            }
+            $response = $client->getGuzzleClient()->post( '/generate_tracking_page_link', ['json' => [
+                'trackingPageId' => $trackingPageId,
+                'filter' => $filter,
+            ]]);
+            $content = $response->getBody()->getContents();
+            $data = json_decode($content, true);
+            return isset($data['link']) ? $data['link']: null;
+        } catch( \Exception $e ) {
+            error_log('Error in getTrackingPageLink: ', $e->getMessage());
+        }
+        return null;
+    }
+
+    /**
      * @param int $orderId
      * @return array of shipments
      */
