@@ -1,13 +1,14 @@
-<a href="#">
+<a href="https://s.trackmage.com/ef2424">
   <div align="center">
     <img src="https://user-images.githubusercontent.com/1675033/84406764-a7091300-ac12-11ea-8250-774a8f0697fe.jpg" width='128'/>
   </div>
 </a>
-<h1 align="center">Trackmage - WooCommerce shipment tracking plugin for WordPress</h1>
+
+<h1 align="center">Trackmage - Get Branded Tracking Page for your ecommerce store. WooCommerce shipment tracking plugin for WordPress</h1>
 
 [![Build Status](https://travis-ci.org/trackmage/trackmage-woo-shipment-tracking.svg?branch=master)](https://travis-ci.org/trackmage/trackmage-woo-shipment-tracking)
 
-[Download plugin from WordPress.org](https://wordpress.org/plugins/trackmage-woo-shipment-tracking/)
+[Download plugin from WordPress.org](https://wordpress.org/plugins/trackmage-woo-shipment-tracking/)<br>
 [Download latest master build](https://travis-uploaded-artifacts.s3-us-west-2.amazonaws.com/trackmage/trackmage-woo-shipment-tracking/master/build/trackmage-woo-shipment-tracking.zip)
 <hr>
 <p align="center">
