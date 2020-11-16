@@ -27,8 +27,12 @@ $isInSync = Helper::isBulkSynchronizationInProcess();
 
 
 <?php if($isInSync): ?>
-    <div class="notice-large notice-warning">
-        <h2><span class="spinner is-active" style="background-size: 30px; width: 30px; height: 30px; margin: 0;"></span> <span>Synchronization in progress. Please refresh the page and check again later.</span></h2>
+    <div id="sync-in-progress" class="notice-large notice-warning">
+        <h2><span class="spinner is-active" style="background-size: 30px; width: 30px; height: 30px; margin: 0;"></span>
+            <span>Synchronization in progress.</span>
+            <span id="sync-status"></span>
+<!--            <span>Please refresh the page and check again later.</span>-->
+        </h2>
     </div>
 <?php endif;?>
 <form method="post" action="options.php" id="general-settings-form" <?php if($isInSync):?>class="blocked-form"<?php endif;?>>

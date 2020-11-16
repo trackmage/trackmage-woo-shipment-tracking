@@ -507,6 +507,20 @@ class Helper {
         return $nextTask->id;
     }
 
+    /**
+     * @return int
+     */
+    public static function getBgOrdersAmountToProcess() {
+        $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
+        $tasks = $backgroundTaskRepo->getQuery('SELECT * FROM _TBL_ WHERE status="new" OR status="processing"');
+        $count = 0;
+        foreach ($tasks as $task) {
+            $ids = json_decode($task->params, true);
+            $count += is_array($ids) ? count($ids) : 0;
+        }
+        return $count;
+    }
+
     public static function clearOptions()
     {
         $options_to_clear = array(

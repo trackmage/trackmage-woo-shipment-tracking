@@ -11,7 +11,39 @@
       somethingChanged = true;
       $('#btn-save-form').removeClass('disabled').removeAttr('disabled');
     });
+    checkBgStats();
   });
+
+  function execCron() {
+    $.ajax({
+      url: '/wp-cron.php?doing_wp_cron',
+      method: "get",
+      success: function () {
+        setTimeout(function () {
+          checkBgStats();
+        }, 3000);
+      },
+    });
+  }
+
+  function checkBgStats() {
+    if ($('#sync-in-progress').length === 0) {
+      return;
+    }
+    $.ajax({
+      url: params.main.urls.ajax,
+      method: "post",
+      data: {action: 'trackmage_get_bg_stats'},
+      success: function (response) {
+        if (response.ordersCount !== 0) {
+          $('#sync-status').text(`Remaining orders: ${response.ordersCount}`);
+          execCron();
+        } else {
+          location.reload();
+        }
+      }
+    });
+  }
 
   // Test credentials.
   $("#trackmage-settings-general #testCredentials").on("click", function (e) {
