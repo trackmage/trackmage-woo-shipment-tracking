@@ -46,6 +46,7 @@ class Ajax {
 
         $ajaxEvents = [
             'get_order_statuses' => 'getOrderStatuses',
+            'get_bg_stats' => 'getBgStats',
             'get_order_items' => 'getOrderItems',
             'get_view' => 'getView',
             'edit_shipment' => 'editShipment',
@@ -60,6 +61,12 @@ class Ajax {
         foreach ($ajaxEvents as $name => $method) {
             add_action('wp_ajax_trackmage_' . $name, [__CLASS__, $method]);
         }
+    }
+
+    public static function getBgStats() {
+        wp_send_json([
+            'ordersCount' => Helper::getBgOrdersAmountToProcess(),
+        ]);
     }
 
     /**
