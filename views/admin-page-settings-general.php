@@ -17,6 +17,7 @@ if ( ! defined( 'WPINC' ) ) {
 $client_id     = get_option( 'trackmage_client_id', '' );
 $client_secret = get_option( 'trackmage_client_secret', '' );
 $workspace     = get_option( 'trackmage_workspace', 0 );
+$trackmage_sync_start_date = get_option( 'trackmage_sync_start_date', '' );
 
 $workspaces = Helper::get_workspaces();
 $credentials = Helper::check_credentials();
@@ -119,6 +120,18 @@ $isInSync = Helper::isBulkSynchronizationInProcess();
                         <?php endforeach; ?>
                     </select>
                     <p class="description"><?php _e( 'Create an order on TrackMage when the status changes to. If none is selected, all new orders will be synced with TrackMage upon creation.', 'trackmage' ); ?></p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row"><label for="trackmage_sync_start_date"><?php _e( 'Start Date', 'trackmage' ); ?></label></th>
+                <td>
+                    <input type="date"
+                           id="trackmage_sync_start_date"
+                           name="trackmage_sync_start_date"
+                           max="<?php date('Y-m-d') ?>"
+                           value="<?php echo esc_attr( $trackmage_sync_start_date ); ?>"
+                    >
+                    <p class="description"><?php _e( 'Only orders created prior to this date will be imported. Leave it empty if you want to import all existing orders', 'trackmage' ); ?></p>
                 </td>
             </tr>
             </tbody>

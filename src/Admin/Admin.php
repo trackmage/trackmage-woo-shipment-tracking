@@ -92,12 +92,14 @@ class Admin {
         register_setting('trackmage_general', 'trackmage_client_secret');
         register_setting('trackmage_general', 'trackmage_workspace');
 
+        // Statuses settings.
+        register_setting('trackmage_general', 'trackmage_sync_statuses');
+        register_setting('trackmage_general', 'trackmage_sync_start_date');
+
+        // Buttons must be processed at the end
         register_setting('trackmage_general', 'trackmage_trigger_sync');
         register_setting('trackmage_general', 'trackmage_delete_data');
         register_setting('trackmage_general', 'reset_plugin_settings');
-
-        // Statuses settings.
-        register_setting('trackmage_general', 'trackmage_sync_statuses');
     }
 
     /**

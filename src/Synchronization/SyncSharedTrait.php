@@ -18,6 +18,13 @@ trait SyncSharedTrait
         }
         $sync_statuses = get_option('trackmage_sync_statuses', []);
         $status = $order->get_status();
-        return empty($sync_statuses) || in_array('wc-' . $status, $sync_statuses, true);
+
+        $startDate = get_option('trackmage_sync_start_date', null);
+        $startDate = $startDate !== '' && $startDate !== null ? date_create_from_format('Y-m-d', $startDate)->getTimestamp() : null;
+        $orderDate = $order->get_date_created();
+        $orderDate = null !== $orderDate ? $orderDate->getTimestamp() : null;
+
+        return (empty($sync_statuses) || in_array('wc-' . $status, $sync_statuses, true))
+            && ($startDate === null || $orderDate === null || $startDate < $orderDate);
     }
 }
