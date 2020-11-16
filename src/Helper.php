@@ -528,6 +528,7 @@ class Helper {
             'trackmage_client_secret',
             'trackmage_workspace',
             'trackmage_sync_statuses',
+            'trackmage_sync_start_date',
             'trackmage_webhook',
             'trackmage_integration',
             'trackmage_webhook_username',
@@ -554,16 +555,23 @@ class Helper {
         }
     }
 
-    public static function getAllOrdersIds(){
-        return get_posts( array(
-            'numberposts' => -1,
-            'fields'      => 'ids',
-            'post_type'   => wc_get_order_types(),
-            'post_status' => array_keys( wc_get_order_statuses() ),
-            'orderby' => 'date',
-            'order' => 'ASC',
-            'post_parent' => 0
-        ));
+    public static function getAllOrdersIds()
+    {
+        $statuses = get_option('trackmage_sync_statuses', []);
+        $startDate = get_option('trackmage_sync_start_date', null);
+
+        $args = array(
+            'type' => 'shop_order',
+            'limit' => -1,
+            'return' => 'ids',
+        );
+        if (!empty($statuses)) {
+            $args['status'] = $statuses;
+        }
+        if (!empty($startDate)) {
+            $args['date_created'] = $startDate . '...' . date('Y-m-d');
+        }
+        return wc_get_orders($args);
     }
 
     public static function registerCustomStatus($code, $title){

@@ -97,6 +97,7 @@ class Assets {
             wp_localize_script('trackmage-admin-settings', 'trackmageAdminSettings', [
                 'workspace' => get_option( 'trackmage_workspace', 0 ),
                 'sync_statuses' => get_option( 'trackmage_sync_statuses', [] ),
+                'sync_start_date' => get_option( 'trackmage_sync_start_date', [] ),
                 'i18n' => [
                     'testCredentials'  => __('Test Credentials', 'trackmage'),
                     'successValidKeys' => __('Valid credentials. Click on <em>“Save Changes”</em> for the changes to take effect.', 'trackmage'),

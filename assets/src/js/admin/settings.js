@@ -7,7 +7,7 @@
   let somethingChanged = false;
 
   $(document).ready(function() {
-    $('#trackmage_workspace,  #trackmage_sync_statuses').on('change',function() {
+    $('#trackmage_workspace,  #trackmage_sync_statuses, #trackmage_sync_start_date').on('change',function() {
       somethingChanged = true;
       $('#btn-save-form').removeClass('disabled').removeAttr('disabled');
     });

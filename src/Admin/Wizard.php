@@ -244,13 +244,14 @@ class Wizard {
                 $statuses = isset($_POST['trackmage_sync_statuses']) && is_array($_POST['trackmage_sync_statuses']) ? $_POST['trackmage_sync_statuses'] : [];
                 try {
                     update_option( 'trackmage_sync_statuses', $statuses );
-                }catch (\Exception $e){
-                    wp_send_json_error([
-                        'status' => 'error',
-                        'errors' => [
-                            $e->getMessage(),
-                        ]
-                    ]);
+                } catch (\Exception $e) {
+                    wp_send_json_error(['status' => 'error', 'errors' => [$e->getMessage()]]);
+                }
+                $startDate = isset($_POST['trackmage_sync_start_date']) && $this->validateDate($_POST['trackmage_sync_start_date']) ? $_POST['trackmage_sync_start_date'] : null;
+                try {
+                    update_option('trackmage_sync_start_date', $startDate);
+                } catch (\Exception $e) {
+                    wp_send_json_error(['status' => 'error', 'errors' => [$e->getMessage()]]);
                 }
                 set_transient('trackmage-wizard-notice', false);
                 $this->_triggerSync();
@@ -269,6 +270,18 @@ class Wizard {
         wp_send_json_success([
             'step' => $step
         ]);
+    }
+
+    /**
+     * @param string $date
+     * @param string $format
+     * @return bool
+     */
+    private function validateDate($date, $format = 'Y-m-d')
+    {
+        $d = \DateTime::createFromFormat($format, $date);
+        // The Y ( 4 digits year ) returns TRUE for any integer with any number of digits so changing the comparison from == to === fixes the issue.
+        return $d && $d->format($format) === $date;
     }
 
     private function _triggerSync(){
