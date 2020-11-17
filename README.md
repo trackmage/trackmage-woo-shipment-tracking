@@ -76,6 +76,24 @@ define('TRACKMAGE_API_DOMAIN', 'https://api.test.trackmage.com');
 define('TRACKMAGE_APP_DOMAIN', 'https://app.test.trackmage.com');
 ```
 
+
+## Generate some orders:
+
+```
+git clone https://github.com/woocommerce/wc-smooth-generator.git
+cd wc-smooth-generator/
+composer install
+
+docker run -it --rm --volumes-from wpbrowser_wp --network container:wpbrowser_wp wordpress:cli-php7.2 \
+ wp plugin activate wc-smooth-generator
+
+docker run -it --rm --volumes-from wpbrowser_wp --network container:wpbrowser_wp wordpress:cli-php7.2 \
+ wp wc generate products 2
+
+docker run -it --rm --volumes-from wpbrowser_wp --network container:wpbrowser_wp wordpress:cli-php7.2 \
+ wp wc generate orders 100 --date-start=2020-04-01 --date-end=2020-11-15
+```
+
 ## Testing:
 
 Local commands:
