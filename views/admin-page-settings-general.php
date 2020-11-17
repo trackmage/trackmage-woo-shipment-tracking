@@ -131,7 +131,7 @@ $isInSync = Helper::isBulkSynchronizationInProcess();
                            max="<?php date('Y-m-d') ?>"
                            value="<?php echo esc_attr( $trackmage_sync_start_date ); ?>"
                     >
-                    <p class="description"><?php _e( 'Only orders created prior to this date will be imported. Leave it empty if you want to import all existing orders', 'trackmage' ); ?></p>
+                    <p class="description"><?php _e( 'Only orders created after this date will be imported. Leave it empty if you want to import all existing orders', 'trackmage' ); ?></p>
                 </td>
             </tr>
             </tbody>
