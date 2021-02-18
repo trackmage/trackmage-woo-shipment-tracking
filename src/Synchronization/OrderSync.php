@@ -3,7 +3,6 @@
 namespace TrackMage\WordPress\Synchronization;
 
 use GuzzleHttp\Exception\ClientException;
-use phpDocumentor\Reflection\Types\Boolean;
 use Psr\Http\Message\ResponseInterface;
 use TrackMage\WordPress\Exception\SynchronizationException;
 use TrackMage\WordPress\Helper;
