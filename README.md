@@ -6,7 +6,7 @@
 
 <h1 align="center">Trackmage - Get Branded Tracking Page for your ecommerce store. WooCommerce shipment tracking plugin for WordPress</h1>
 
-[![Build Status](https://travis-ci.org/trackmage/trackmage-woo-shipment-tracking.svg?branch=master)](https://travis-ci.org/trackmage/trackmage-woo-shipment-tracking)
+[![Build Status](https://travis-ci.com/trackmage/trackmage-woo-shipment-tracking.svg?branch=master)](https://travis-ci.com/trackmage/trackmage-woo-shipment-tracking)
 
 [Download plugin from WordPress.org](https://wordpress.org/plugins/trackmage-woo-shipment-tracking/)<br>
 [Download latest master build](https://travis-uploaded-artifacts.s3-us-west-2.amazonaws.com/trackmage/trackmage-woo-shipment-tracking/master/build/trackmage-woo-shipment-tracking.zip)
