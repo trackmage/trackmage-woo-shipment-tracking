@@ -273,9 +273,11 @@ class Admin {
     }
 
     public function trigger_delete_data($value, $old_value, $option) {
-        $allOrdersIds = Helper::getAllOrdersIds();
-        foreach ( $allOrdersIds as $orderId ) {
-            Plugin::instance()->getSynchronizer()->unlinkOrder( $orderId );
+        if (isset($_POST['trackmage_delete_data']) && $_POST['trackmage_delete_data'] === '1'){
+            $allOrdersIds = Helper::getAllOrdersIds();
+            foreach ( $allOrdersIds as $orderId ) {
+                Plugin::instance()->getSynchronizer()->unlinkOrder( $orderId );
+            }
         }
         return 0;
     }
