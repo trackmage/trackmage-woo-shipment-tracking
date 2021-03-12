@@ -54,7 +54,7 @@ class OrderSync implements EntitySyncInterface
 
     public function sync($order_id, $forse = false ) {
         $order = wc_get_order( $order_id );
-        if (!$forse && (!$this->canSyncOrder($order) || !$this->getChangesDetector()->isChanged(new ArrayAccessDecorator($order)))) {
+        if ($forse !== true && !($this->canSyncOrder($order) && $this->getChangesDetector()->isChanged(new ArrayAccessDecorator($order)))) {
             return;
         }
         $workspace = get_option( 'trackmage_workspace' );

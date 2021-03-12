@@ -97,10 +97,10 @@ class Synchronizer
         }
     }
 
-    public function syncOrder($orderId, $forse = false ) {
+    public function syncOrder($orderId, $force = false ) {
         $this->logger->info(self::TAG.'Try to sync order.', [
             'order_id' => $orderId,
-            'forse' => $forse
+            'force' => $force
         ]);
         if ($this->disableEvents) {
             $this->logger->info(self::TAG.'Events are disabled. Sync is skipped.', [
@@ -109,11 +109,11 @@ class Synchronizer
             return;
         }
         try {
-            $this->orderSync->sync($orderId, $forse);
+            $this->orderSync->sync($orderId, $force);
 
             $order = wc_get_order( $orderId );
             foreach ($order->get_items() as $item) {
-                $this->syncOrderItem($item->get_id(), $forse);
+                $this->syncOrderItem($item->get_id(), $force);
             }
         } catch (RuntimeException $e) {
             $this->logger->warning(self::TAG.'Unable to sync remote order', array_merge([
