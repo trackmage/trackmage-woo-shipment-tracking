@@ -74,7 +74,7 @@ class OrderItemSync implements EntitySyncInterface
 
         $trackmage_order_item_id = wc_get_order_item_meta( $orderItemId, '_trackmage_order_item_id', true );
 
-        if (!$forse && (!($this->canSyncOrder($order) && (empty($trackmage_order_item_id) || $this->getChangesDetector()->isChanged($item))))) {
+        if ($forse !== true && (!($this->canSyncOrder($order) && (empty($trackmage_order_item_id) || $this->getChangesDetector()->isChanged($item))))) {
             return;
         }
 
