@@ -292,7 +292,11 @@
           }
         });
       return false;
-    }else if(params.settings.workspace == "0" && workspace != "0" || (differences.length > 0 || !sync_statuses) && params.settings.workspace != "0"){ // check if workspace is set first time || sync statuses were changed and workspace is set
+    }else if(
+      params.settings.workspace == "0" && workspace != "0" ||
+      (differences.length > 0 || sync_statuses.length === 0 && params.settings.sync_statuses.length > 0) &&
+      params.settings.workspace != "0"
+    ){ // check if workspace is set first time || sync statuses were changed and workspace is set
       window.trackmageConfirmDialog(
         '#trigger-sync-dialog',
         function(){
