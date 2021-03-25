@@ -2,9 +2,9 @@
 Contributors: trackmage,karser,harbuzniak
 Tags: shipping, tracking, order, status, delivery, shipment tracking, order tracking, order status, carrier, carriers
 Requires at least: 4.9.1
-Tested up to: 5.5.3
+Tested up to: 5.7
 Requires PHP: 5.6
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -52,8 +52,11 @@ With TrackMage you can analyze your carrier’s performance across all channels 
 
 = Minimum Requirements =
 
-* PHP 5.6 or greater is recommended
-* WooCommerce 3.8 or greater is recommended
+* WordPress 4.9.1 or greater. WordPress 5.4 or greater is recommended
+* WooCommerce 3.8 or greater. WooCommerce 4.2.0 or greater is recommended
+* PHP version 5.6 or greater. PHP 7.2 or greater is recommended
+* MySQL version 5.0 or greater. MySQL 5.6 or greater is recommended
+
 
 = Installation Steps =
 
@@ -62,6 +65,10 @@ With TrackMage you can analyze your carrier’s performance across all channels 
 3. Go through the Onboarding wizard in the Plugin
 
 == Changelog ==
+
+= 1.0.6 =
+* Added support for Wordpress 5.7 and WooCommerce 5.1.0
+* Minor bugfixes and enhancements
 
 = 1.0.2 =
 * Fixed php version
