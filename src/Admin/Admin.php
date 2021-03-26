@@ -222,6 +222,7 @@ class Admin {
 
         update_option('trackmage_webhook', '');
         update_option('trackmage_integration', '');
+        update_option('trackmage_team', '');
 
         Helper::clearTransients();
 
@@ -266,6 +267,10 @@ class Admin {
             return $old_value;
         }
 
+        if (false !== $idx = array_search($value, array_column($workspaces, 'id'))) {
+            update_option('trackmage_team', $workspaces[$idx]['team']);
+        }
+
         update_option( 'trackmage_order_status_aliases', [] );
         update_option('trackmage_webhook', $data['id']);
         update_option('trackmage_integration', $data['integration']['id']);
@@ -274,10 +279,8 @@ class Admin {
 
     public function trigger_delete_data($value, $old_value, $option) {
         if (isset($_POST['trackmage_delete_data']) && $_POST['trackmage_delete_data'] === '1'){
-            $allOrdersIds = Helper::getAllOrdersIds();
-            foreach ( $allOrdersIds as $orderId ) {
-                Plugin::instance()->getSynchronizer()->unlinkOrder( $orderId );
-            }
+            Helper::unlinkAllOrders();
+            Helper::unlinkAllProducts();
         }
         return 0;
     }

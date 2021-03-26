@@ -13,6 +13,7 @@ namespace TrackMage\WordPress;
 use TrackMage\WordPress\Admin\Admin;
 use TrackMage\WordPress\Admin\Wizard;
 use TrackMage\WordPress\Admin\Orders;
+use TrackMage\WordPress\Synchronization\ProductSync;
 use TrackMage\WordPress\Webhook\Endpoint;
 use TrackMage\Client\TrackMageClient;
 use TrackMage\Client\Swagger\ApiException;
@@ -60,6 +61,9 @@ class Plugin {
     /** @var ShipmentItemSync|null */
     private $shipmentItemSync;
 
+    /** @var ProductSync|null */
+    private $productSync;
+
     private $wpdb;
 
     private $dropOnDeactivate = true;
@@ -89,6 +93,7 @@ class Plugin {
 
     /** @var OrdersMapper|null */
     private $ordersMapper;
+
 
     /**
      * @param \wpdb $wpdb
@@ -144,7 +149,7 @@ class Plugin {
     {
         if ($this->synchronizer === null) {
             $this->synchronizer = new Synchronizer($this->getLogger(), $this->getOrderSync(), $this->getOrderItemSync(),
-                $this->getBackgroundTaskRepo());
+                $this->getProductSync(), $this->getBackgroundTaskRepo());
         }
 
         return $this->synchronizer;
@@ -304,6 +309,17 @@ class Plugin {
             $this->orderItemSync = new OrderItemSync($this->getIntegrationId());
         }
         return $this->orderItemSync;
+    }
+
+    /**
+     * @return ProductSync|null
+     */
+    public function getProductSync()
+    {
+        if (null === $this->productSync) {
+            $this->productSync = new ProductSync($this->getIntegrationId());
+        }
+        return $this->productSync;
     }
 
     /**

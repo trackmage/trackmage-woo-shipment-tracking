@@ -9,6 +9,8 @@ use TrackMage\WordPress\Exception\RuntimeException;
 use TrackMage\WordPress\Repository\BackgroundTaskRepository;
 use TrackMage\WordPress\Synchronization\OrderItemSync;
 use TrackMage\WordPress\Synchronization\OrderSync;
+use TrackMage\WordPress\Synchronization\ProductSync;
+use WC_Order_Item;
 
 class Synchronizer
 {
@@ -22,13 +24,18 @@ class Synchronizer
     private $backgroundTaskRepository;
 
     private $logger;
+    /**
+     * @var ProductSync
+     */
+    private $productSync;
 
     public function __construct(LoggerInterface $logger, OrderSync $orderSync, OrderItemSync $orderItemSync,
-                                BackgroundTaskRepository $backgroundTaskRepository)
+                                ProductSync $productSync, BackgroundTaskRepository $backgroundTaskRepository)
     {
         $this->logger = $logger;
         $this->orderSync = $orderSync;
         $this->orderItemSync = $orderItemSync;
+        $this->productSync = $productSync;
         $this->backgroundTaskRepository = $backgroundTaskRepository;
         $this->bindEvents();
     }
@@ -51,11 +58,7 @@ class Synchronizer
         add_action('wp_trash_post', function ($postId) {//woocommerce_trash_order is not fired
             $type = get_post_type($postId);
             if ($type === 'shop_order'){
-                // This doesn't work whatsoever:
-                // the trashed order status remains the same
-                // and change detector doesn't find the difference.
-                // So OrderSync skips this update.
-                $this->syncOrder($postId);
+                $this->syncOrder($postId, true);
             }
         }, 10, 1);
         add_action('before_delete_post', function ($postId) { //woocommerce_delete_order is not fired
@@ -63,8 +66,12 @@ class Synchronizer
             if ($type === 'shop_order'){
                 $this->deleteOrder($postId);
             }
+            if ($type === 'product'){
+                $this->deleteProduct($postId);
+            }
         }, 10, 1);
 
+        add_action( 'woocommerce_update_product', [ $this, 'syncProduct' ], 10, 1 );
         add_action( 'woocommerce_new_order_item', [ $this, 'syncOrderItem' ], 10, 1 );
         add_action( 'woocommerce_update_order_item', [ $this, 'syncOrderItem' ], 10, 1 );
         add_action( 'woocommerce_delete_order_item', [ $this, 'deleteOrderItem' ], 10, 1 );
@@ -187,14 +194,24 @@ class Synchronizer
         }
     }
 
-    public function syncOrderItem($itemId, $forse = false)
+    public function syncOrderItem($itemId, $force = false)
     {
+        $this->logger->info(self::TAG.'Try to sync order item.', [
+            'item_id' => $itemId,
+            'force' => $force
+        ]);
         if ( $this->disableEvents) {
             return;
         }
         try {
-            $this->orderItemSync->sync($itemId, $forse);
-        } catch (RuntimeException $e) {
+            $item = $this->getOrderItem($itemId);
+            $this->logger->info(self::TAG.'Try to sync product.', [
+                'product_id' => $item->get_product()->get_id(),
+                'force' => $force
+            ]);
+            $this->productSync->sync($item->get_product()->get_id(), $force);
+            $this->orderItemSync->sync($itemId, $force);
+        } catch (\Exception $e) {
             $this->logger->warning(self::TAG.'Unable to sync remote order item', array_merge([
                 'item_id' => $itemId,
                 'exception' => $e->getMessage(),
@@ -229,6 +246,87 @@ class Synchronizer
         } catch (RuntimeException $e) {
             $this->logger->warning(self::TAG.'Unable to unlink order item', [
                 'item_id' => $itemId,
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
+
+    }
+
+    /**
+     * Sync Product
+     *
+     * @param $productId
+     * @param false $force
+     *
+     * @since 1.0.7
+     */
+    public function syncProduct($productId, $force = false)
+    {
+        $this->logger->info(self::TAG.'Try to sync product.', [
+            'product_id' => $productId,
+            'force' => $force
+        ]);
+        if ( $this->disableEvents || empty(Helper::getSyncedOrderItemsByProduct((int) $productId))) {
+            $this->logger->info(self::TAG.'Sync of product is skipped.', [
+                'product_id' => $productId
+            ]);
+            return;
+        }
+        try {
+            $this->productSync->sync($productId, $force);
+        } catch (RuntimeException $e) {
+            $this->logger->warning(self::TAG.'Unable to sync remote product', array_merge([
+                'product_id' => $productId,
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], $this->grabGuzzleData($e)));
+        }
+    }
+
+    /**
+     * Delete Product
+     *
+     * @param $productId
+     *
+     * @since 1.0.7
+     */
+    public function deleteProduct($productId)
+    {
+        $this->logger->info(self::TAG.'Try to delete product.', [
+            'product_id' => $productId
+        ]);
+        if ($this->disableEvents) {
+            return;
+        }
+        try {
+            $this->productSync->delete($productId);
+        } catch (RuntimeException $e) {
+            $this->logger->warning(self::TAG.'Unable to delete remote product', array_merge([
+                'product_id' => $productId,
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], $this->grabGuzzleData($e)));
+        }
+    }
+
+    /**
+     * Unlink Product
+     *
+     * @param $productId
+     *
+     * @since 1.0.7
+     */
+    public function unlinkProduct($productId)
+    {
+        if ($this->disableEvents) {
+            return;
+        }
+        try{
+            $this->productSync->unlink($productId);
+        } catch (RuntimeException $e) {
+            $this->logger->warning(self::TAG.'Unable to unlink product', [
+                'product_id' => $productId,
                 'exception' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -277,5 +375,23 @@ class Synchronizer
         }
 
         return [];
+    }
+
+    /**
+     * @param int $orderItemId
+     *
+     * @return WC_Order_Item|\WC_Order_Item_Product
+     * @throws \Exception
+     */
+    private function getOrderItem($orderItemId)
+    {
+        $orderId = wc_get_order_id_by_order_item_id($orderItemId);
+        $order = wc_get_order($orderId);
+        foreach( $order->get_items() as $id => $item ) {
+            if ($id === $orderItemId) {
+                return $item;
+            }
+        }
+        return null;
     }
 }

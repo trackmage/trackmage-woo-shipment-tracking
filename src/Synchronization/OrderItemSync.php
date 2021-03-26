@@ -90,6 +90,7 @@ class OrderItemSync implements EntitySyncInterface
 
         $product = $item->get_variation_id() > 0 ? wc_get_product($item->get_variation_id()) : $item->get_product();
         $image = wp_get_attachment_image_url( $product->get_image_id(), 'thumbnail' );
+        $trackmage_product_id = get_post_meta( $item->get_product()->get_id(), ProductSync::TRACKMAGE_PRODUCT_ID_META_KEY, true );
         try {
             if (empty($trackmage_order_item_id)) {
                 try {
@@ -107,6 +108,7 @@ class OrderItemSync implements EntitySyncInterface
                             'externalProductId' => (string)$item->get_product()->get_id(),
                             'externalSourceSyncId' => (string)$orderItemId,
                             'externalSourceIntegration' => $this->integration,
+                            'product' => !empty($trackmage_product_id) ? '/products/' . $trackmage_product_id : null
                         ]
                     ]);
                     $result = json_decode( $response->getBody()->getContents(), true );

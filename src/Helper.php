@@ -82,6 +82,7 @@ class Helper {
                     $workspaces[] = [
                         'id'    => $workspace['id'],
                         'title' => $workspace['title'],
+                        'team'  => $workspace['team']
                     ];
                 }
                 set_transient( 'trackmage_workspaces', $workspaces, 3600 );
@@ -527,6 +528,7 @@ class Helper {
             'trackmage_client_id',
             'trackmage_client_secret',
             'trackmage_workspace',
+            'trackmage_team',
             'trackmage_sync_statuses',
             'trackmage_sync_start_date',
             'trackmage_webhook',
@@ -574,6 +576,15 @@ class Helper {
         return wc_get_orders($args);
     }
 
+    public static function getAllProductIds()
+    {
+        $args = array(
+            'limit' => -1,
+            'return' => 'ids'
+        );
+        return wc_get_products($args);
+    }
+
     public static function registerCustomStatus($code, $title){
         register_post_status( $code, array(
             'label' => _x( $title, 'WooCommerce Order status', 'trackmage' ),
@@ -604,5 +615,38 @@ class Helper {
             }
             return $shipmentItem;
         }, $shipmentItems);
+    }
+
+    public static function unlinkAllOrders()
+    {
+        $allOrdersIds = self::getAllOrdersIds();
+        foreach ( $allOrdersIds as $orderId ) {
+            Plugin::instance()->getSynchronizer()->unlinkOrder( $orderId );
+        }
+    }
+
+    public static function unlinkAllProducts()
+    {
+        $allProductsIds = self::getAllProductIds();
+        foreach ( $allProductsIds as $productId ) {
+            Plugin::instance()->getSynchronizer()->unlinkProduct( $productId );
+        }
+    }
+
+    /**
+     * Retrieves a post meta field for the given post ID.
+     *
+     * @param int    $productId    The product ID.
+     *
+     * @since 1.0.7
+     *
+     * @return array|null Array of order item IDs
+     */
+    public static function getSyncedOrderItemsByProduct( int $productId ) {
+        global $wpdb;
+        $results = $wpdb->get_results(
+            "select order_item_id from {$wpdb->prefix}woocommerce_order_itemmeta where order_item_id IN (select order_item_id from {$wpdb->prefix}wc_order_product_lookup where product_id = {$productId} OR variation_id = {$productId}) AND meta_key = '_trackmage_order_item_id'",
+            ARRAY_A);
+        return $results;
     }
 }
