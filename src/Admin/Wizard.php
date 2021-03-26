@@ -228,6 +228,10 @@ class Wizard {
                 }
                 try {
                     update_option( 'trackmage_workspace', $workspaceId );
+                    $workspaces = Helper::get_workspaces();
+                    if (false !== $idx = array_search($workspaceId, array_column($workspaces, 'id'))) {
+                        update_option('trackmage_team', $workspaces[$idx]['team']);
+                    }
                 }catch (\Exception $e){
                     wp_send_json_error([
                         'status' => 'error',
