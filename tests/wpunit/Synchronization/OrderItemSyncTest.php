@@ -373,6 +373,42 @@ class OrderItemSyncTest extends WPTestCase
         self::assertCount(0, $requests);
     }
 
+    public function testNewOrderItemWithDeletedProductGetsPosted()
+    {
+        //GIVEN
+        update_option('trackmage_sync_statuses', ['wc-completed']);
+        $requests = [];
+        $guzzleClient = $this->createClient([
+            $this->createJsonResponse(201, ['id' => self::TM_ORDER_ITEM_ID]),
+        ], $requests);
+        $this->initPlugin($guzzleClient);
+
+        $product = new WC_Product_Simple();
+        $product->set_name('TEST-DELETE');
+        $product->set_sku('TEST-DELETE');
+        $product->set_price(self::PRICE);
+        $product->save();
+
+        //programmatically create an order in WC
+        $wcOrder = wc_create_order(['status' => 'completed']);
+        $wcItemId = $wcOrder->add_product($product);
+        $wcId = $wcOrder->get_id();
+
+        add_post_meta( $wcId, '_trackmage_order_id', self::TM_ORDER_ID, true );
+
+        //WHEN
+        $product->delete(true);
+        $this->orderItemSync->sync($wcItemId);
+
+        //THEN
+        //check this order is sent to TM
+        $this->assertMethodsWereCalled($requests, [
+            ['POST', '/order_items', ['ignoreWebhookId' => self::TM_WEBHOOK_ID]],
+        ]);
+        //make sure that TM ID is saved to WC order item meta
+        self::assertSame(self::TM_ORDER_ITEM_ID, wc_get_order_item_meta($wcItemId, '_trackmage_order_item_id', true));
+    }
+
 
     private function initPlugin(ClientInterface $guzzleClient = null)
     {
