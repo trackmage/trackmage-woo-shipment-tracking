@@ -87,35 +87,28 @@ class OrderItemSync implements EntitySyncInterface
 
         $client = Plugin::get_client();
         $guzzleClient = $client->getGuzzleClient();
-
         $product = $item->get_variation_id() > 0 ? wc_get_product($item->get_variation_id()) : $item->get_product();
-        $image = wp_get_attachment_image_url( $product->get_image_id(), 'thumbnail' );
-        $trackmage_product_id = get_post_meta( $item->get_product()->get_id(), ProductSync::TRACKMAGE_PRODUCT_ID_META_KEY, true );
+        $productData = $this->getProductInfo($product);
         try {
             if (empty($trackmage_order_item_id)) {
                 try {
+                    $data = [
+                        'order' => '/orders/' . $trackmage_order_id,
+                        'productName' => $item->get_name(),
+                        'qty' => $item['quantity'],
+                        'rowTotal' => $item->get_total(),
+                        'externalSourceSyncId' => (string)$orderItemId,
+                        'externalSourceIntegration' => $this->integration
+                    ];
                     $response = $guzzleClient->post('/order_items', [
-                        'query' => ['ignoreWebhookId' => $webhookId],
-                        'json' => [
-                            'order' => '/orders/' . $trackmage_order_id,
-                            'productName' => $item->get_product()->get_name(),
-                            'productSku' => $product->get_sku(),
-                            'productOptions' => $this->getProductOptions($product),
-                            'imageUrl' => $image !== false ? $image : null,
-                            'qty' => $item['quantity'],
-                            'price' => $product->get_price(),
-                            'rowTotal' => $item->get_total(),
-                            'externalProductId' => (string)$item->get_product()->get_id(),
-                            'externalSourceSyncId' => (string)$orderItemId,
-                            'externalSourceIntegration' => $this->integration,
-                            'product' => !empty($trackmage_product_id) ? '/products/' . $trackmage_product_id : null
-                        ]
+                        'query' => array('ignoreWebhookId' => $webhookId),
+                        'json' => array_merge($data, $productData)
                     ]);
                     $result = json_decode( $response->getBody()->getContents(), true );
                     $trackmage_order_item_id = $result['id'];
                     wc_add_order_item_meta($orderItemId, '_trackmage_order_item_id', $trackmage_order_item_id, true )
                         || wc_update_order_item_meta($orderItemId, '_trackmage_order_item_id', $trackmage_order_item_id);
-                    $order->add_order_note(sprintf( __( 'Order Item %s was created in TrackMage', 'trackmage' ), $product->get_sku()), false, true);
+                    $order->add_order_note(sprintf( __( 'Order Item %s was created in TrackMage', 'trackmage' ), $item->get_name()), false, true);
                 } catch (ClientException $e) {
                     $response = $e->getResponse();
                     if (null !== $response
@@ -131,20 +124,16 @@ class OrderItemSync implements EntitySyncInterface
                 }
             } else {
                 try {
+                    $data = [
+                        'productName' => $item->get_product()->get_name(),
+                        'qty' => $item['quantity'],
+                        'rowTotal' => $item->get_total()
+                    ];
                     $guzzleClient->put('/order_items/'.$trackmage_order_item_id, [
                         'query' => ['ignoreWebhookId' => $webhookId],
-                        'json' => [
-                            'productName' => $item->get_product()->get_name(),
-                            'productSku' => $product->get_sku(),
-                            'productOptions' => $this->getProductOptions($product),
-                            'externalProductId' => (string)$item->get_product()->get_id(),
-                            'imageUrl' => $image !== false ? $image : null,
-                            'qty' => $item['quantity'],
-                            'price' => $product->get_price(),
-                            'rowTotal' => $item->get_total(),
-                        ]
+                        'json' => array_merge($data, $productData)
                     ]);
-                    $order->add_order_note(sprintf( __( 'Order Item %s was updated in TrackMage', 'trackmage' ), $product->get_sku()), false, true);
+                    $order->add_order_note(sprintf( __( 'Order Item %s was updated in TrackMage', 'trackmage' ), $item->get_name()), false, true);
                 } catch (ClientException $e) {
                     $response = $e->getResponse();
                     if (null !== $response && 404 === $response->getStatusCode()) {
@@ -244,6 +233,26 @@ class OrderItemSync implements EntitySyncInterface
             return $parent->get_name();
         }
         return $product->get_name();
+    }
+
+    /**
+     * @param WC_Product|false|null $product
+     * @return array
+     */
+    private function getProductInfo( $product ) {
+        if(!($product instanceof WC_Product)) return [];
+
+        $image = wp_get_attachment_image_url( $product->get_image_id(), 'thumbnail' );
+        $productId = $product->get_type() === 'variation' && $product->get_parent_id() ? $product->get_parent_id() : $product->get_id();
+        $trackmage_product_id = get_post_meta( $productId, ProductSync::TRACKMAGE_PRODUCT_ID_META_KEY, true );
+        return [
+            'productSku' => $product->get_sku(),
+            'productOptions' => $this->getProductOptions($product),
+            'imageUrl' => $image !== false ? $image : null,
+            'price' => $product->get_price(),
+            'externalProductId' => (string)$productId,
+            'product' => !empty($trackmage_product_id) ? '/products/' . $trackmage_product_id : null,
+        ];
     }
 
 }

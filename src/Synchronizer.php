@@ -205,11 +205,13 @@ class Synchronizer
         }
         try {
             $item = $this->getOrderItem($itemId);
-            $this->logger->info(self::TAG.'Try to sync product.', [
-                'product_id' => $item->get_product()->get_id(),
-                'force' => $force
-            ]);
-            $this->productSync->sync($item->get_product()->get_id(), $force);
+            if (false !== $product = $item->get_product()) {
+                $this->logger->info( self::TAG . 'Try to sync product.', [
+                    'product_id' => $product->get_id(),
+                    'force'      => $force
+                ] );
+                $this->productSync->sync( $product->get_id(), $force );
+            }
             $this->orderItemSync->sync($itemId, $force);
         } catch (\Exception $e) {
             $this->logger->warning(self::TAG.'Unable to sync remote order item', array_merge([
