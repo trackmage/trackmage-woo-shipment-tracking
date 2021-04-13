@@ -3,12 +3,10 @@
 namespace TrackMage\WordPress\Synchronization;
 
 use GuzzleHttp\Exception\ClientException;
-use Psr\Http\Message\ResponseInterface;
-use TrackMage\Client\Swagger\ApiException;
+use TrackMage\Client\TrackMageClient;
 use TrackMage\WordPress\Exception\InvalidArgumentException;
 use TrackMage\WordPress\Exception\SynchronizationException;
 use TrackMage\WordPress\Plugin;
-use TrackMage\WordPress\Repository\ShipmentRepository;
 
 class ShipmentSync implements EntitySyncInterface
 {
@@ -41,7 +39,6 @@ class ShipmentSync implements EntitySyncInterface
         $webhookId = get_option('trackmage_webhook', '');
 
         $client = Plugin::get_client();
-        $guzzleClient = $client->getGuzzleClient();
 
         $trackmage_order_id = get_post_meta( $orderId, '_trackmage_order_id', true );
 
@@ -60,17 +57,15 @@ class ShipmentSync implements EntitySyncInterface
                     if(isset($shipment['items'])){
                         $data['shipmentItems'] = $this->getShipmentItemsForSync($shipment['items'], $order->get_items());
                     }
-                    $response = $guzzleClient->post('/shipments', [
+                    $response = $client->post('/shipments', [
                         'headers' => [
                             'Content-Type' => 'application/ld+json'
                         ],
-                        'body' => \GuzzleHttp\json_encode($data)
+                        'json' => $data,
                     ]);
-                    return json_decode( $response->getBody()->getContents(), true );
+                    return TrackMageClient::item($response);
                 } catch (ClientException $e) {
-                    $contents = $e->getResponse()->getBody()->getContents();
-                    $data = \json_decode($contents, true);
-                    throw new SynchronizationException($data['hydra:description'], $e->getCode(), $e);
+                    throw new SynchronizationException(TrackMageClient::error($e), $e->getCode(), $e);
                 }
             } else {
                 try {
@@ -85,18 +80,16 @@ class ShipmentSync implements EntitySyncInterface
                     if ( isset( $shipment['items'] ) ) {
                         $data['shipmentItems'] = $this->getShipmentItemsForSync( $shipment['items'], $order->get_items() );
                     }
-                    $response = $guzzleClient->put( '/shipments/' . $trackmage_id, [
+                    $response = $client->put( '/shipments/' . $trackmage_id, [
                         'headers' => [
                             'Content-Type' => 'application/ld+json'
                         ],
-                        'body' => \GuzzleHttp\json_encode($data)
+                        'json' => $data,
                     ] );
 
-                    return json_decode( $response->getBody()->getContents(), true );
+                    return TrackMageClient::item($response);
                 } catch (ClientException $e) {
-                    $contents = $e->getResponse()->getBody()->getContents();
-                    $data = \json_decode($contents, true);
-                    throw new SynchronizationException($data['hydra:description'], $e->getCode(), $e);
+                    throw new SynchronizationException(TrackMageClient::error($e), $e->getCode(), $e);
                 }
             }
         } catch ( \Throwable $e ) {
@@ -107,11 +100,10 @@ class ShipmentSync implements EntitySyncInterface
     public function delete($id)
     {
         $client = Plugin::get_client();
-        $guzzleClient = $client->getGuzzleClient();
         try {
-            $guzzleClient->delete('/shipments/'.$id);
+            $client->delete('/shipments/'.$id);
         } catch ( ClientException $e ) {
-            throw new SynchronizationException('Unable to delete shipment: '.$e->getMessage(), $e->getCode(), $e);
+            throw new SynchronizationException('Unable to delete shipment: '.TrackMageClient::error($e), $e->getCode(), $e);
         } catch ( \Throwable $e ) {
             throw new SynchronizationException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
         }

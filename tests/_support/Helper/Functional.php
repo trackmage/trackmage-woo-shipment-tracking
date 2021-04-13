@@ -65,7 +65,7 @@ class Functional extends Module
         }
         $client = new TrackMageClient();
         $client->setHost($this->config['trackmageApi']);
-        $response = $client->getGuzzleClient()->get('/oauth/v2/token', [
+        $response = $client->get('/oauth/v2/token', [
             'query' => [
                 'client_id' => '18165608-5a8c-4535-803f-9704792cbbd9_trackmage-public-client',
                 'grant_type' => 'password',
@@ -73,10 +73,9 @@ class Functional extends Module
                 'password' => '123454',
             ],
         ]);
-        $contents = $response->getBody()->getContents();
-        $data = json_decode($contents, true);
+        $data = TrackMageClient::item($response);
         if (!isset($data['access_token'])) {
-            throw new ModuleException(__CLASS__, $contents);
+            throw new ModuleException(__CLASS__, $response->getBody()->getContents());
         }
         $client->setAccessToken($data['access_token']);
 
@@ -86,15 +85,15 @@ class Functional extends Module
     /**
      * @return array
      * @throws \Codeception\Exception\ModuleException
-     * @throws \TrackMage\Client\Swagger\ApiException
      */
     public function getOAuthKeySecretPair()
     {
         $client = $this->getAuthorizedClient();
-        $items = $client->getOauthClientApi()->getOauthClientCollection();
+        $response = $client->request('GET', '/oauth_clients');
+        $items = TrackMageClient::collection($response);
         foreach ($items as $item) {
             if (0 === strpos($item->getName(), 'wordpress-plugin')) {
-                return [$item->getPublicId()[0], $item->getSecret()];
+                return [$item['publicId'], $item['secret']];
             }
         }
         throw new ModuleException(__CLASS__, 'Unable to find oauth client uploaded from fixtures');

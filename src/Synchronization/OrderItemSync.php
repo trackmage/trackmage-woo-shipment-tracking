@@ -4,6 +4,7 @@ namespace TrackMage\WordPress\Synchronization;
 
 use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\ResponseInterface;
+use TrackMage\Client\TrackMageClient;
 use TrackMage\WordPress\Exception\InvalidArgumentException;
 use TrackMage\WordPress\Exception\SynchronizationException;
 use TrackMage\WordPress\Plugin;
@@ -86,7 +87,6 @@ class OrderItemSync implements EntitySyncInterface
         $webhookId = get_option('trackmage_webhook', '');
 
         $client = Plugin::get_client();
-        $guzzleClient = $client->getGuzzleClient();
         $product = $item->get_variation_id() > 0 ? wc_get_product($item->get_variation_id()) : $item->get_product();
         $productData = $this->getProductInfo($product);
         try {
@@ -100,11 +100,11 @@ class OrderItemSync implements EntitySyncInterface
                         'externalSourceSyncId' => (string)$orderItemId,
                         'externalSourceIntegration' => $this->integration
                     ];
-                    $response = $guzzleClient->post('/order_items', [
+                    $response = $client->post('/order_items', [
                         'query' => array('ignoreWebhookId' => $webhookId),
                         'json' => array_merge($data, $productData)
                     ]);
-                    $result = json_decode( $response->getBody()->getContents(), true );
+                    $result = TrackMageClient::item($response);
                     $trackmage_order_item_id = $result['id'];
                     wc_add_order_item_meta($orderItemId, '_trackmage_order_item_id', $trackmage_order_item_id, true )
                         || wc_update_order_item_meta($orderItemId, '_trackmage_order_item_id', $trackmage_order_item_id);
@@ -129,7 +129,7 @@ class OrderItemSync implements EntitySyncInterface
                         'qty' => $item['quantity'],
                         'rowTotal' => $item->get_total()
                     ];
-                    $guzzleClient->put('/order_items/'.$trackmage_order_item_id, [
+                    $client->put('/order_items/'.$trackmage_order_item_id, [
                         'query' => ['ignoreWebhookId' => $webhookId],
                         'json' => array_merge($data, $productData)
                     ]);
@@ -180,18 +180,15 @@ class OrderItemSync implements EntitySyncInterface
     private function lookupByCriteria(array $query, $orderId)
     {
         $client = Plugin::get_client();
-        $guzzleClient = $client->getGuzzleClient();
         $query['itemsPerPage'] = 1;
-        $response = $guzzleClient->get("/orders/{$orderId}/items", ['query' => $query]);
-        $content = $response->getBody()->getContents();
-        $data = json_decode($content, true);
-        return isset($data['hydra:member'][0]) ? $data['hydra:member'][0] : null;
+        $response = $client->get("/orders/{$orderId}/items", ['query' => $query]);
+        $items = TrackMageClient::collection($response);
+        return isset($items[0]) ? $items[0] : null;
     }
 
     public function delete($id)
     {
         $client = Plugin::get_client();
-        $guzzleClient = $client->getGuzzleClient();
 
         $trackmage_order_item_id = wc_get_order_item_meta( $id, '_trackmage_order_item_id', true );
         if (empty($trackmage_order_item_id)) {
@@ -200,9 +197,9 @@ class OrderItemSync implements EntitySyncInterface
         $webhookId = get_option('trackmage_webhook', '');
 
         try {
-            $guzzleClient->delete('/order_items/'.$trackmage_order_item_id, ['query' => ['ignoreWebhookId' => $webhookId]]);
+            $client->delete('/order_items/'.$trackmage_order_item_id, ['query' => ['ignoreWebhookId' => $webhookId]]);
         } catch ( ClientException $e ) {
-            throw new SynchronizationException('Unable to delete order item: '.$e->getMessage(), $e->getCode(), $e);
+            throw new SynchronizationException('Unable to delete order item: '.TrackMageClient::error($e), $e->getCode(), $e);
         } catch ( \Throwable $e ) {
             throw new SynchronizationException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
         } finally {

@@ -12,9 +12,9 @@ namespace TrackMage\WordPress\Admin;
 
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\RequestOptions;
+use TrackMage\Client\TrackMageClient;
 use TrackMage\WordPress\Plugin;
 use TrackMage\WordPress\Helper;
-use TrackMage\Client\Swagger\ApiException;
 
 /**
  * The Admin class.
@@ -214,9 +214,9 @@ class Admin {
 
         if (! empty($integration) && in_array($old_value, array_map(function($ws){ return $ws['id'];}, $workspaces), true)) {
             try {
-                $client->getGuzzleClient()->delete('/workflows/'.$integration, [RequestOptions::QUERY => ['deleteData'=>$deleteData]]);
-            } catch(\Exception $e){
-                // do nothing
+                $client->delete('/workflows/'.$integration, [RequestOptions::QUERY => ['deleteData'=>$deleteData]]);
+            } catch(ClientException $e){
+                error_log('Unable to delete workflow: '.TrackMageClient::error($e));
             }
         }
 
@@ -258,12 +258,10 @@ class Admin {
         ];
 
         try {
-            $response = $client->getGuzzleClient()->post('/workflows', ['json' => $workflow]);
-            $contents = $response->getBody()->getContents();
-            $data = json_decode($contents, true);
+            $response = $client->post('/workflows', ['json' => $workflow]);
+            $data = TrackMageClient::item($response);
         } catch( ClientException $e ) {
-            return $old_value;
-        } catch (ApiException $e) {
+            error_log('Unable to fetch workspaces: '.TrackMageClient::error($e));
             return $old_value;
         }
 
@@ -314,7 +312,7 @@ class Admin {
                 $integration = get_option('trackmage_integration', '');
                 if(!empty($integration)){
                     $client = Plugin::get_client();
-                    $client->getGuzzleClient()->delete('/workflows/' . $integration, [RequestOptions::QUERY => ['deleteData' => $deleteData]]);
+                    $client->delete('/workflows/' . $integration, [RequestOptions::QUERY => ['deleteData' => $deleteData]]);
                 }
 
                 $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
