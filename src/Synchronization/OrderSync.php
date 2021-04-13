@@ -4,6 +4,7 @@ namespace TrackMage\WordPress\Synchronization;
 
 use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\ResponseInterface;
+use TrackMage\Client\TrackMageClient;
 use TrackMage\WordPress\Exception\SynchronizationException;
 use TrackMage\WordPress\Helper;
 use TrackMage\WordPress\Plugin;
@@ -61,13 +62,12 @@ class OrderSync implements EntitySyncInterface
         $webhookId = get_option('trackmage_webhook', '');
         $trackmage_order_id = get_post_meta( $order_id, '_trackmage_order_id', true );
         $client = Plugin::get_client();
-        $guzzleClient = $client->getGuzzleClient();
 
         // Create order on TrackMage.
         try {
             if (empty($trackmage_order_id)) {
                 try {
-                    $response = $guzzleClient->post('/orders', [
+                    $response = $client->post('/orders', [
                         'query' => ['ignoreWebhookId' => $webhookId],
                         'json' => [
                             'workspace' => '/workspaces/' . $workspace,
@@ -84,7 +84,7 @@ class OrderSync implements EntitySyncInterface
                             'total' => (string)$order->get_total(),
                         ]
                     ]);
-                    $result = json_decode( $response->getBody()->getContents(), true );
+                    $result = TrackMageClient::item($response);
                     $trackmage_order_id = $result['id'];
                     add_post_meta( $order_id, '_trackmage_order_id', $trackmage_order_id, true )
                         || update_post_meta($order_id, '_trackmage_order_id', $trackmage_order_id);
@@ -104,7 +104,7 @@ class OrderSync implements EntitySyncInterface
                 }
             } else {
                 try {
-                    $guzzleClient->put("/orders/{$trackmage_order_id}", [
+                    $client->put("/orders/{$trackmage_order_id}", [
                         'query' => ['ignoreWebhookId' => $webhookId],
                         'json' => [
                             'orderStatus' => $this->getTrackMageStatus($order),
@@ -137,7 +137,6 @@ class OrderSync implements EntitySyncInterface
     public function delete($id)
     {
         $client = Plugin::get_client();
-        $guzzleClient = $client->getGuzzleClient();
 
         $trackmage_order_id = get_post_meta( $id, '_trackmage_order_id', true );
         if (empty($trackmage_order_id)) {
@@ -146,9 +145,9 @@ class OrderSync implements EntitySyncInterface
         $webhookId = get_option('trackmage_webhook', '');
 
         try {
-            $guzzleClient->delete('/orders/'.$trackmage_order_id, ['query' => ['ignoreWebhookId' => $webhookId]]);
+            $client->delete('/orders/'.$trackmage_order_id, ['query' => ['ignoreWebhookId' => $webhookId]]);
         } catch ( ClientException $e ) {
-            throw new SynchronizationException('Unable to delete order: '.$e->getMessage(), $e->getCode(), $e);
+            throw new SynchronizationException('Unable to delete order: '.TrackMageClient::error($e), $e->getCode(), $e);
         } catch ( \Throwable $e ) {
             throw new SynchronizationException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
         } finally {
@@ -190,12 +189,10 @@ class OrderSync implements EntitySyncInterface
     private function lookupByCriteria(array $query, $workspace)
     {
         $client = Plugin::get_client();
-        $guzzleClient = $client->getGuzzleClient();
         $query['itemsPerPage'] = 1;
-        $response = $guzzleClient->get("/workspaces/{$workspace}/orders", ['query' => $query]);
-        $content = $response->getBody()->getContents();
-        $data = json_decode($content, true);
-        return isset($data['hydra:member'][0]) ? $data['hydra:member'][0] : null;
+        $response = $client->get("/workspaces/{$workspace}/orders", ['query' => $query]);
+        $items = TrackMageClient::collection($response);
+        return isset($items[0]) ? $items[0] : null;
     }
 
     /**

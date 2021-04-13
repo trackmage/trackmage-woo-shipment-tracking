@@ -4,6 +4,7 @@ namespace TrackMage\WordPress\Synchronization;
 
 use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\ResponseInterface;
+use TrackMage\Client\TrackMageClient;
 use TrackMage\WordPress\Exception\SynchronizationException;
 use TrackMage\WordPress\Plugin;
 
@@ -63,14 +64,13 @@ class ProductSync implements EntitySyncInterface
         $webhookId = get_option('trackmage_webhook', '');
         $trackmage_product_id = get_post_meta( $productId, self::TRACKMAGE_PRODUCT_ID_META_KEY, true );
         $client = Plugin::get_client();
-        $guzzleClient = $client->getGuzzleClient();
 
         // Create product on TrackMage.
         try {
             if (empty($trackmage_product_id)) {
                 try {
                     $productImageUrl = $this->getProductImageUrl($product);
-                    $response = $guzzleClient->post('/products', [
+                    $response = $client->post('/products', [
                         'query' => ['ignoreWebhookId' => $webhookId],
                         'json' => [
                             'team' => $team,
@@ -82,7 +82,7 @@ class ProductSync implements EntitySyncInterface
                             'imageUrl' => $productImageUrl !== false ? $productImageUrl : null,
                         ]
                     ]);
-                    $result = json_decode( $response->getBody()->getContents(), true );
+                    $result = TrackMageClient::item($response);
                     $trackmage_product_id = $result['id'];
                     add_post_meta( $productId, self::TRACKMAGE_PRODUCT_ID_META_KEY, $trackmage_product_id, true )
                     || update_post_meta($productId, self::TRACKMAGE_PRODUCT_ID_META_KEY, $trackmage_product_id);
@@ -102,7 +102,7 @@ class ProductSync implements EntitySyncInterface
             } else {
                 try {
                     $productImageUrl = $this->getProductImageUrl($product);
-                    $guzzleClient->put("/products/{$trackmage_product_id}", [
+                    $client->put("/products/{$trackmage_product_id}", [
                         'query' => ['ignoreWebhookId' => $webhookId],
                         'json' => [
                             'name' => $product->get_name(),
@@ -130,7 +130,6 @@ class ProductSync implements EntitySyncInterface
 
     public function delete( $id ) {
         $client = Plugin::get_client();
-        $guzzleClient = $client->getGuzzleClient();
 
         $trackmage_product_id = get_post_meta( $id, self::TRACKMAGE_PRODUCT_ID_META_KEY, true );
         if (empty($trackmage_product_id)) {
@@ -139,9 +138,9 @@ class ProductSync implements EntitySyncInterface
         $webhookId = get_option('trackmage_webhook', '');
 
         try {
-            $guzzleClient->delete('/products/'.$trackmage_product_id, ['query' => ['ignoreWebhookId' => $webhookId]]);
+            $client->delete('/products/'.$trackmage_product_id, ['query' => ['ignoreWebhookId' => $webhookId]]);
         } catch ( ClientException $e ) {
-            throw new SynchronizationException('Unable to delete product: '.$e->getMessage(), $e->getCode(), $e);
+            throw new SynchronizationException('Unable to delete product: '.TrackMageClient::error($e), $e->getCode(), $e);
         } catch ( \Throwable $e ) {
             throw new SynchronizationException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
         } finally {
@@ -183,12 +182,10 @@ class ProductSync implements EntitySyncInterface
     private function lookupByCriteria(array $query)
     {
         $client = Plugin::get_client();
-        $guzzleClient = $client->getGuzzleClient();
         $query['itemsPerPage'] = 1;
-        $response = $guzzleClient->get("/products", ['query' => $query]);
-        $content = $response->getBody()->getContents();
-        $data = json_decode($content, true);
-        return isset($data['hydra:member'][0]) ? $data['hydra:member'][0] : null;
+        $response = $client->get("/products", ['query' => $query]);
+        $items = TrackMageClient::collection($response);
+        return isset($items[0]) ? $items[0] : null;
     }
 
     /**

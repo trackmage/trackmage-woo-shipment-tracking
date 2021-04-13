@@ -2,6 +2,10 @@ sudo: required
 
 language: php
 
+branches:
+  only:
+    - master
+
 matrix:
   include:
     - php: '5.6'

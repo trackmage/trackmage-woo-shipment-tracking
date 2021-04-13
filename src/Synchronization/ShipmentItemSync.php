@@ -3,12 +3,10 @@
 namespace TrackMage\WordPress\Synchronization;
 
 use GuzzleHttp\Exception\ClientException;
-use Psr\Http\Message\ResponseInterface;
+use TrackMage\Client\TrackMageClient;
 use TrackMage\WordPress\Exception\InvalidArgumentException;
 use TrackMage\WordPress\Exception\SynchronizationException;
 use TrackMage\WordPress\Plugin;
-use TrackMage\WordPress\Repository\ShipmentItemRepository;
-use TrackMage\WordPress\Repository\ShipmentRepository;
 
 class ShipmentItemSync implements EntitySyncInterface
 {
@@ -34,32 +32,23 @@ class ShipmentItemSync implements EntitySyncInterface
         }
 
         $client = Plugin::get_client();
-        $guzzleClient = $client->getGuzzleClient();
         try {
             if (empty($trackmage_id)) {
-                try {
-                    $response = $guzzleClient->post('/shipment_items', [
-                        'json' => [
-                            'shipment' => '/shipments/' . $trackmageShipmentId,
-                            'orderItem' => '/order_items/'.$trackmageOrderItemId,
-                            'qty' => (int)$shipmentItem['qty']
-                        ]
-                    ]);
-                    return json_decode( $response->getBody()->getContents(), true );
-                } catch (ClientException $e) {
-                    throw $e;
-                }
+                $response = $client->post('/shipment_items', [
+                    'json' => [
+                        'shipment' => '/shipments/' . $trackmageShipmentId,
+                        'orderItem' => '/order_items/'.$trackmageOrderItemId,
+                        'qty' => (int)$shipmentItem['qty']
+                    ]
+                ]);
+                return TrackMageClient::item($response);
             } else {
-                try {
-                    $response = $guzzleClient->put('/shipment_items/'.$trackmage_id, [
-                        'json' => [
-                            'qty' => (int)$shipmentItem['qty'],
-                        ]
-                    ]);
-                    return json_decode( $response->getBody()->getContents(), true );
-                } catch (ClientException $e) {
-                    throw $e;
-                }
+                $response = $client->put('/shipment_items/'.$trackmage_id, [
+                    'json' => [
+                        'qty' => (int)$shipmentItem['qty'],
+                    ]
+                ]);
+                return TrackMageClient::item($response);
             }
         } catch ( \Throwable $e ) {
             throw new SynchronizationException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
@@ -70,16 +59,15 @@ class ShipmentItemSync implements EntitySyncInterface
     public function delete($id)
     {
         $client = Plugin::get_client();
-        $guzzleClient = $client->getGuzzleClient();
 
         if (empty($id)) {
             return;
         }
 
         try {
-            $guzzleClient->delete('/shipment_items/'.$id );
+            $client->delete('/shipment_items/'.$id );
         } catch ( ClientException $e ) {
-            throw new SynchronizationException('Unable to delete shipmentItem: '.$e->getMessage(), $e->getCode(), $e);
+            throw new SynchronizationException('Unable to delete shipmentItem: '.TrackMageClient::error($e), $e->getCode(), $e);
         } catch ( \Throwable $e ) {
             throw new SynchronizationException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
         }

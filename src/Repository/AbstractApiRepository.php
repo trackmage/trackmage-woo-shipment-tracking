@@ -5,7 +5,7 @@ namespace TrackMage\WordPress\Repository;
 
 
 use GuzzleHttp\Exception\ClientException;
-use TrackMage\Client\Swagger\ApiException;
+use TrackMage\Client\TrackMageClient;
 use TrackMage\WordPress\Plugin;
 use TrackMage\WordPress\Synchronization\EntitySyncInterface;
 
@@ -30,12 +30,10 @@ class AbstractApiRepository {
     {
         try {
             $client   = Plugin::get_client();
-            $response = $client->getGuzzleClient()->get( $this->apiEndpoint . "/{$id}");
-            $contents = $response->getBody()->getContents();
-            return json_decode( $contents, true );
-        } catch ( ApiException $e ) {
-            return null;
+            $response = $client->get( $this->apiEndpoint . "/{$id}");
+            return TrackMageClient::item($response);
         } catch ( ClientException $e ) {
+            error_log('Unable to find: '.TrackMageClient::error($e));
             return null;
         }
     }
@@ -55,15 +53,12 @@ class AbstractApiRepository {
                 $criteria['page'] = 1;
                 $criteria['itemsPerPage'] = $limit;
             }
-            $response = $client->getGuzzleClient()->get( $this->apiEndpoint, [
+            $response = $client->get( $this->apiEndpoint, [
                 'query' => $criteria
             ] );
-            $contents = $response->getBody()->getContents();
-            $data     = json_decode( $contents, true );
-            return isset( $data['hydra:member'] ) ? $data['hydra:member'] : [];
-        } catch ( ApiException $e ) {
-            return null;
+            return TrackMageClient::collection($response);
         } catch ( ClientException $e ) {
+            error_log('Unable to findBy: '.TrackMageClient::error($e));
             return null;
         }
     }
