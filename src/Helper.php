@@ -10,8 +10,6 @@ namespace TrackMage\WordPress;
 
 use GuzzleHttp\Exception\ClientException;
 use TrackMage\Client\TrackMageClient;
-use TrackMage\Client\Swagger\ApiException;
-use TrackMage\WordPress\Exception\InvalidArgumentException;
 use TrackMage\WordPress\Exception\RuntimeException;
 
 /**
@@ -46,14 +44,11 @@ class Helper {
         try {
             $client = new TrackMageClient( $client_id, $client_secret );
             $client->setHost(TRACKMAGE_API_DOMAIN);
-            $client->getGuzzleClient()->get('/workspaces');
+            $client->get('/workspaces');
             return self::CREDENTIALS_VALID;
         } catch( ClientException $e ) {
+            error_log('Unable to check credentials: '.TrackMageClient::error($e));
             if ($e->getResponse()->getStatusCode() === 401) {
-                return self::CREDENTIALS_INVALID;
-            }
-        } catch( ApiException $e ) {
-            if ( 'Authorization error' === $e->getMessage() ) {
                 return self::CREDENTIALS_INVALID;
             }
         }
@@ -72,10 +67,8 @@ class Helper {
         if ( false === $workspaces || $refresh) {
             try {
                 $client   = Plugin::get_client();
-                $response = $client->getGuzzleClient()->get( '/workspaces' );
-                $contents = $response->getBody()->getContents();
-                $data     = json_decode( $contents, true );
-                $result   = isset( $data['hydra:member'] ) ? $data['hydra:member'] : [];
+                $response = $client->get( '/workspaces' );
+                $result = TrackMageClient::collection($response);
                 $workspaces = [];
 
                 foreach ( $result as $workspace ) {
@@ -86,9 +79,8 @@ class Helper {
                     ];
                 }
                 set_transient( 'trackmage_workspaces', $workspaces, 3600 );
-            } catch ( ApiException $e ) {
-                return false;
             } catch ( ClientException $e ) {
+                error_log('Unable to fetch workspaces: '.TrackMageClient::error($e));
                 return false;
             }
         }
@@ -102,22 +94,24 @@ class Helper {
      * @return array List of carriers.
      */
     public static function get_shipment_carriers() {
-        $carriers = get_transient( 'trackmage_carriers' );
+        $carriers = get_transient('trackmage_carriers');
 
         if ( false === $carriers ) {
             try {
                 $client = Plugin::get_client();
-                $result = $client->getCarrierApi()->getCarrierCollection();
+                $response = $client->get('/public/carriers');
+                $result = TrackMageClient::collection($response);
 
                 $carriers = [];
                 foreach ( $result as $carrier ) {
                     $carriers[] = [
-                        'code' => $carrier->getCode(),
-                        'name' => $carrier->getName(),
+                        'code' => $carrier['code'],
+                        'name' => $carrier['name'],
                     ];
                 }
                 set_transient( 'trackmage_carriers', $carriers, 0 );
-            } catch( ApiException $e ) {
+            } catch(ClientException $e) {
+                error_log('Unable to fetch carriers: '.TrackMageClient::error($e));
                 $carriers = [];
             }
         }
@@ -137,20 +131,17 @@ class Helper {
         $aliases = [];
         if($cachedAliases && isset($cachedAliases[$workspaceId])) {
             $aliases = $cachedAliases[$workspaceId];
-        }elseif(!empty($workspaceId) && self::check_credentials() === self::CREDENTIALS_VALID){
+        } elseif (!empty($workspaceId) && self::check_credentials() === self::CREDENTIALS_VALID){
             try {
                 $client = Plugin::get_client();
-                $guzzleClient = $client->getGuzzleClient();
-                $response = $guzzleClient->get("/workspaces/{$workspaceId}/statuses?entity=orders");
-                $content = $response->getBody()->getContents();
-                $data = json_decode($content, true);
-                $aliases = array_column($data['hydra:member'], 'title', 'code');
+                $response = $client->get("/workspaces/{$workspaceId}/statuses?entity=orders");
+                $statuses = TrackMageClient::collection($response);
+                $aliases = array_column($statuses, 'title', 'code');
                 $cachedAliases[$workspaceId] = $aliases;
                 set_transient('trackmage_order_statuses', $cachedAliases, 3600);
-            } catch( ApiException $e ) {
-
+            } catch( ClientException $e ) {
+                error_log('Unable to fetch statuses: '.TrackMageClient::error($e));
             }
-
         }
         return $aliases;
     }
@@ -194,23 +185,21 @@ class Helper {
         $workspaceId = get_option('trackmage_workspace');
 
         try {
-            $response = $client->getGuzzleClient()->get( '/workspaces/' . $workspaceId );
-            $contents = $response->getBody()->getContents();
-            $data = json_decode( $contents, true );
+            $response = $client->get( '/workspaces/' . $workspaceId );
+            $data = TrackMageClient::item($response);
             $trackingPageId = isset($data['defaultTrackingPage']) ? explode('/tracking_pages/', $data['defaultTrackingPage'])[1] : null;
             if ($trackingPageId === null || $trackingPageId === '') {
                 error_log(sprintf('defaultTrackingPage is empty for workspace %s', $workspaceId));
                 return null;
             }
-            $response = $client->getGuzzleClient()->post( '/generate_tracking_page_link', ['json' => [
+            $response = $client->post( '/generate_tracking_page_link', ['json' => [
                 'trackingPageId' => $trackingPageId,
                 'filter' => $filter,
             ]]);
-            $content = $response->getBody()->getContents();
-            $data = json_decode($content, true);
+            $data = TrackMageClient::item($response);
             return isset($data['link']) ? $data['link']: null;
-        } catch( \Exception $e ) {
-            error_log('Error in getTrackingPageLink: ', $e->getMessage());
+        } catch( ClientException $e ) {
+            error_log('Error in getTrackingPageLink: ', TrackMageClient::error($e));
         }
         return null;
     }

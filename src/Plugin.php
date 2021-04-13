@@ -16,7 +16,6 @@ use TrackMage\WordPress\Admin\Orders;
 use TrackMage\WordPress\Synchronization\ProductSync;
 use TrackMage\WordPress\Webhook\Endpoint;
 use TrackMage\Client\TrackMageClient;
-use TrackMage\Client\Swagger\ApiException;
 use TrackMage\WordPress\Repository\EntityRepositoryInterface;
 use TrackMage\WordPress\Repository\LogRepository;
 use TrackMage\WordPress\Repository\ShipmentItemRepository;
@@ -127,16 +126,9 @@ class Plugin {
      */
     public static function get_client($config = []) {
         if ( null === self::$client ) {
-            self::$client = new TrackMageClient();
-
-            try {
-                $client_id = isset( $config['client_id'] ) ? $config['client_id'] : get_option( 'trackmage_client_id', '' );
-                $client_secret = isset( $config['client_secret'] ) ? $config['client_secret'] : get_option( 'trackmage_client_secret', '' );
-                self::$client = new TrackMageClient( $client_id, $client_secret );
-                self::$client->setHost( TRACKMAGE_API_DOMAIN );
-            } catch( ApiException $e ) {
-                return null;
-            }
+            $client_id = isset( $config['client_id'] ) ? $config['client_id'] : get_option( 'trackmage_client_id', '' );
+            $client_secret = isset( $config['client_secret'] ) ? $config['client_secret'] : get_option( 'trackmage_client_secret', '' );
+            self::$client = new TrackMageClient( $client_id, $client_secret, null, TRACKMAGE_API_DOMAIN );
         }
 
         return self::$client;
