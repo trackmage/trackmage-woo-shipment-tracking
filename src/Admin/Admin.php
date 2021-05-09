@@ -261,7 +261,7 @@ class Admin {
             $response = $client->post('/workflows', ['json' => $workflow]);
             $data = TrackMageClient::item($response);
         } catch( ClientException $e ) {
-            error_log('Unable to fetch workspaces: '.TrackMageClient::error($e));
+            error_log('Unable to create webhook: '.TrackMageClient::error($e));
             return $old_value;
         }
 
