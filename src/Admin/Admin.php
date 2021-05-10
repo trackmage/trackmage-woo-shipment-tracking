@@ -56,7 +56,7 @@ class Admin {
             __('TrackMage', 'trackmage'),
             __('TrackMage', 'trackmage'),
             'manage_options',
-            get_transient( 'trackmage-wizard-notice' )?'trackmage-wizard':'trackmage-settings',
+            get_transient( 'trackmage-wizard-notice' ) ? 'trackmage-wizard' : 'trackmage-settings',
             '',
             TRACKMAGE_URL . 'assets/dist/images/trackmage-icon-white-16x16.png',
             30
@@ -67,7 +67,7 @@ class Admin {
             __('Settings', 'trackmage'),
             __('Settings', 'trackmage'),
             'manage_options',
-            get_transient( 'trackmage-wizard-notice' )?'trackmage-wizard':'trackmage-settings',
+            get_transient( 'trackmage-wizard-notice' ) ? 'trackmage-wizard' : 'trackmage-settings',
             [$this, 'renderSettings']
         );
 
@@ -268,6 +268,9 @@ class Admin {
         if (false !== $idx = array_search($value, array_column($workspaces, 'id'))) {
             update_option('trackmage_team', $workspaces[$idx]['team']);
         }
+
+        Helper::unlinkAllOrders();
+        Helper::unlinkAllProducts();
 
         update_option( 'trackmage_order_status_aliases', [] );
         update_option('trackmage_webhook', $data['id']);
