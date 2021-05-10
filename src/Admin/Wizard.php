@@ -227,6 +227,11 @@ class Wizard {
                     ]);
                 }
                 try {
+                    $oldWsID = get_option( 'trackmage_workspace', null );
+                    if (null !== $oldWsID && $oldWsID !== $workspaceId) {
+                        Helper::unlinkAllOrders();
+                        Helper::unlinkAllProducts();
+                    }
                     update_option( 'trackmage_workspace', $workspaceId );
                     $workspaces = Helper::get_workspaces();
                     if (false !== $idx = array_search($workspaceId, array_column($workspaces, 'id'))) {
