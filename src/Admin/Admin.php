@@ -24,8 +24,6 @@ use TrackMage\WordPress\Helper;
 class Admin {
 
     /**
-     * The constructor.
-     *
      * @since 0.1.0
      */
     public function __construct() {
