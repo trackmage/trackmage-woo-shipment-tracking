@@ -52,6 +52,7 @@ before_install:
   - sudo sh -c "echo 'precedence ::ffff:0:0/96 100' >> /etc/gai.conf"
   - echo '{"ipv6":true,"fixed-cidr-v6":"2001:db8:1::/64"}' | sudo tee /etc/docker/daemon.json
   - sudo service docker restart
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - composer self-update --1
   - composer config -g repo.packagist composer https://packagist.phpcomposer.com
   # Disable services enabled by default
