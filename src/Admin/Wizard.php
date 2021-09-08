@@ -164,6 +164,11 @@ class Wizard {
         $step = isset($_POST['step']) && in_array($step = sanitize_key($_POST['step']), $availableSteps, true) ? $step : $availableSteps[0];
         $data = '';
         if(file_exists(TRACKMAGE_VIEWS_DIR . "wizard/step-{$step}.php")) {
+            if ($step !== 'credentials') {
+                $clientId = isset($_POST['trackmage_client_id']) ? sanitize_key($_POST['trackmage_client_id']) : '';
+                $clientSecret = isset($_POST['trackmage_client_secret']) ? sanitize_key($_POST['trackmage_client_secret']) : '';
+                $credentials = Helper::check_credentials($clientId, $clientSecret);
+            }
             ob_start();
             include( TRACKMAGE_VIEWS_DIR . "wizard/step-{$step}.php" );
             $data = ob_get_clean();
