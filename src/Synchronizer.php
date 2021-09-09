@@ -10,7 +10,9 @@ use TrackMage\WordPress\Repository\BackgroundTaskRepository;
 use TrackMage\WordPress\Synchronization\OrderItemSync;
 use TrackMage\WordPress\Synchronization\OrderSync;
 use TrackMage\WordPress\Synchronization\ProductSync;
+use WC_Data_Store;
 use WC_Order_Item;
+use WC_Order_Factory;
 
 class Synchronizer
 {
@@ -30,7 +32,7 @@ class Synchronizer
     private $productSync;
 
     public function __construct(LoggerInterface $logger, OrderSync $orderSync, OrderItemSync $orderItemSync,
-                                ProductSync $productSync, BackgroundTaskRepository $backgroundTaskRepository)
+        ProductSync $productSync, BackgroundTaskRepository $backgroundTaskRepository)
     {
         $this->logger = $logger;
         $this->orderSync = $orderSync;
@@ -50,6 +52,7 @@ class Synchronizer
 
     private function bindEvents()
     {
+        if(get_transient('trackmage-wizard-notice')) return;
         add_action( 'woocommerce_order_status_changed', [ $this, 'syncOrder' ], 10, 3 );
         add_action( 'woocommerce_new_order', [ $this, 'syncOrder' ], 10, 1 );
         add_action( 'woocommerce_update_order', [ $this, 'syncOrder' ], 10, 1 );
@@ -119,7 +122,8 @@ class Synchronizer
             $this->orderSync->sync($orderId, $force);
 
             $order = wc_get_order( $orderId );
-            foreach ($order->get_items() as $item) {
+            $items = WC_Data_Store::load( 'order' )->read_items($order, 'line_item');
+            foreach ($items as $item) {
                 $this->syncOrderItem($item->get_id(), $force);
             }
         } catch (RuntimeException $e) {
@@ -204,7 +208,14 @@ class Synchronizer
             return;
         }
         try {
-            $item = $this->getOrderItem($itemId);
+            $item = WC_Order_Factory::get_order_item( $itemId ); //$this->getOrderItem($itemId);
+            if(in_array($item, array(null, false), true)) {
+                $this->logger->info(self::TAG.'Order item was not found.', [
+                    'item_id' => $itemId,
+                    'force' => $force
+                ]);
+                return;
+            }
             if (false !== $product = $item->get_product()) {
                 $this->logger->info( self::TAG . 'Try to sync product.', [
                     'product_id' => $product->get_id(),
