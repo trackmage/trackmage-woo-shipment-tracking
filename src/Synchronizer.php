@@ -12,7 +12,6 @@ use TrackMage\WordPress\Synchronization\OrderSync;
 use TrackMage\WordPress\Synchronization\ProductSync;
 use WC_Data_Store;
 use WC_Order_Factory;
-use WC_Order_Item;
 use WC_Order_Item_Product;
 
 class Synchronizer
