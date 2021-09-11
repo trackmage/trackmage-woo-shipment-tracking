@@ -11,8 +11,9 @@ use TrackMage\WordPress\Synchronization\OrderItemSync;
 use TrackMage\WordPress\Synchronization\OrderSync;
 use TrackMage\WordPress\Synchronization\ProductSync;
 use WC_Data_Store;
-use WC_Order_Item;
 use WC_Order_Factory;
+use WC_Order_Item;
+use WC_Order_Item_Product;
 
 class Synchronizer
 {
@@ -208,11 +209,11 @@ class Synchronizer
             return;
         }
         try {
-            $item = WC_Order_Factory::get_order_item( $itemId ); //$this->getOrderItem($itemId);
-            if(in_array($item, array(null, false), true)) {
-                $this->logger->info(self::TAG.'Order item was not found.', [
+            $item = WC_Order_Factory::get_order_item( $itemId );
+            if(in_array($item, array(null, false), true) || !($item instanceof WC_Order_Item_Product)) {
+                $this->logger->info(self::TAG.'Order item was not found or it is not instance of WC_Order_Item_Product', [
                     'item_id' => $itemId,
-                    'force' => $force
+                    'force' => $force,
                 ]);
                 return;
             }
@@ -388,23 +389,5 @@ class Synchronizer
         }
 
         return [];
-    }
-
-    /**
-     * @param int $orderItemId
-     *
-     * @return WC_Order_Item|\WC_Order_Item_Product
-     * @throws \Exception
-     */
-    private function getOrderItem($orderItemId)
-    {
-        $orderId = wc_get_order_id_by_order_item_id($orderItemId);
-        $order = wc_get_order($orderId);
-        foreach( $order->get_items() as $id => $item ) {
-            if ($id === $orderItemId) {
-                return $item;
-            }
-        }
-        return null;
     }
 }
