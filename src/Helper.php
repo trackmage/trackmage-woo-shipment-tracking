@@ -40,17 +40,16 @@ class Helper {
         if(empty( $client_id ) || empty( $client_secret )){
             return self::CREDENTIALS_INVALID;
         }
-
+        $key = '_trackmage_credentials_valid_'.md5($client_id.$client_secret);
         try {
-            $client = new TrackMageClient( $client_id, $client_secret );
-            $client->setHost(TRACKMAGE_API_DOMAIN);
-            $client->get('/workspaces');
+            if (!get_transient($key)) {
+                $client = new TrackMageClient( $client_id, $client_secret, null, TRACKMAGE_API_DOMAIN);
+                $client->validateCredentials();
+                set_transient($key, true);
+            }
             return self::CREDENTIALS_VALID;
         } catch( ClientException $e ) {
             error_log('Unable to check credentials: '.TrackMageClient::error($e));
-            if ($e->getResponse()->getStatusCode() === 401) {
-                return self::CREDENTIALS_INVALID;
-            }
         }
         return self::CREDENTIALS_ERROR;
     }

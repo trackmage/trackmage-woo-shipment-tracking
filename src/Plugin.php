@@ -133,7 +133,8 @@ class Plugin {
         if ( null === self::$client ) {
             $client_id = isset( $config['client_id'] ) ? $config['client_id'] : get_option( 'trackmage_client_id', '' );
             $client_secret = isset( $config['client_secret'] ) ? $config['client_secret'] : get_option( 'trackmage_client_secret', '' );
-            self::$client = new TrackMageClient( $client_id, $client_secret, null, TRACKMAGE_API_DOMAIN );
+            $mw = RemoveTransientOnErrorMiddleware::get($client_id, $client_secret);
+            self::$client = new TrackMageClient( $client_id, $client_secret, null, TRACKMAGE_API_DOMAIN, null, $mw);
         }
 
         return self::$client;
