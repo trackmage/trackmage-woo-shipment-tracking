@@ -250,7 +250,7 @@ class Helper {
         $shipmentRepo = Plugin::instance()->getShipmentRepo();
         $shipmentItemRepo = Plugin::instance()->getShipmentItemsRepo();
         $order = wc_get_order($orderId);
-        $orderItems = $order->get_items();
+        $orderItems = self::getOrderItems($order);
         $shipments = $shipmentRepo->findBy(['orderNumbers' => $order->get_order_number()]);
         $shipmentItems = $shipmentItemRepo->findBy(['orderNumber.id' => $trackmageOrderId]);
         foreach ($shipments as &$shipment) {
@@ -272,7 +272,7 @@ class Helper {
         $shipmentRepo = Plugin::instance()->getShipmentRepo();
         $shipmentItemRepo = Plugin::instance()->getShipmentItemsRepo();
         $order = wc_get_order($orderId);
-        $orderItems = $order->get_items();
+        $orderItems = self::getOrderItems($order);
         $shipment = $shipmentRepo->find($id);
         $shipmentItems = $shipmentItemRepo->findBy(['shipment.id' => $shipment['id']]);
         $shipment['items'] = self::mapOrderItemsToShipmentItem($orderItems, $shipmentItems);
@@ -670,5 +670,32 @@ class Helper {
             "select order_item_id from {$wpdb->prefix}woocommerce_order_itemmeta where order_item_id IN (select order_item_id from {$wpdb->prefix}wc_order_product_lookup where product_id = {$productId} OR variation_id = {$productId}) AND meta_key = '_trackmage_order_item_id'",
             ARRAY_A);
         return $results;
+    }
+
+    /**
+     * @param int $orderItemId
+     * @return \WC_Order_Item_Product
+     */
+    public static function getOrderItem($orderItemId)
+    {
+        $item = \WC_Order_Factory::get_order_item( $orderItemId );
+        return $item instanceof \WC_Order_Item_Product ? $item : null;
+    }
+
+    /**
+     * @return \WC_Order_Item_Product[]
+     */
+    public static function getOrderItems(\WC_Order $order)
+    {
+        $items = \WC_Data_Store::load( 'order' )->read_items($order, 'line_item');
+        /** @var \WC_Order_Item_Product[] $values */
+        $values = array_values(array_filter($items, static function($item) {
+            return $item instanceof \WC_Order_Item_Product;
+        }));
+        $result = [];
+        foreach ($values as $item) {
+            $result[$item->get_id()] = $item;
+        }
+        return $result;
     }
 }

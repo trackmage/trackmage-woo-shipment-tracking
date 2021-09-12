@@ -106,7 +106,7 @@ class Ajax {
         }
         $results = [];
 
-        foreach ($order->get_items() as $id => $item) {
+        foreach (Helper::getOrderItems($order) as $id => $item) {
             array_push($results, [
                 'id' => $id,
                 'name' => $item->get_name(),
@@ -159,7 +159,7 @@ class Ajax {
         }
         $orderId = absint($_POST['orderId']);
         $order = wc_get_order($orderId);
-        $orderItems = $order->get_items();
+        $orderItems = Helper::getOrderItems($order);
         $shipmentId = sanitize_key($_POST['id']);
         $shipment = Helper::geShipmentWithJoinedItems($shipmentId, $orderId);
 
@@ -227,7 +227,7 @@ class Ajax {
 
         // Order data.
         $order               = wc_get_order($orderId);
-        $orderItems          = $order->get_items();
+        $orderItems          = Helper::getOrderItems($order);
         $orderNotes          = [];
 
         try {
@@ -333,7 +333,7 @@ class Ajax {
 
         // Order data.
         $order               = wc_get_order($orderId);
-        $orderItems          = $order->get_items();
+        $orderItems          = Helper::getOrderItems($order);
         try {
             $mergedItems = [];
             foreach ($shipment['items'] as $item) {
@@ -408,7 +408,7 @@ class Ajax {
 
         // Order data.
         $order               = wc_get_order($orderId);
-        $orderItems          = $order->get_items();
+        $orderItems          = Helper::getOrderItems($order);
 
         /** @var \WP_User $user */
         $user = wp_get_current_user();
