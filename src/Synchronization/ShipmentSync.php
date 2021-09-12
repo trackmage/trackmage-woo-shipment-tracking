@@ -6,6 +6,7 @@ use GuzzleHttp\Exception\ClientException;
 use TrackMage\Client\TrackMageClient;
 use TrackMage\WordPress\Exception\InvalidArgumentException;
 use TrackMage\WordPress\Exception\SynchronizationException;
+use TrackMage\WordPress\Helper;
 use TrackMage\WordPress\Plugin;
 
 class ShipmentSync implements EntitySyncInterface
@@ -55,7 +56,7 @@ class ShipmentSync implements EntitySyncInterface
                         'orders' => ['/orders/'.$trackmage_order_id],
                     ];
                     if(isset($shipment['items'])){
-                        $data['shipmentItems'] = $this->getShipmentItemsForSync($shipment['items'], $order->get_items());
+                        $data['shipmentItems'] = $this->getShipmentItemsForSync($shipment['items'], Helper::getOrderItems($order));
                     }
                     $response = $client->post('/shipments', [
                         'headers' => [
@@ -78,7 +79,7 @@ class ShipmentSync implements EntitySyncInterface
                         $data['originCarrier'] = $shipment['carrier'] === 'auto' ? null : $shipment['carrier'];
                     }
                     if ( isset( $shipment['items'] ) ) {
-                        $data['shipmentItems'] = $this->getShipmentItemsForSync( $shipment['items'], $order->get_items() );
+                        $data['shipmentItems'] = $this->getShipmentItemsForSync( $shipment['items'], Helper::getOrderItems($order) );
                     }
                     $response = $client->put( '/shipments/' . $trackmage_id, [
                         'headers' => [

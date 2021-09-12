@@ -10,9 +10,6 @@ use TrackMage\WordPress\Repository\BackgroundTaskRepository;
 use TrackMage\WordPress\Synchronization\OrderItemSync;
 use TrackMage\WordPress\Synchronization\OrderSync;
 use TrackMage\WordPress\Synchronization\ProductSync;
-use WC_Data_Store;
-use WC_Order_Factory;
-use WC_Order_Item_Product;
 
 class Synchronizer
 {
@@ -122,8 +119,7 @@ class Synchronizer
             $this->orderSync->sync($orderId, $force);
 
             $order = wc_get_order( $orderId );
-            $items = WC_Data_Store::load( 'order' )->read_items($order, 'line_item');
-            foreach ($items as $item) {
+            foreach (Helper::getOrderItems($order) as $item) {
                 $this->syncOrderItem($item->get_id(), $force);
             }
         } catch (RuntimeException $e) {
@@ -163,7 +159,7 @@ class Synchronizer
             return;
         }
         $order = wc_get_order( $orderId );
-        foreach ($order->get_items() as $item) { //woocommerce_delete_order_item is not fired on order delete
+        foreach (Helper::getOrderItems($order) as $item) { //woocommerce_delete_order_item is not fired on order delete
             $this->deleteOrderItem($item->get_id());
         }
 
@@ -184,7 +180,7 @@ class Synchronizer
             return;
         }
         $order = wc_get_order( $orderId );
-        foreach ($order->get_items() as $item) {
+        foreach (Helper::getOrderItems($order) as $item) {
             $this->unlinkOrderItem($item->get_id());
         }
         try {
@@ -208,9 +204,9 @@ class Synchronizer
             return;
         }
         try {
-            $item = WC_Order_Factory::get_order_item( $itemId );
-            if(in_array($item, array(null, false), true) || !($item instanceof WC_Order_Item_Product)) {
-                $this->logger->info(self::TAG.'Order item was not found or it is not instance of WC_Order_Item_Product', [
+            $item = Helper::getOrderItem($itemId);
+            if (null === $item) {
+                $this->logger->info(self::TAG.'Order item was not found', [
                     'item_id' => $itemId,
                     'force' => $force,
                 ]);

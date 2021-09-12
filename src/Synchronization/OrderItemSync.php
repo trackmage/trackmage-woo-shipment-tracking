@@ -7,8 +7,8 @@ use Psr\Http\Message\ResponseInterface;
 use TrackMage\Client\TrackMageClient;
 use TrackMage\WordPress\Exception\InvalidArgumentException;
 use TrackMage\WordPress\Exception\SynchronizationException;
+use TrackMage\WordPress\Helper;
 use TrackMage\WordPress\Plugin;
-use WC_Order;
 use WC_Order_Item;
 use WC_Product;
 use WC_Product_Attribute;
@@ -49,31 +49,16 @@ class OrderItemSync implements EntitySyncInterface
         return $this->changesDetector;
     }
 
-    /**
-     * @param int $orderItemId
-     * @param WC_Order $order
-     * @return WC_Order_Item|\WC_Order_Item_Product
-     */
-    private function getOrderItem($orderItemId, WC_Order $order)
-    {
-        foreach( $order->get_items() as $id => $item ) {
-            if ($id === $orderItemId) {
-                return $item;
-            }
-        }
-        return null;
-    }
-
     public function sync($orderItemId, $forse = false)
     {
         $orderId = wc_get_order_id_by_order_item_id($orderItemId);
-        $order = wc_get_order($orderId);
-        $item = $this->getOrderItem($orderItemId, $order);
+        $item = Helper::getOrderItem($orderItemId);
         if ($item === null) {
             throw new InvalidArgumentException('Unable to find order item id: '. $orderItemId);
         }
 
         $trackmage_order_item_id = wc_get_order_item_meta( $orderItemId, '_trackmage_order_item_id', true );
+        $order = wc_get_order($orderId);
 
         if ($forse !== true && (!($this->canSyncOrder($order) && (empty($trackmage_order_item_id) || $this->getChangesDetector()->isChanged($item))))) {
             return;
