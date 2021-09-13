@@ -17,7 +17,7 @@ class TrackingInfo {
         if (null === $link = Helper::getOrderTrackingPageLink($order)) {
             return;
         }
-        printf( '<p>Track your order <strong><a href="%s">here</a></strong>.</p>', esc_url( $link, array( 'http', 'https' )));
+        printf( '<p>%s <strong><a href="%s">%s</a></strong>.</p>', __('Track your order', 'trackmage'), esc_url( $link, array( 'http', 'https' )), __('here', 'trackmage'));
     }
 
     /**
@@ -33,6 +33,6 @@ class TrackingInfo {
         if (null === $link = Helper::getOrderTrackingPageLink($order)) {
             return;
         }
-        printf( '<p>Track your order <strong><a href="%s">here</a></strong>.</p>', esc_url( $link, array( 'http', 'https' )));
+        printf( '<p>%s <strong><a href="%s">%s</a></strong>.</p>', __('Track your order', 'trackmage'), esc_url( $link, array( 'http', 'https' )), __('here', 'trackmage'));
     }
 }
