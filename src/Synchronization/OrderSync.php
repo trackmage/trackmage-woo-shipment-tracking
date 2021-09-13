@@ -37,9 +37,9 @@ class OrderSync implements EntitySyncInterface
             $detector = new ChangesDetector([
                 '[order_number]', '[status]',
                 '[shipping_address_1]', '[shipping_address_2]', '[shipping_city]', '[shipping_company]', '[shipping_country]',
-                '[shipping_first_name]', '[shipping_last_name]',  '[shipping_postcode]',  '[shipping_state]',
+                '[shipping_first_name]', '[shipping_last_name]', '[shipping_postcode]', '[shipping_state]',
                 '[billing_address_1]', '[billing_address_2]', '[billing_city]', '[billing_company]', '[billing_country]',
-                '[billing_first_name]', '[billing_last_name]',  '[billing_postcode]',  '[billing_state]',
+                '[billing_first_name]', '[billing_last_name]', '[billing_postcode]', '[billing_state]', '[billing_email]', '[billing_phone]',
             ], function($order) {
                 return get_post_meta( $order['id'], '_trackmage_hash', true );
             }, function($order, $hash) {
