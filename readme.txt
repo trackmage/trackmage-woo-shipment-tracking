@@ -4,7 +4,7 @@ Tags: shipping, tracking, order, status, delivery, shipment tracking, order trac
 Requires at least: 4.9.1
 Tested up to: 5.8.1
 Requires PHP: 5.6
-Stable tag: 1.0.9
+Stable tag: 1.0.10
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -54,8 +54,8 @@ With TrackMage you can analyze your carrier’s performance across all channels 
 
 * WordPress 4.9.1 or greater. WordPress 5.4 or greater is recommended
 * WooCommerce 3.8 or greater. WooCommerce 4.2.0 or greater is recommended
-* PHP version 5.6 or greater. PHP 7.2 or greater is recommended
-* MySQL version 5.0 or greater. MySQL 5.6 or greater is recommended
+* PHP version 5.6 or greater. PHP 7.4 or greater is recommended
+* MySQL version 5.6 or greater. MySQL 8.0 or greater is recommended
 
 
 = Installation Steps =
@@ -65,6 +65,19 @@ With TrackMage you can analyze your carrier’s performance across all channels 
 3. Go through the Onboarding wizard in the Plugin
 
 == Changelog ==
+
+= 1.0.10 =
+* Trigger sync when email or phone changed
+* Improved WPML compatibility
+* Fixed translation in TrackInfo
+
+= 1.0.9 =
+* Added support for Wordpress 5.8.1 and WooCommerce 5.6.0
+* Improved performance when checking credentials
+* Fixed conflict with WPML (WooCommerce Multilingual) compatibility
+* Fixed credentials warning in wizard
+* Use already created integration instead of creation one new.
+* Override WC order_tracking shortcode
 
 = 1.0.8 =
 * Fixed orders synchronization on change workspace and re-install
