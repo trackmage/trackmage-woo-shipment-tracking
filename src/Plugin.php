@@ -114,8 +114,10 @@ class Plugin {
         add_action('before_delete_post', function ($postId) {
             $type = get_post_type($postId);
             if ($type === 'shop_order'){
-                foreach ($this->getShipmentRepo()->findBy(['order_id' => $postId]) as $shipment) {
-                    Helper::deleteShipment($shipment['id']);
+                foreach ($this->getShipmentRepo()->findBy(['orderNumbers' => $postId]) as $shipment) {
+                    if (in_array($postId, isset($shipment['orderNumbers']) ? $shipment['orderNumbers'] : [], true)) {
+                        Helper::deleteShipment($shipment['id']);
+                    }
                 }
             }
         }, 10, 1);
