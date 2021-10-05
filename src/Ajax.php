@@ -396,10 +396,7 @@ class Ajax {
         if( !isset($_POST['orderId'], $_POST['id']) || (isset($_POST['orderId']) && !is_numeric($_POST['orderId'])) || empty($_POST['id'])) {
             wp_send_json([]);
         }
-        $reason = '';
-        if( !isset($_POST['reason']) || empty($reason = sanitize_textarea_field($_POST['reason']))){
-            wp_send_json_error(['message' => __('You should add reason to delete shipment', 'trackmage')]);
-        }
+
         $orderId = absint($_POST['orderId']);
         $shipmentId = sanitize_key($_POST['id']);
 
@@ -414,7 +411,7 @@ class Ajax {
         $user = wp_get_current_user();
         $userName = null !== $user ? $user->user_login : 'unknown';
 
-        $order->add_order_note( sprintf( __( 'Shipment %s was deleted by %s. Reason: %s.', 'trackmage' ), $shipmentId, $userName, $reason), false, true );
+        $order->add_order_note( sprintf( __( 'Shipment %s was deleted by %s.', 'trackmage' ), $shipmentId, $userName), false, true );
 
         try {
             // Get HTML to return.

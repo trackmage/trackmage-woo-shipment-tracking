@@ -458,7 +458,7 @@
     }
   );
 
-  function deleteShipment(shipment, reason){
+  function deleteShipment(shipment){
     const shipmentId = $(shipment).data("id");
     $.ajax({
       url: params.main.urls.ajax,
@@ -467,8 +467,7 @@
         action: 'trackmage_delete_shipment',
         security: params.metaBoxes.nonces.deleteShipment,
         orderId: params.metaBoxes.orderId,
-        id: shipmentId,
-        reason
+        id: shipmentId
       },
       beforeSend: function() {
         trackmageBlockUi($("#trackmage-shipment-tracking .inside"));
@@ -525,19 +524,13 @@
       window.trackmageConfirmDialog(
         '#delete-shipment-confirm-dialog',
         function(){
-          const reason = $('#delete-shipment-reason').val();
-          if(reason.trim() === '') {
-            $('#delete-shipment-reason').parent().addClass('error').find('p.description').show();
-            return false;
-          }
           return true;
         },
         params.metaBoxes.i18n.confirmDeleteShipment,
-        'Yes'
+        params.metaBoxes.i18n.yes
       ).then(function(yesno) {
         if(yesno == 'yes'){
-          const reason = $('#delete-shipment-reason').val();
-          deleteShipment(shipment, reason);
+          deleteShipment(shipment);
         }else{
           return false;
         }

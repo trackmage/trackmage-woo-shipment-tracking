@@ -98,7 +98,7 @@
     $(el).unblock();
   };
 
-  window.trackmageConfirmDialog = function(container, okBtnCallback = null, dialogTitle = 'Confirm Changes', okBtnTitle = 'OK'){
+  window.trackmageConfirmDialog = function(container, okBtnCallback = null, dialogTitle = 'Confirm Changes', okBtnTitle = (params.main.ok || 'OK')){
     let defer = $.Deferred();
     let buttons = {};
     buttons[okBtnTitle] = function() {
@@ -109,7 +109,7 @@
         $(this).dialog("close");
       }
     };
-    buttons["Cancel"] = function() {
+    buttons[params.main.cancel || "Cancel"] = function() {
       $(this).dialog('close');
     };
     $(container).dialog({
