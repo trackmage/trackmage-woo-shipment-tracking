@@ -54,9 +54,6 @@ before_install:
   - sudo service docker restart
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - composer self-update --1
-#  - composer config -g repo.packagist composer https://packagist.phpcomposer.com
-#  - composer config -g repo.packagist composer https://repo.packagist.org
-#  - composer diagnose
   # Disable services enabled by default
   - sudo /etc/init.d/mysql stop
   - sudo /etc/init.d/postgresql stop
