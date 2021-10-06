@@ -87,6 +87,8 @@ class Assets {
                     'failure'      => __('Failure', 'trackmage'),
                     'unknownError' => __('Unknown error occured. Please try again later.', 'trackmage'),
                     'cannot_edit'      => __('Please save your order before edit shipments', 'trackmage'),
+                    'ok' => __('OK', 'trackmage'),
+                    'cancel' => __('Cancel', 'trackmage')
                 ],
             ]);
         }
@@ -142,6 +144,8 @@ class Assets {
                 ],
                 'i18n' => [
                     'confirmDeleteShipment' => __('Are you sure you want to delete this shipment?', 'trackmage'),
+                    'yes' => __('Yes', 'trackmage'),
+                    'cancel' => __('Cancel', 'trackmage')
                 ],
             ]);
         }

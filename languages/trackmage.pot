@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: TrackMage - Woo Shipment Tracking\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-12 09:02+0000\n"
+"POT-Creation-Date: 2021-10-05 11:43+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -16,7 +16,7 @@ msgstr ""
 "X-Loco-Version: 2.5.3; wp-5.8\n"
 "X-Domain: trackmage"
 
-#: src/Helper.php:619
+#: src/Helper.php:617
 #, php-format
 msgid " (%s)"
 msgid_plural " (%s)"
@@ -24,7 +24,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. 1: Required PHP version, 2: Current PHP version.
-#: trackmage.php:63
+#: trackmage.php:62
 #, php-format
 msgid ""
 "<strong>TrackMage for WordPress</strong> requires PHP %1$s to run. This site "
@@ -58,21 +58,29 @@ msgstr ""
 msgid "Added shipment %s for order items: %s"
 msgstr ""
 
-#: src/Admin/Assets.php:144
+#: src/Admin/Admin.php:370
+msgid ""
+"An error occurred during changing workspace. Please try again later or "
+"contact with <a href=\"mailto:support@trackmage.com\">TrackMage.com "
+"support</a>"
+msgstr ""
+
+#: src/Admin/Assets.php:146
 msgid "Are you sure you want to delete this shipment?"
 msgstr ""
 
-#: src/Admin/Assets.php:127
+#: src/Admin/Assets.php:129
 msgid "Are you sure you want to delete this status?"
 msgstr ""
 
+#: src/Admin/Assets.php:91 src/Admin/Assets.php:127 src/Admin/Assets.php:148
 #: views/meta-boxes/order-shipments.php:49
-#: views/meta-boxes/order-shipments.php:55 src/Admin/Assets.php:125
+#: views/meta-boxes/order-shipments.php:55
 msgid "Cancel"
 msgstr ""
 
-#: views/meta-boxes/order-edit-shipment.php:27
 #: views/meta-boxes/order-shipments.php:23
+#: views/meta-boxes/order-edit-shipment.php:27
 #: views/meta-boxes/order-add-shipment.php:21
 msgid "Carrier"
 msgstr ""
@@ -115,12 +123,12 @@ msgstr ""
 msgid "Credentials"
 msgstr ""
 
-#: views/admin-page-status-manager.php:45 src/Admin/Assets.php:121
+#: views/admin-page-status-manager.php:45 src/Admin/Assets.php:123
 msgid "Delete"
 msgstr ""
 
-#: views/modals/admin-page-settings-general-reset-settings.php:17
 #: views/modals/admin-page-settings-general-change-workspace.php:17
+#: views/modals/admin-page-settings-general-reset-settings.php:17
 msgid "Delete data"
 msgstr ""
 
@@ -135,7 +143,7 @@ msgid ""
 "items)."
 msgstr ""
 
-#: views/admin-page-status-manager.php:44 src/Admin/Assets.php:120
+#: views/admin-page-status-manager.php:44 src/Admin/Assets.php:122
 msgid "Edit"
 msgstr ""
 
@@ -143,7 +151,7 @@ msgstr ""
 msgid "Edit Shipment"
 msgstr ""
 
-#: src/Admin/Wizard.php:114 src/Admin/Assets.php:87
+#: src/Admin/Assets.php:87 src/Admin/Wizard.php:114
 msgid "Failure"
 msgstr ""
 
@@ -151,13 +159,17 @@ msgstr ""
 msgid "Finish"
 msgstr ""
 
-#: src/Admin/Wizard.php:326
+#: src/Admin/Wizard.php:331
 #, php-format
 msgid "First-time %s configuration"
 msgstr ""
 
 #: views/admin-page-settings.php:25
 msgid "General"
+msgstr ""
+
+#: src/TrackingInfo.php:20 src/TrackingInfo.php:36
+msgid "here"
 msgstr ""
 
 #. URI of the plugin
@@ -181,7 +193,7 @@ msgstr ""
 msgid "Installation Wizard"
 msgstr ""
 
-#: src/Admin/Wizard.php:190 src/Admin/Admin.php:140
+#: src/Admin/Admin.php:144 src/Admin/Wizard.php:195
 msgid "Invalid credentials."
 msgstr ""
 
@@ -195,7 +207,7 @@ msgid "Map to TrackMage Status"
 msgstr ""
 
 #: views/admin-page-status-manager.php:29
-#: views/admin-page-status-manager.php:55 src/Admin/Assets.php:122
+#: views/admin-page-status-manager.php:55 src/Admin/Assets.php:124
 msgid "Name"
 msgstr ""
 
@@ -219,22 +231,30 @@ msgid ""
 "or contact us if you are having difficulty finding your order details."
 msgstr ""
 
+#: views/meta-boxes/order-shipments.php:61
+msgid "Note! The deletion of shipment cannot be undone."
+msgstr ""
+
+#: src/Admin/Assets.php:90
+msgid "OK"
+msgstr ""
+
 #: views/admin-page-settings-general.php:134
 msgid ""
 "Only orders created after this date will be imported. Leave it empty if you "
 "want to import all existing orders"
 msgstr ""
 
-#: src/Shortcodes/OrderTracking.php:61
+#: src/Shortcodes/OrderTracking.php:62
 msgid "optional"
 msgstr ""
 
-#: src/Synchronization/OrderItemSync.php:111
+#: src/Synchronization/OrderItemSync.php:96
 #, php-format
 msgid "Order Item %s was created in TrackMage"
 msgstr ""
 
-#: src/Synchronization/OrderItemSync.php:136
+#: src/Synchronization/OrderItemSync.php:121
 #, php-format
 msgid "Order Item %s was updated in TrackMage"
 msgstr ""
@@ -267,7 +287,7 @@ msgstr ""
 msgid "Please select orders statuses to sync with TrackMage."
 msgstr ""
 
-#: src/Admin/Wizard.php:225
+#: src/Admin/Wizard.php:230
 msgid "Please select workspace"
 msgstr ""
 
@@ -277,10 +297,6 @@ msgstr ""
 
 #: views/meta-boxes/order-add-shipment-items-row.php:14
 msgid "Qty"
-msgstr ""
-
-#: views/meta-boxes/order-shipments.php:62
-msgid "Reason should not be empty"
 msgstr ""
 
 #: views/admin-page-settings-general.php:94
@@ -322,7 +338,7 @@ msgid ""
 " in TrackMage. Don't forget to refresh page after create new workspace."
 msgstr ""
 
-#: src/Admin/Admin.php:65 src/Admin/Admin.php:66
+#: src/Admin/Admin.php:69 src/Admin/Admin.php:70
 msgid "Settings"
 msgstr ""
 
@@ -332,7 +348,7 @@ msgstr ""
 
 #: src/Ajax.php:417
 #, php-format
-msgid "Shipment %s was deleted by %s. Reason: %s."
+msgid "Shipment %s was deleted by %s."
 msgstr ""
 
 #: src/Ajax.php:361
@@ -353,7 +369,7 @@ msgid "Shipment updated successfully!"
 msgstr ""
 
 #: views/admin-page-status-manager.php:30
-#: views/admin-page-status-manager.php:56 src/Admin/Assets.php:123
+#: views/admin-page-status-manager.php:56 src/Admin/Assets.php:125
 msgid "Slug"
 msgstr ""
 
@@ -377,8 +393,8 @@ msgstr ""
 msgid "Status deleted successfully"
 msgstr ""
 
-#: views/admin-page-status-manager.php:24 src/Admin/Admin.php:74
-#: src/Admin/Admin.php:75
+#: views/admin-page-status-manager.php:24 src/Admin/Admin.php:78
+#: src/Admin/Admin.php:79
 msgid "Status Manager"
 msgstr ""
 
@@ -398,7 +414,7 @@ msgstr ""
 msgid "Statuses"
 msgstr ""
 
-#: src/Admin/Wizard.php:113 src/Admin/Assets.php:86
+#: src/Admin/Assets.php:86 src/Admin/Wizard.php:113
 msgid "Success"
 msgstr ""
 
@@ -406,8 +422,8 @@ msgstr ""
 msgid "Sync With TrackMage"
 msgstr ""
 
-#: views/admin-page-settings-general.php:69 src/Admin/Wizard.php:116
-#: src/Admin/Assets.php:102
+#: views/admin-page-settings-general.php:69 src/Admin/Assets.php:104
+#: src/Admin/Wizard.php:116
 msgid "Test Credentials"
 msgstr ""
 
@@ -427,10 +443,14 @@ msgid ""
 "cannot be changed."
 msgstr ""
 
-#: trackmage.php:68
+#: trackmage.php:67
 msgid ""
 "To use TrackMage for WooCommerce it is required that WooCommerce is "
 "installed and activated"
+msgstr ""
+
+#: src/TrackingInfo.php:20 src/TrackingInfo.php:36
+msgid "Track your order"
 msgstr ""
 
 #: views/meta-boxes/order-edit-shipment.php:23
@@ -439,7 +459,7 @@ msgid "Tracking Number"
 msgstr ""
 
 #. Author of the plugin
-#: src/Admin/Admin.php:54 src/Admin/Admin.php:55
+#: src/Admin/Admin.php:58 src/Admin/Admin.php:59
 msgid "TrackMage"
 msgstr ""
 
@@ -459,7 +479,7 @@ msgstr ""
 msgid "TrackMage Shipment Tracking"
 msgstr ""
 
-#: src/Admin/Assets.php:124
+#: src/Admin/Assets.php:126
 msgid "TrackMage Status"
 msgstr ""
 
@@ -479,21 +499,21 @@ msgstr ""
 msgid "Unknown error occured. Please try again later."
 msgstr ""
 
-#: src/Admin/Wizard.php:275
+#: src/Admin/Wizard.php:280
 msgid "Unknown wizard step."
 msgstr ""
 
-#: src/Admin/Assets.php:126
+#: src/Admin/Assets.php:128
 msgid "Update"
 msgstr ""
 
-#: src/Admin/Wizard.php:117 src/Admin/Assets.php:103
+#: src/Admin/Assets.php:105 src/Admin/Wizard.php:117
 msgid ""
 "Valid credentials. Click on <em>“Save Changes”</em> for the changes to take "
 "effect."
 msgstr ""
 
-#: src/Admin/Admin.php:131
+#: src/Admin/Admin.php:135
 msgid "Values should not be empty"
 msgstr ""
 
@@ -501,11 +521,11 @@ msgstr ""
 msgid "View file was not found"
 msgstr ""
 
-#: src/Admin/Wizard.php:199 src/Admin/Admin.php:155 src/Admin/Admin.php:173
+#: src/Admin/Admin.php:159 src/Admin/Admin.php:177 src/Admin/Wizard.php:204
 msgid "We could not perform the check. Please try again."
 msgstr ""
 
-#: src/Admin/Wizard.php:318
+#: src/Admin/Wizard.php:323
 #, php-format
 msgid ""
 "We have detected that you have not finished this wizard yet, so we recommend "
@@ -523,7 +543,7 @@ msgstr ""
 msgid "Workspace"
 msgstr ""
 
-#: src/Admin/Admin.php:166
+#: src/Admin/Admin.php:170
 msgid "Workspaces have been reloaded"
 msgstr ""
 
@@ -547,6 +567,10 @@ msgid ""
 "pressing the button Trigger sync"
 msgstr ""
 
+#: src/Admin/Assets.php:147
+msgid "Yes"
+msgstr ""
+
 #: views/modals/admin-page-settings-general-change-workspace.php:12
 msgid "Yes, change workspace"
 msgstr ""
@@ -555,7 +579,7 @@ msgstr ""
 msgid "Yes, reset settings"
 msgstr ""
 
-#: views/meta-boxes/order-shipments.php:67
+#: views/meta-boxes/order-shipments.php:66
 msgid "You cannot add shipments to draft orders."
 msgstr ""
 
@@ -571,13 +595,9 @@ msgstr ""
 msgid "You need to specify the statuses that you use for fulfilment."
 msgstr ""
 
-#: src/Ajax.php:401
-msgid "You should add reason to delete shipment"
-msgstr ""
-
-#: views/admin-page-status-manager.php:59
-#: views/admin-page-settings-general.php:86 views/wizard/step-statuses.php:21
-#: views/wizard/step-workspace.php:21 src/Admin/Wizard.php:112
-#: src/Admin/Assets.php:85
+#: views/admin-page-settings-general.php:86
+#: views/admin-page-status-manager.php:59 src/Admin/Assets.php:85
+#: src/Admin/Wizard.php:112 views/wizard/step-statuses.php:21
+#: views/wizard/step-workspace.php:21
 msgid "— Select —"
 msgstr ""

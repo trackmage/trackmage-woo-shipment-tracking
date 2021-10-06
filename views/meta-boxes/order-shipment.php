@@ -29,9 +29,9 @@ $carrier = $carrierKey ? esc_attr($carriers[$carrierKey]['name']) : __('No Info'
     <td class="shipment__actions">
         <div class="shipment__actions__wrap">
             <?php if($shipment['shippedAt'] === null):?>
-                <a class="shipment__actions__action shipment__actions__action--edit"></a>
+                <a class="shipment__actions__action shipment__actions__action--edit button button-secondary"><?php echo __('Edit', 'trackmage')?></a>
             <?php endif; ?>
-            <a class="shipment__actions__action shipment__actions__action--delete"></a>
+            <a class="shipment__actions__action shipment__actions__action--delete button button-secondary"><?php echo __('Delete', 'trackmage')?></a>
         </div>
     </td>
 </tr>
