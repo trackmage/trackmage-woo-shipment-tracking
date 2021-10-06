@@ -4,7 +4,7 @@ Tags: shipping, tracking, order, status, delivery, shipment tracking, order trac
 Requires at least: 4.9.1
 Tested up to: 5.8.1
 Requires PHP: 5.6
-Stable tag: 1.0.11
+Stable tag: 1.0.12
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -65,6 +65,10 @@ With TrackMage you can analyze your carrier’s performance across all channels 
 3. Go through the Onboarding wizard in the Plugin
 
 == Changelog ==
+
+= 1.0.12 =
+* Remove reason from shipment deletion dialog
+* Change icons to buttons
 
 = 1.0.11 =
 * Fix issue with deleting shipments during deleting orders.
