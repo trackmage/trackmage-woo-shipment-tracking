@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: TrackMage - Woo Shipment Tracking\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-08-12 07:46+0000\n"
-"PO-Revision-Date: 2021-10-05 11:44+0000\n"
+"PO-Revision-Date: 2021-10-05 12:58+0000\n"
 "Last-Translator: Евгений Гарбузняк\n"
 "Language-Team: Русский\n"
 "Language: ru_RU\n"
@@ -86,7 +86,7 @@ msgstr "Отмена"
 #: views/meta-boxes/order-edit-shipment.php:27
 #: views/meta-boxes/order-add-shipment.php:21
 msgid "Carrier"
-msgstr ""
+msgstr "Перевозчик"
 
 #: views/modals/admin-page-settings-general-change-workspace.php:10
 msgid ""
@@ -148,11 +148,11 @@ msgstr ""
 
 #: views/admin-page-status-manager.php:44 src/Admin/Assets.php:122
 msgid "Edit"
-msgstr ""
+msgstr "Изменить"
 
 #: views/meta-boxes/order-edit-shipment.php:19
 msgid "Edit Shipment"
-msgstr ""
+msgstr "Изменить посылку"
 
 #: src/Admin/Assets.php:87 src/Admin/Wizard.php:114
 msgid "Failure"
@@ -216,7 +216,7 @@ msgstr ""
 
 #: views/meta-boxes/order-shipments.php:44
 msgid "New Shipment"
-msgstr ""
+msgstr "Новая посылка"
 
 #: views/wizard/container.php:41
 msgid "Next"
@@ -236,7 +236,7 @@ msgstr ""
 
 #: views/meta-boxes/order-shipments.php:61
 msgid "Note! The deletion of shipment cannot be undone."
-msgstr ""
+msgstr "Примечание! Удаление посылки невозможно отменить."
 
 #: src/Admin/Assets.php:90
 msgid "OK"
@@ -347,7 +347,7 @@ msgstr ""
 
 #: views/meta-boxes/order-shipments.php:21
 msgid "Shipment"
-msgstr ""
+msgstr "Посылка"
 
 #: src/Ajax.php:417
 #, php-format
@@ -386,7 +386,7 @@ msgstr ""
 
 #: views/meta-boxes/order-shipments.php:22
 msgid "Status"
-msgstr ""
+msgstr "Статус"
 
 #: src/Ajax.php:586
 msgid "Status added successfully!"
