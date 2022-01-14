@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: TrackMage - Woo Shipment Tracking\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-08-12 07:46+0000\n"
-"PO-Revision-Date: 2021-10-05 12:58+0000\n"
+"PO-Revision-Date: 2022-01-14 16:13+0000\n"
 "Last-Translator: Евгений Гарбузняк\n"
 "Language-Team: Русский\n"
 "Language: ru_RU\n"
@@ -13,14 +13,14 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Loco https://localise.biz/\n"
-"X-Loco-Version: 2.5.3; wp-5.8.1\n"
+"X-Loco-Version: 2.5.5; wp-5.8.3\n"
 "X-Domain: trackmage"
 
 #: src/Helper.php:617
 #, php-format
 msgid " (%s)"
 msgid_plural " (%s)"
-msgstr[0] ""
+msgstr[0] " (%s)"
 msgstr[1] ""
 msgstr[2] ""
 
@@ -49,7 +49,7 @@ msgstr "Добавить новый статус"
 #: views/meta-boxes/order-edit-shipment.php:48
 #: views/meta-boxes/order-add-shipment.php:45
 msgid "Add Row"
-msgstr ""
+msgstr "Добавить"
 
 #: views/meta-boxes/order-shipments.php:50
 msgid "Add Shipment"
@@ -59,7 +59,7 @@ msgstr "Добавить посылку"
 #: src/Ajax.php:272
 #, php-format
 msgid "Added shipment %s for order items: %s"
-msgstr ""
+msgstr "Добавлена ​​отправка %s для позиций заказа: %s"
 
 #: src/Admin/Admin.php:370
 msgid ""
@@ -67,6 +67,9 @@ msgid ""
 "contact with <a href=\"mailto:support@trackmage.com\">TrackMage.com "
 "support</a>"
 msgstr ""
+"Произошла ошибка при изменении рабочей области. Повторите попытку позже или "
+"обратитесь в <a href=\"mailto:support@trackmage.com\">службу поддержки "
+"TrackMage.com</a>."
 
 #: src/Admin/Assets.php:146
 msgid "Are you sure you want to delete this shipment?"
@@ -74,7 +77,7 @@ msgstr "Вы уверены, что хотите удалить эту посы�
 
 #: src/Admin/Assets.php:129
 msgid "Are you sure you want to delete this status?"
-msgstr ""
+msgstr "Вы уверены, что хотите удалить этот статус?"
 
 #: src/Admin/Assets.php:91 src/Admin/Assets.php:127 src/Admin/Assets.php:148
 #: views/meta-boxes/order-shipments.php:49
@@ -95,36 +98,45 @@ msgid ""
 "shipments will be unlinked from the TrackMage workspace. The data in "
 "TrackMage will not be affected."
 msgstr ""
+"Изменение рабочей области приведет к изменениям, которые нельзя отменить. "
+"Если вы измените свое рабочее пространство, все ваши текущие "
+"синхронизированные заказы, элементы заказа и поставки будут отсоединены от "
+"рабочего пространства TrackMage. Данные в TrackMage не будут затронуты."
 
 #: views/admin-page-settings-general.php:48
 #: views/wizard/step-credentials.php:19
 msgid "Client ID"
-msgstr ""
+msgstr "ID клиента"
 
 #: views/admin-page-settings-general.php:55
 #: views/wizard/step-credentials.php:25
 msgid "Client Secret"
-msgstr ""
+msgstr "Секретный ключ клиента"
 
 #: src/Ajax.php:622
 msgid ""
 "Core statuses and statuses created by other plugins and themes cannot be "
 "deleted."
 msgstr ""
+"Основные статусы и статусы, созданные другими плагинами и темами, не могут "
+"быть удалены."
 
 #: src/Ajax.php:618
 msgid "Could not delete the selected status."
-msgstr ""
+msgstr "Не удалось удалить выбранный статус."
 
 #: views/admin-page-settings-general.php:122 views/wizard/step-statuses.php:30
 msgid ""
 "Create an order on TrackMage when the status changes to. If none is selected,"
 " all new orders will be synced with TrackMage upon creation."
 msgstr ""
+"Создать заказ в TrackMage, когда статус изменится на один из выбранных. Если "
+"ничего не выбрано, все новые заказы будут синхронизироваться с TrackMage при "
+"создании."
 
 #: views/admin-page-settings-general.php:43
 msgid "Credentials"
-msgstr ""
+msgstr "Реквизиты для входа"
 
 #: views/admin-page-status-manager.php:45 src/Admin/Assets.php:123
 msgid "Delete"
@@ -133,11 +145,11 @@ msgstr "Удалить"
 #: views/modals/admin-page-settings-general-change-workspace.php:17
 #: views/modals/admin-page-settings-general-reset-settings.php:17
 msgid "Delete data"
-msgstr ""
+msgstr "Удалить данные"
 
 #: views/modals/admin-page-settings-general-trigger-sync.php:12
 msgid "Do you want to save settings and sync your orders right now?"
-msgstr ""
+msgstr "Хотите сохранить настройки и синхронизировать заказы прямо сейчас?"
 
 #: views/modals/admin-page-settings-general-reset-settings.php:10
 msgid ""
@@ -145,6 +157,9 @@ msgid ""
 "information will be removed (Custom order statuses, shipments and shipment "
 "items)."
 msgstr ""
+"Во время сброса плагина все параметры будут очищены, а вся информация о "
+"плагине будет удалена (Статусы нестандартных заказов, отгрузки и позиции "
+"отгрузки)."
 
 #: views/admin-page-status-manager.php:44 src/Admin/Assets.php:122
 msgid "Edit"
@@ -156,32 +171,32 @@ msgstr "Изменить посылку"
 
 #: src/Admin/Assets.php:87 src/Admin/Wizard.php:114
 msgid "Failure"
-msgstr ""
+msgstr "Отказ"
 
 #: views/wizard/container.php:42
 msgid "Finish"
-msgstr ""
+msgstr "Закончить"
 
 #: src/Admin/Wizard.php:331
 #, php-format
 msgid "First-time %s configuration"
-msgstr ""
+msgstr "Первая конфигурация %s"
 
 #: views/admin-page-settings.php:25
 msgid "General"
-msgstr ""
+msgstr "Общие"
 
 #: src/TrackingInfo.php:20 src/TrackingInfo.php:36
 msgid "here"
-msgstr ""
+msgstr "здесь"
 
 #. URI of the plugin
 msgid "https://github.com/trackmage/trackmage-woo-shipment-tracking"
-msgstr ""
+msgstr "https://github.com/trackmage/trackmage-woo-shipment-tracking"
 
 #. Author URI of the plugin
 msgid "https://trackmage.com"
-msgstr ""
+msgstr "https://trackmage.com"
 
 #: views/admin-page-settings-general.php:44
 #: views/wizard/step-credentials.php:16
@@ -191,28 +206,31 @@ msgid ""
 "target=\"_blank\">login</a> to TrackMage account and generate a new key for "
 "this website."
 msgstr ""
+"Если вы еще не создали ключи API, <a href=\"%1$s\" target=\"_blank\">"
+"войдите</a> в учетную запись TrackMage и создайте новый ключ для этого веб-"
+"сайта.\n"
 
 #: src/Admin/Wizard.php:128
 msgid "Installation Wizard"
-msgstr ""
+msgstr "Мастер установки"
 
 #: src/Admin/Admin.php:144 src/Admin/Wizard.php:195
 msgid "Invalid credentials."
-msgstr ""
+msgstr "Недействительные учетные данные."
 
 #: views/meta-boxes/order-edit-shipment.php:41
 #: views/meta-boxes/order-add-shipment.php:36
 msgid "Items"
-msgstr ""
+msgstr "Позиции"
 
 #: views/admin-page-status-manager.php:31
 msgid "Map to TrackMage Status"
-msgstr ""
+msgstr "Сопоставление со статусом TrackMage"
 
 #: views/admin-page-status-manager.php:29
 #: views/admin-page-status-manager.php:55 src/Admin/Assets.php:124
 msgid "Name"
-msgstr ""
+msgstr "Имя"
 
 #: views/meta-boxes/order-shipments.php:44
 msgid "New Shipment"
@@ -220,19 +238,22 @@ msgstr "Новая посылка"
 
 #: views/wizard/container.php:41
 msgid "Next"
-msgstr ""
+msgstr "След."
 
 #: views/meta-boxes/order-shipment.php:12
 #: views/meta-boxes/order-shipment.php:16
 #: views/meta-boxes/order-shipment.php:18
 msgid "No Info"
-msgstr ""
+msgstr "Нет информации"
 
 #: src/Shortcodes/OrderTracking.php:37
 msgid ""
 "No information found for the email. Please try again with the correct data "
 "or contact us if you are having difficulty finding your order details."
 msgstr ""
+"Информация по электронной почте не найдена. Пожалуйста, попробуйте еще раз с "
+"правильными данными или свяжитесь с нами, если у вас возникли трудности с "
+"поиском деталей вашего заказа."
 
 #: views/meta-boxes/order-shipments.php:61
 msgid "Note! The deletion of shipment cannot be undone."
@@ -247,6 +268,8 @@ msgid ""
 "Only orders created after this date will be imported. Leave it empty if you "
 "want to import all existing orders"
 msgstr ""
+"Будут импортированы только заказы, созданные после этой даты. Оставьте поле "
+"пустым, если хотите импортировать все существующие заказы."
 
 #: src/Shortcodes/OrderTracking.php:62
 msgid "optional"
@@ -256,76 +279,80 @@ msgstr "опционально"
 #, php-format
 msgid "Order Item %s was created in TrackMage"
 msgstr ""
+"Элемент заказа %s был создан в TrackMage\n"
 
 #: src/Synchronization/OrderItemSync.php:121
 #, php-format
 msgid "Order Item %s was updated in TrackMage"
-msgstr ""
+msgstr "Элемент заказа %s был обновлен в TrackMage."
 
 #: src/Synchronization/OrderSync.php:91
 msgid "Order was created in TrackMage"
-msgstr ""
+msgstr "Заказ был создан в TrackMage"
 
 #: src/Synchronization/OrderSync.php:119
 msgid "Order was updated in TrackMage"
-msgstr ""
+msgstr "Заказ был обновлен в TrackMage"
 
 #: src/Shortcodes/OrderTracking.php:29
 msgid "Please enter a valid order ID or email address"
 msgstr ""
+"Пожалуйста, введите действительный идентификатор заказа или адрес "
+"электронной почты"
 
 #: views/modals/admin-page-settings-general-trigger-sync.php:10
 msgid "Please review the order statuses in Sync With TrackMage section."
-msgstr ""
+msgstr "Просмотрите статусы заказов в разделе «Синхронизация с TrackMage»."
 
 #: src/Admin/Assets.php:89
 msgid "Please save your order before edit shipments"
-msgstr ""
+msgstr "Пожалуйста, сохраните ваш заказ, прежде чем редактировать отгрузки"
 
 #: views/admin-page-settings-general.php:79 views/wizard/step-workspace.php:15
 msgid "Please select a workspace in TrackMage."
-msgstr ""
+msgstr "Пожалуйста, выберите рабочую область в TrackMage."
 
 #: views/admin-page-settings-general.php:109 views/wizard/step-statuses.php:15
 msgid "Please select orders statuses to sync with TrackMage."
 msgstr ""
+"Выберите статусы заказов для синхронизации с TrackMage.\n"
 
 #: src/Admin/Wizard.php:230
 msgid "Please select workspace"
-msgstr ""
+msgstr "Пожалуйста, выберите рабочее пространство"
 
 #: views/wizard/container.php:45
 msgid "Previous"
-msgstr ""
+msgstr "Предыдущий"
 
 #: views/meta-boxes/order-add-shipment-items-row.php:14
 msgid "Qty"
-msgstr ""
+msgstr "Кол-во"
 
 #: views/admin-page-settings-general.php:94
 msgid "Reload"
-msgstr ""
+msgstr "Перезагрузить"
 
 #: views/admin-page-settings-general.php:149
 msgid "Reset Plugin"
-msgstr ""
+msgstr "Сбросить плагин"
 
 #: views/meta-boxes/order-shipments.php:56
 msgid "Save"
-msgstr ""
+msgstr "Сохранить"
 
 #: views/admin-page-settings-general.php:147
 msgid "Save Changes"
-msgstr ""
+msgstr "Сохранить изменения"
 
 #: views/meta-boxes/order-add-shipment-items-row.php:13
 msgid "Search for a product&hellip;"
-msgstr ""
+msgstr "Поиск продукта…"
 
 #: views/meta-boxes/order-add-shipment.php:23
 #: views/meta-boxes/order-add-shipment.php:24
 msgid "Select a carrier"
-msgstr ""
+msgstr "Выберите перевозчика"
 
 #: views/admin-page-settings-general.php:97
 #, php-format
@@ -333,6 +360,8 @@ msgid ""
 "Select a workspace or <a target=\"_blank\" href=\"%1$s\">create a new one</a>"
 " in TrackMage."
 msgstr ""
+"Выберите рабочую область или <a target=\"_blank\" href=\"%1$s\">создайте "
+"новую</a> в TrackMage."
 
 #: views/wizard/step-workspace.php:28
 #, php-format
@@ -340,10 +369,13 @@ msgid ""
 "Select a workspace or <a target=\"_blank\" href=\"%1$s\">create a new one</a>"
 " in TrackMage. Don't forget to refresh page after create new workspace."
 msgstr ""
+"Выберите рабочую область или <a target=\"_blank\" href=\"%1$s\">создайте "
+"новую</a> в TrackMage. Не забудьте обновить страницу после создания нового "
+"рабочего пространства."
 
 #: src/Admin/Admin.php:69 src/Admin/Admin.php:70
 msgid "Settings"
-msgstr ""
+msgstr "Настройки"
 
 #: views/meta-boxes/order-shipments.php:21
 msgid "Shipment"
@@ -357,11 +389,11 @@ msgstr "Посылка %s была удалена администратором
 #: src/Ajax.php:361
 #, php-format
 msgid "Shipment %s was updated"
-msgstr ""
+msgstr "Отгрузка %s была обновлена"
 
 #: src/Ajax.php:285
 msgid "Shipment added successfully!"
-msgstr ""
+msgstr "Отправка успешно добавлена!"
 
 #: src/Ajax.php:431
 msgid "Shipment deleted successfully!"
@@ -369,20 +401,20 @@ msgstr "Посылка удалена успешно!"
 
 #: src/Ajax.php:374
 msgid "Shipment updated successfully!"
-msgstr ""
+msgstr "Отгрузка успешно обновлена!"
 
 #: views/admin-page-status-manager.php:30
 #: views/admin-page-status-manager.php:56 src/Admin/Assets.php:125
 msgid "Slug"
-msgstr ""
+msgstr "Ярлык"
 
 #: views/admin-page-settings-general.php:126 views/wizard/step-statuses.php:34
 msgid "Start Date"
-msgstr ""
+msgstr "Дата начала"
 
 #: views/wizard/step-statuses.php:42
 msgid "Start date"
-msgstr ""
+msgstr "Дата начала"
 
 #: views/meta-boxes/order-shipments.php:22
 msgid "Status"
@@ -390,143 +422,149 @@ msgstr "Статус"
 
 #: src/Ajax.php:586
 msgid "Status added successfully!"
-msgstr ""
+msgstr "Статус успешно добавлен!"
 
 #: src/Ajax.php:639
 msgid "Status deleted successfully"
-msgstr ""
+msgstr "Статус успешно удален"
 
 #: views/admin-page-status-manager.php:24 src/Admin/Admin.php:78
 #: src/Admin/Admin.php:79
 msgid "Status Manager"
-msgstr ""
+msgstr "Менеджер статуса"
 
 #: src/Ajax.php:471 src/Ajax.php:555
 msgid "Status name cannot be empty."
-msgstr ""
+msgstr "Название статуса не может быть пустым."
 
 #: src/Ajax.php:475
 msgid "Status slug cannot be empty."
-msgstr ""
+msgstr "Ярлык состояния не может быть пустым."
 
 #: src/Ajax.php:519
 msgid "Status updated successfully!"
-msgstr ""
+msgstr "Статус успешно обновлен!"
 
 #: views/admin-page-settings-general.php:113 views/wizard/step-statuses.php:18
 msgid "Statuses"
-msgstr ""
+msgstr "Статусы"
 
 #: src/Admin/Assets.php:86 src/Admin/Wizard.php:113
 msgid "Success"
-msgstr ""
+msgstr "Успех"
 
 #: views/admin-page-settings-general.php:108
 msgid "Sync With TrackMage"
-msgstr ""
+msgstr "Синхронизация с TrackMage"
 
 #: views/admin-page-settings-general.php:69 src/Admin/Assets.php:104
 #: src/Admin/Wizard.php:116
 msgid "Test Credentials"
-msgstr ""
+msgstr "Проверить учетные данные"
 
 #: src/Ajax.php:501 src/Ajax.php:567
 #, php-format
 msgid "The alias <em>“%1$s”</em> is already assigned to another status."
-msgstr ""
+msgstr "Псевдоним <em>\"%1$s\"</em> уже присвоен другому статусу."
 
 #: src/Ajax.php:479 src/Ajax.php:563
 #, php-format
 msgid "The slug <em>“%1$s”</em> is already used by another status."
-msgstr ""
+msgstr "Ярлык <em>\"%1$s\"</em> уже используется другим статусом."
 
 #: src/Ajax.php:487
 msgid ""
 "The slug of core statuses and statuses created by other plugins and themes "
 "cannot be changed."
 msgstr ""
+"Ярлык основных статусов и статусов, созданных другими плагинами и темами, не "
+"может быть изменен."
 
 #: trackmage.php:67
 msgid ""
 "To use TrackMage for WooCommerce it is required that WooCommerce is "
 "installed and activated"
 msgstr ""
+"Чтобы использовать TrackMage для WooCommerce, необходимо, чтобы WooCommerce "
+"была установлена ​​и активирована."
 
 #: src/TrackingInfo.php:20 src/TrackingInfo.php:36
 msgid "Track your order"
-msgstr ""
+msgstr "Отследить ваш заказ"
 
 #: views/meta-boxes/order-edit-shipment.php:23
 #: views/meta-boxes/order-add-shipment.php:17
 msgid "Tracking Number"
-msgstr ""
+msgstr "Номер отслеживания"
 
 #. Author of the plugin
 #: src/Admin/Admin.php:58 src/Admin/Admin.php:59
 msgid "TrackMage"
-msgstr ""
+msgstr "TrackMage"
 
 #. Name of the plugin
 msgid "TrackMage - Woo Shipment Tracking"
-msgstr ""
+msgstr "TrackMage - Отслеживание доставки WooCommerce"
 
 #. Description of the plugin
 msgid "TrackMage integrates shipments tracking into your WooCommerce store."
-msgstr ""
+msgstr "TrackMage интегрирует отслеживание поставок в ваш магазин WooCommerce."
 
 #: views/admin-page-settings.php:23
 msgid "TrackMage Settings"
-msgstr ""
+msgstr "Настройки TrackMage"
 
 #: src/Admin/Orders.php:52
 msgid "TrackMage Shipment Tracking"
-msgstr ""
+msgstr "Отслеживание доставки TrackMage"
 
 #: src/Admin/Assets.php:126
 msgid "TrackMage Status"
-msgstr ""
+msgstr "Статус TrackMage"
 
 #: views/admin-page-settings-general.php:148
 msgid "Trigger Sync"
-msgstr ""
+msgstr "Запустить синхронизацию"
 
 #: views/modals/admin-page-settings-general-change-workspace.php:22
 msgid "Trigger sync"
-msgstr ""
+msgstr "Запустить синхронизацию"
 
 #: src/Admin/Wizard.php:115
 msgid "Unknown error occured."
-msgstr ""
+msgstr "Произошла неизвестная ошибка."
 
 #: src/Admin/Assets.php:88
 msgid "Unknown error occured. Please try again later."
-msgstr ""
+msgstr "Произошла неизвестная ошибка. Пожалуйста, повторите попытку позже."
 
 #: src/Admin/Wizard.php:280
 msgid "Unknown wizard step."
-msgstr ""
+msgstr "Неизвестный шаг мастера."
 
 #: src/Admin/Assets.php:128
 msgid "Update"
-msgstr ""
+msgstr "Обновить"
 
 #: src/Admin/Assets.php:105 src/Admin/Wizard.php:117
 msgid ""
 "Valid credentials. Click on <em>“Save Changes”</em> for the changes to take "
 "effect."
 msgstr ""
+"Действительные учетные данные. Нажмите <em>Сохранить изменения</em>, чтобы "
+"изменения вступили в силу."
 
 #: src/Admin/Admin.php:135
 msgid "Values should not be empty"
-msgstr ""
+msgstr "Укажите значения."
 
 #: src/Ajax.php:127
 msgid "View file was not found"
-msgstr ""
+msgstr "Файл просмотра не найден"
 
 #: src/Admin/Admin.php:159 src/Admin/Admin.php:177 src/Admin/Wizard.php:204
 msgid "We could not perform the check. Please try again."
-msgstr ""
+msgstr "Мы не смогли выполнить проверку. Пожалуйста, попробуйте еще раз."
 
 #: src/Admin/Wizard.php:323
 #, php-format
@@ -534,33 +572,44 @@ msgid ""
 "We have detected that you have not finished this wizard yet, so we recommend "
 "you to %2$sstart the configuration wizard to configure %1$s%3$s."
 msgstr ""
+"Мы обнаружили, что вы еще не завершили работу с этим мастером, поэтому "
+"рекомендуем вам %2$sзапустить мастер настройки, чтобы настроить %1$s%3$s."
 
 #: src/Shortcodes/OrderTracking.php:35
 msgid ""
 "We have sent your tracking link to your email (if it exists). Please check "
 "your email to see where your parcel is."
 msgstr ""
+"Мы отправили ссылку для отслеживания на вашу электронную почту (если она "
+"существует). Пожалуйста, проверьте свою электронную почту, чтобы узнать, где "
+"находится ваша посылка."
 
 #: views/admin-page-settings-general.php:78
 #: views/admin-page-settings-general.php:83 views/wizard/step-workspace.php:18
 msgid "Workspace"
-msgstr ""
+msgstr "Рабочее пространство"
 
 #: src/Admin/Admin.php:170
 msgid "Workspaces have been reloaded"
-msgstr ""
+msgstr "Рабочие области были перезагружены"
 
 #: views/modals/admin-page-settings-general-reset-settings.php:15
 msgid ""
 "Would you like to DELETE all previously synced orders from TrackMage "
 "workspace, order items and shipments in your current workspace?"
 msgstr ""
+"Вы хотите УДАЛИТЬ все ранее синхронизированные заказы из рабочего "
+"пространства TrackMage, заказанные товары и поставки в текущем рабочем "
+"пространстве?"
 
 #: views/modals/admin-page-settings-general-change-workspace.php:15
 msgid ""
 "Would you like to DELETE all previously synced orders from TrackMage "
 "workspace, order items and shipments in your previous workspace?"
 msgstr ""
+"Вы хотите УДАЛИТЬ все ранее синхронизированные заказы из рабочего "
+"пространства TrackMage, заказать товары и поставки в своем предыдущем "
+"рабочем пространстве?"
 
 #: views/modals/admin-page-settings-general-change-workspace.php:19
 msgid ""
@@ -569,6 +618,9 @@ msgid ""
 "        you can do this and then trigger synchronization manually later by "
 "pressing the button Trigger sync"
 msgstr ""
+"Запустить синхронизацию с новым рабочим пространством сейчас? Если вы хотите "
+"изменить настройки статусов до этого, вы можете сделать это, а затем "
+"запустить синхронизацию вручную позже, нажав кнопку Запустить синхронизацию"
 
 #: src/Admin/Assets.php:147
 msgid "Yes"
@@ -576,27 +628,28 @@ msgstr "Да"
 
 #: views/modals/admin-page-settings-general-change-workspace.php:12
 msgid "Yes, change workspace"
-msgstr ""
+msgstr "Да, изменить рабочее пространство"
 
 #: views/modals/admin-page-settings-general-reset-settings.php:12
 msgid "Yes, reset settings"
-msgstr ""
+msgstr "Да, сбросить настройки"
 
 #: views/meta-boxes/order-shipments.php:66
 msgid "You cannot add shipments to draft orders."
-msgstr ""
+msgstr "Вы не можете добавлять отгрузки в проекты заказов."
 
 #: views/modals/admin-page-settings-general-reset-settings.php:13
 msgid "You have to check this before reset plugin."
-msgstr ""
+msgstr "Вы должны проверить это перед сбросом плагина."
 
 #: views/modals/admin-page-settings-general-change-workspace.php:13
 msgid "You must check this before change the workspace."
-msgstr ""
+msgstr "Вы должны проверить это перед изменением рабочей области."
 
 #: views/modals/admin-page-settings-general-trigger-sync.php:11
 msgid "You need to specify the statuses that you use for fulfilment."
 msgstr ""
+"Вам необходимо указать статусы, которые вы используете для фулфилмента."
 
 #: views/admin-page-settings-general.php:86
 #: views/admin-page-status-manager.php:59 src/Admin/Assets.php:85
