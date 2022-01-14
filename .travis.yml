@@ -58,10 +58,11 @@ before_install:
   - sudo /etc/init.d/mysql stop
   - sudo /etc/init.d/postgresql stop
   - sudo apt-get install sshpass
-  - nvm install 10.11.0
+  - nvm install v14
   - node -v
   - npm install -g npm@latest
   - npm install -g gulp-cli
+  - npm rebuild node-sass
   - make ci_before_install
   - make ensure_pingable_hosts
   # Make Composer binaries available w/o the vendor/bin prefix.
