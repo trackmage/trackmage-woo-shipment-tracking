@@ -6,10 +6,9 @@
 
 <h1 align="center">Trackmage - Get Branded Tracking Page for your ecommerce store. WooCommerce shipment tracking plugin for WordPress</h1>
 
-[![Build Status](https://api.travis-ci.com/trackmage/trackmage-woo-shipment-tracking.svg?branch=master)](https://app.travis-ci.com/github/trackmage/trackmage-woo-shipment-tracking)
+[![Build Status](https://gitlab.dev.trackmage.com/karser/trackmage-woo-shipment-tracking/badges/master/pipeline.svg)](https://gitlab.dev.trackmage.com/karser/trackmage-woo-shipment-tracking/pipelines)
 
 [Download plugin from WordPress.org](https://wordpress.org/plugins/trackmage-woo-shipment-tracking/)<br>
-[Download latest master build](https://travis-uploaded-artifacts.s3-us-west-2.amazonaws.com/trackmage/trackmage-woo-shipment-tracking/master/build/trackmage-woo-shipment-tracking.zip)
 <hr>
 <p align="center">
   Your Beautiful, Branded, Highly Customizable TrackMage <b>Tracking Page</b>.
@@ -99,20 +98,18 @@ docker run -it --rm --volumes-from wpbrowser_wp --network container:wpbrowser_wp
 Local commands:
 ```
 export PHP_VERSION=7.2
-make sync_hosts_entries
-make ci_local_prepare
-make ci_before_script
-make ci_script
+make init
+make test
 vendor/bin/codecept run wpunit,unit,functional,acceptance
 XDEBUG_CONFIG="idekey=PhpStorm1" vendor/bin/codecept run wpunit tests/wpunit/Synchronization/OrderSyncTest.php 
-make docker_down
-make down
+vendor/bin/codecept clean
+docker-compose -f docker/docker-compose.yml down
 ```
 
 Manual deployment to wordpress.org
 ```
 make build
-TRAVIS=true WP_ORG_USERNAME=trackmage WP_ORG_PASSWORD= TRAVIS_TAG=v1.0.0 bin/deploy.sh
+CI_SERVER=yes WP_ORG_USERNAME=trackmage WP_ORG_PASSWORD= GIT_TAG=v1.0.0 bin/deploy.sh
 ```
 
 Docs:

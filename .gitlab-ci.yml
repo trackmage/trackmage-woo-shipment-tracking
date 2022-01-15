@@ -1,0 +1,97 @@
+#ENV variables: https://docs.gitlab.com/ce/ci/variables/
+image: karser/docker-compose-ci
+
+stages:
+    - test
+    - deploy
+
+variables:
+    npm_config_cache: '$CI_PROJECT_DIR/.cache/npm'
+
+cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+        - .cache/npm
+        - .composer/cache/files
+
+before_script:
+    - docker -v && docker-compose -v
+
+.run_test: &test_tpl
+    stage: test
+    variables: &test_vars
+        COMPOSE_PROJECT_NAME: 'tm_wp_plugin_test${CI_JOB_ID}'
+        COMPOSE_FILE: 'docker/docker-compose.yml'
+        GIT_BRANCH: ${CI_COMMIT_BRANCH}
+    before_script:
+        - echo ${COMPOSE_PROJECT_NAME}
+        - npm ci && npm run build && rm -rf node_modules/
+        - docker-compose up -d db
+        - docker-compose run --rm waiter
+        - docker-compose exec -T db bash -c 'mysql -u root -e "CREATE DATABASE IF NOT EXISTS wp_test"'
+        - docker-compose up -d
+    script:
+        - docker-compose exec -T wp bash -c '/project/docker/bin/install.sh'
+        - docker-compose exec -T wp bash -c 'cd /project; make info'
+        - docker-compose exec -T wp bash -c 'cd /project; make init'
+        - docker-compose exec -T wp bash -c 'cd /project; make test'
+    after_script:
+        - docker-compose down
+    artifacts:
+        expire_in: 1 week
+        when: always
+        paths:
+            - tests/_output/*.html
+            - build/*.zip
+
+php56_wp52_wc38_build_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '5.6'
+        WORDPRESS_VERSION: '5.2.2'
+        WOOCOMMERCE_VERSION: '3.8.1'
+        ZIP_BUILD: 'true'
+
+php72_wp56_wc48_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '7.2'
+        WORDPRESS_VERSION: '5.6.1'
+        WOOCOMMERCE_VERSION: '4.8.0'
+
+php74_wp58_wc61_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '7.4'
+        WORDPRESS_VERSION: '5.8.3'
+        WOOCOMMERCE_VERSION: '6.1.0'
+
+#php80_wp58_wc61_test:
+#    <<: *test_tpl
+#    variables:
+#        <<: *test_vars
+#        PHP_VERSION: '8.0'
+#        WORDPRESS_VERSION: '5.8.3'
+#        WOOCOMMERCE_VERSION: '6.1.0'
+#
+#php81_wp58_wc61_test:
+#    <<: *test_tpl
+#    variables:
+#        <<: *test_vars
+#        PHP_VERSION: '8.1'
+#        WORDPRESS_VERSION: '5.8.3'
+#        WOOCOMMERCE_VERSION: '6.1.0'
+
+publish:
+    stage: deploy
+    only:
+        - tags
+    variables:
+        GIT_TAG: ${CI_COMMIT_TAG}
+    script:
+        - ls -alh build
+        - unzip -qq build/trackmage-woo-shipment-tracking.zip -d build
+        - bin/deploy.sh

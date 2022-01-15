@@ -2,11 +2,7 @@
 /*
  * If in the contxext of a wp-cli request then use the localhost-accessible database host.
  */
-if (getenv('WPBROWSER_HOST_REQUEST')) {
-    define('DB_HOST', '127.0.0.1:3306');
-} else {
-    define('DB_HOST', 'db');
-}
+define('DB_HOST', 'db');
 define('DB_NAME', 'wp_site');
 define('DB_USER', 'root');
 define('DB_PASSWORD', '');
