@@ -3,8 +3,8 @@
 # This script is based on the article written by Iain Poulson
 # https://deliciousbrains.com/deploying-wordpress-plugins-travis/
 
-if [[ -z "$TRAVIS" ]]; then
-    echo "Script is only to be run by Travis CI" 1>&2
+if [[ -z "$CI_SERVER" ]]; then
+    echo "Script is only to be run by CI" 1>&2
     exit 1
 fi
 
@@ -18,7 +18,7 @@ if [[ -z "$WP_ORG_PASSWORD" ]]; then
     exit 1
 fi
 
-if [[ -z "$TRAVIS_TAG" ]]; then
+if [[ -z "$GIT_TAG" ]]; then
     echo "Build tag is required" 1>&2
     exit 1
 fi
@@ -33,9 +33,9 @@ if [[ -z "$VERSION" ]]; then
     exit 1
 fi
 
-if [ "$TRAVIS_TAG" != "$VERSION" ] && [ "$TRAVIS_TAG" != "v$VERSION" ]; then
+if [ "$GIT_TAG" != "$VERSION" ] && [ "$GIT_TAG" != "v$VERSION" ]; then
     echo "Versions don't match. Did you forget to bump version in trackmage.php?" 1>&2
-    echo "VERSION FROM TRAVIS TAG: $TRAVIS_TAG; VERSION FROM trackmage.php: $VERSION" 1>&2
+    echo "VERSION FROM GIT TAG: $GIT_TAG; VERSION FROM trackmage.php: $VERSION" 1>&2
     exit 1
 fi
 
