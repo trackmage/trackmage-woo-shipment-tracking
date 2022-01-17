@@ -6,7 +6,7 @@ apt-get -y update && apt-get install -y jq libicu-dev mariadb-client rsync zip u
 docker-php-ext-configure intl && docker-php-ext-install intl
 php -m
 
-curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --version=1.10.24
+curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 composer --version
 composer global require hirak/prestissimo
 

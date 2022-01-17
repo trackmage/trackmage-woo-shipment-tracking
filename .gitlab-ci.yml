@@ -69,21 +69,21 @@ php74_wp58_wc61_test:
         WORDPRESS_VERSION: '5.8.3'
         WOOCOMMERCE_VERSION: '6.1.0'
 
-#php80_wp58_wc61_test:
-#    <<: *test_tpl
-#    variables:
-#        <<: *test_vars
-#        PHP_VERSION: '8.0'
-#        WORDPRESS_VERSION: '5.8.3'
-#        WOOCOMMERCE_VERSION: '6.1.0'
-#
-#php81_wp58_wc61_test:
-#    <<: *test_tpl
-#    variables:
-#        <<: *test_vars
-#        PHP_VERSION: '8.1'
-#        WORDPRESS_VERSION: '5.8.3'
-#        WOOCOMMERCE_VERSION: '6.1.0'
+php80_wp58_wc61_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '8.0'
+        WORDPRESS_VERSION: '5.8.3'
+        WOOCOMMERCE_VERSION: '6.1.0'
+
+php81_wp58_wc61_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '8.1'
+        WORDPRESS_VERSION: '5.8.3'
+        WOOCOMMERCE_VERSION: '6.1.0'
 
 publish:
     stage: deploy
