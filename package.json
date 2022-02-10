@@ -29,7 +29,7 @@
     "gulp-wp-pot": "^2.3.6",
     "gulp-zip": "^4.2.0",
     "jshint": "^2.11.0",
-    "node-sass": "^4.14.1"
+    "node-sass": "^7.0.0"
   },
   "dependencies": {
     "bootstrap": "^4.4.1",
