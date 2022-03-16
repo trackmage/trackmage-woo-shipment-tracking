@@ -40,6 +40,7 @@ class Assets {
         $suffix   = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
 
         // Register admin styles.
+        wp_register_style('trackmage-bootstrap', TRACKMAGE_URL . 'assets/dist/css/admin/bootstrap' . $suffix . '.css', [], TRACKMAGE_VERSION, 'all');
         wp_register_style('trackmage_admin', TRACKMAGE_URL . 'assets/dist/css/admin/main' . $suffix . '.css', [], TRACKMAGE_VERSION, 'all');
 
         // Enqueue WooCommerce styles.
@@ -49,6 +50,7 @@ class Assets {
         }
 
         // Enqueue admin styles.
+        wp_enqueue_style('trackmage-bootstrap');
         wp_enqueue_style('trackmage_admin');
     }
 
@@ -64,6 +66,7 @@ class Assets {
         $suffix   = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
 
         // Register admin scripts.
+
         wp_register_script('trackmage-admin', TRACKMAGE_URL . 'assets/dist/js/admin/main' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
         wp_register_script('trackmage-admin-settings', TRACKMAGE_URL . 'assets/dist/js/admin/settings' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
         wp_register_script('trackmage-admin-status-manager', TRACKMAGE_URL . 'assets/dist/js/admin/status-manager' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
