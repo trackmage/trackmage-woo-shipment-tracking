@@ -348,6 +348,36 @@
       width: 50% !important;
     }
   }
+
+  .action-button {
+    width: auto;
+    max-width: 100%;
+    padding: 12px 15px;
+    border-radius: 200px;
+    border: 1px solid transparent;
+    box-shadow: rgba(0 0 0, 0.4) 0 5px 10px 0;
+    background-image: none !important;
+    background-color: rgb(238, 114, 39) !important;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    margin: 10px 0 10px 5px;
+    -webkit-transition: all .3s;
+    -moz-transition: all .3s;
+    -o-transition: all .3s;
+    transition: all .3s;
+    outline: none;
+    text-decoration: none !important;
+    line-height: 1.2em;
+    font-size: 18px;
+    display: block;
+
+    &:hover, &:focus{
+      color: rgb(241, 99, 52) !important;
+      background-color: rgb(250, 241, 239) !important;
+      border-color: rgb(241, 99, 52) !important;
+    }
+  }
 }
 
 /** Status Manager */
@@ -488,3 +518,5 @@
     }
   }
 }
+
+
