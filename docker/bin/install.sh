@@ -10,7 +10,12 @@ curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin
 composer --version
 composer global require hirak/prestissimo
 
-curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp
+if [[ $PHP_VERSION = "5.6" ]]; then
+    WPCLI_INSTALL_URL=https://github.com/wp-cli/wp-cli/releases/download/v2.5.0/wp-cli-2.5.0.phar
+else
+    WPCLI_INSTALL_URL=https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+fi
+curl -L -o wp ${WPCLI_INSTALL_URL} && chmod +x ./wp && mv ./wp /usr/local/bin/
 wp --info
 
 chown -R www-data:www-data /var/www
