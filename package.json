@@ -34,6 +34,6 @@
   "dependencies": {
     "bootstrap": "^4.4.1",
     "jquery-bootstrap-wizard": "^1.4.2",
-    "jquery-validation": "^1.19.4"
+    "jquery-validation": "^1.19.5"
   }
 }
