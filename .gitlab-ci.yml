@@ -51,6 +51,7 @@ php74_wp53_wc45_test:
         PHP_VERSION: '7.4'
         WORDPRESS_VERSION: '5.3'
         WOOCOMMERCE_VERSION: '4.5.0'
+        ZIP_BUILD: 'true'
 
 php74_wp58_wc61_test:
     <<: *test_tpl
