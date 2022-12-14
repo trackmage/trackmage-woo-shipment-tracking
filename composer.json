@@ -17,10 +17,11 @@
 	"require-dev": {
 		"ext-intl": "*",
 		"automattic/vipwpcs": "^2.3",
+		"codeception/module-db": "^2.1",
 		"composer/composer": "^2.4",
 		"lucatume/wp-browser": "^3.0",
 		"phpcompatibility/phpcompatibility-wp": "*",
-		"phpunit/phpunit": "^9.5",
+		"phpunit/phpunit": "^8.0",
 		"squizlabs/php_codesniffer": "^3.7.1",
 		"wp-coding-standards/wpcs": "^2.3.0"
 	},

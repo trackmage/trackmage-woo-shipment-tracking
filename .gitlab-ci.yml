@@ -50,7 +50,7 @@ php74_wp53_wc45_test:
         <<: *test_vars
         PHP_VERSION: '7.4'
         WORDPRESS_VERSION: '5.3'
-        WOOCOMMERCE_VERSION: '4.5'
+        WOOCOMMERCE_VERSION: '4.5.0'
 
 php74_wp58_wc61_test:
     <<: *test_tpl
@@ -74,7 +74,7 @@ php81_wp61_wc72_test:
         <<: *test_vars
         PHP_VERSION: '8.1'
         WORDPRESS_VERSION: '6.1.1'
-        WOOCOMMERCE_VERSION: '7.2'
+        WOOCOMMERCE_VERSION: '7.2.0'
 #
 #php81_wp58_wc61_test:
 #    <<: *test_tpl

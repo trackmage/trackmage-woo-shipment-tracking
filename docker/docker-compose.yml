@@ -10,7 +10,7 @@ services:
             - "wp.test:127.0.0.1"
 
     db:
-        image: mariadb:latest
+        image: mariadb:10.3.6
         environment:
             MYSQL_ALLOW_EMPTY_PASSWORD: 1
             MYSQL_DATABASE: wp_site
