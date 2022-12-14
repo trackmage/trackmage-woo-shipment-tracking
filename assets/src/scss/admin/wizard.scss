@@ -65,10 +65,10 @@ body{
   font-size: 10px;
   position: relative;
   text-indent: -9999em;
-  border-top: ($loader-size/10)*1.1rem solid $loader-sub-color;
-  border-right: ($loader-size/10)*1.1rem solid $loader-sub-color;
-  border-bottom: ($loader-size/10)*1.1rem solid $loader-sub-color;
-  border-left: ($loader-size/10)*1.1rem solid $loader-color;
+  border-top: calc($loader-size/10)*1.1rem solid $loader-sub-color;
+  border-right: calc($loader-size/10)*1.1rem solid $loader-sub-color;
+  border-bottom: calc($loader-size/10)*1.1rem solid $loader-sub-color;
+  border-left: calc($loader-size/10)*1.1rem solid $loader-color;
   -webkit-transform: translateZ(0);
   -ms-transform: translateZ(0);
   transform: translateZ(0);
@@ -225,7 +225,7 @@ body{
   li {
     list-style-type: none;
     font-size: 15px;
-    width: 100/3*1%;
+    width: calc(100/3)*1%;
     float: left;
     position: relative;
     font-weight: 400;

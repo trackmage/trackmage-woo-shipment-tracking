@@ -63,11 +63,6 @@ composer install
 npm install
 npm run build
 ```
-In case of `npm run build` errors run
-```
-npm install -g gulp-cli
-npm rebuild node-sass
-```
 
 Add this to wp-config.php to change the api domain:
 ```
@@ -97,7 +92,7 @@ docker run -it --rm --volumes-from wpbrowser_wp --network container:wpbrowser_wp
 
 Local commands:
 ```
-export PHP_VERSION=7.2
+export PHP_VERSION=7.4
 make init
 make test
 vendor/bin/codecept run wpunit,unit,functional,acceptance
