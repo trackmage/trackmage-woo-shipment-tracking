@@ -30,7 +30,7 @@ class Orders {
         add_filter( 'init', [ $this, 'register_order_statuses' ] );
 
         if (Helper::canSync()) {
-            add_action( 'add_meta_boxes', [ $this, 'add_meta_box' ] );
+            add_action( 'add_meta_boxes', [ $this, 'add_meta_box' ], 10, 2 );
             add_action( 'save_post', [ $this, 'save_meta_box' ] );
         }
     }
@@ -46,15 +46,17 @@ class Orders {
      *
      * @since 0.1.0
      */
-    public function add_meta_box() {
-        add_meta_box(
-            'trackmage-shipment-tracking',
-            __( 'TrackMage Shipment Tracking', 'trackmage' ),
-            [ $this, 'meta_box_html' ],
-            'shop_order',
-            'advanced',
-            'high'
-        );
+    public function add_meta_box(string $post_type, ?\WP_Post $post = null): void {
+        if($post_type === 'shop_order' && null !== $post && !in_array($trackmage_order_id = get_post_meta( $post->ID, '_trackmage_order_id', true ), [null, false, ''])) {
+            add_meta_box(
+                'trackmage-shipment-tracking',
+                __( 'TrackMage Shipment Tracking', 'trackmage' ),
+                [ $this, 'meta_box_html' ],
+                'shop_order',
+                'advanced',
+                'high'
+            );
+        }
     }
 
     /**

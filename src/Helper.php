@@ -252,12 +252,9 @@ class Helper {
         $order = wc_get_order($orderId);
         $orderItems = self::getOrderItems($order);
         $shipments = $shipmentRepo->findBy(['orderNumbers' => $order->get_order_number()]);
-        $shipmentItems = $shipmentItemRepo->findBy(['orderNumber.id' => $trackmageOrderId]);
         foreach ($shipments as &$shipment) {
-            $items = array_filter($shipmentItems, function($shipmentItem) use ($shipment) {
-                return $shipmentItem['shipment'] === $shipment['@id'];
-            });
-            $shipment['items'] = self::mapOrderItemsToShipmentItem($orderItems, $items);
+            $shipmentItems = $shipmentItemRepo->findBy(['shipment.id' => $shipment['id']]);
+            $shipment['items'] = self::mapOrderItemsToShipmentItem($orderItems, $shipmentItems);
         }
         unset($shipment);
         return $shipments;
@@ -395,7 +392,7 @@ class Helper {
      * @since 0.1.0
      *
      */
-    public static function add_css_class( $condition = false, $class = '', $leading_space = false, $echo = false ): string
+    public static function add_css_class(bool $condition = false, string $class = '', bool $leading_space = false, bool $echo = false )
     {
         if ( $condition ) {
             $output = ( $leading_space ? ' ' : '' ) . $class;

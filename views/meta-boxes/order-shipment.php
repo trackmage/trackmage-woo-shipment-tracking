@@ -9,7 +9,7 @@
 defined( 'WPINC' ) || exit;
 
 $carrierKey = array_search($shipment['originCarrier'], array_column($carriers, 'code'), true);
-$carrier = $carrierKey ? esc_attr($carriers[$carrierKey]['name']) : __('No Info', 'trackmage');
+$carrier = false !== $carrierKey ? esc_attr($carriers[$carrierKey]['name']) : __('No Info', 'trackmage');
 ?>
 <tr class="shipment" data-id="<?php echo $shipment['id']; ?>">
     <td class="shipment__tracking-number">
