@@ -9,11 +9,11 @@
 defined( 'WPINC' ) || exit;
 
 $carrierKey = array_search($shipment['originCarrier'], array_column($carriers, 'code'), true);
-$carrier = $carrierKey ? esc_attr($carriers[$carrierKey]['name']) : __('No Info', 'trackmage');
+$carrier = false !== $carrierKey ? esc_attr($carriers[$carrierKey]['name']) : __('No Info', 'trackmage');
 ?>
 <tr class="shipment" data-id="<?php echo $shipment['id']; ?>">
     <td class="shipment__tracking-number">
-        <a href=""><?php echo $shipment['trackingNumber'] !== null ? esc_attr($shipment['trackingNumber']) : __('No Info', 'trackmage'); ?></a>
+        <a href="<?php echo \TrackMage\WordPress\Helper::getTrackingPageLink(['id' => $shipment['id']]) ?? '';?>"><?php echo $shipment['trackingNumber'] !== null ? esc_attr($shipment['trackingNumber']) : __('No Info', 'trackmage'); ?></a>
     </td>
     <td class="shipment__status"><?php echo $shipment['trackingStatus'] !== null ? ucwords(str_replace('_',' ', $shipment['trackingStatus'])) : __('No Info', 'trackmage')?></td>
     <td class="shipment__carrier">

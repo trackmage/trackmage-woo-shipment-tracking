@@ -131,10 +131,11 @@ class Plugin {
      * @since 0.1.0
      * @return TrackMageClient
      */
-    public static function get_client($config = []) {
+    public static function get_client($config = []): ?TrackMageClient
+    {
         if ( null === self::$client ) {
-            $client_id = isset( $config['client_id'] ) ? $config['client_id'] : get_option( 'trackmage_client_id', '' );
-            $client_secret = isset( $config['client_secret'] ) ? $config['client_secret'] : get_option( 'trackmage_client_secret', '' );
+            $client_id = $config['client_id'] ?? get_option('trackmage_client_id', '');
+            $client_secret = $config['client_secret'] ?? get_option('trackmage_client_secret', '');
             $mw = RemoveTransientOnErrorMiddleware::get($client_id, $client_secret);
             self::$client = new TrackMageClient( $client_id, $client_secret, null, TRACKMAGE_API_DOMAIN, null, $mw);
         }
@@ -145,7 +146,7 @@ class Plugin {
     /**
      * @return Synchronizer
      */
-    public function getSynchronizer()
+    public function getSynchronizer(): Synchronizer
     {
         if ($this->synchronizer === null) {
             $this->synchronizer = new Synchronizer($this->getLogger(), $this->getOrderSync(), $this->getOrderItemSync(),
@@ -158,7 +159,7 @@ class Plugin {
     /**
      * @return Endpoint
      */
-    public function getEndpoint()
+    public function getEndpoint(): Endpoint
     {
         if($this->endpoint === null){
             $this->endpoint = new Endpoint($this->getLogger(), $this->getOrdersMapper());
@@ -170,7 +171,8 @@ class Plugin {
     /**
      * @return self
      */
-    public static function instance() {
+    public static function instance(): self
+    {
         if(null === self::$instance) {
             global $wpdb;
             self::$instance = new self($wpdb);
@@ -212,7 +214,8 @@ class Plugin {
     /**
      * @return ShipmentRepository
      */
-    public function getShipmentRepo() {
+    public function getShipmentRepo(): ?ShipmentRepository
+    {
         if($this->shipmentRepo === null) {
             $this->shipmentRepo = new ShipmentRepository($this->getShipmentSync());
         }
@@ -222,7 +225,8 @@ class Plugin {
     /**
      * @return ShipmentItemRepository
      */
-    public function getShipmentItemsRepo() {
+    public function getShipmentItemsRepo(): ?ShipmentItemRepository
+    {
         if($this->shipmentItemRepo === null) {
             $this->shipmentItemRepo = new ShipmentItemRepository($this->getShipmentItemSync());
         }
@@ -232,7 +236,8 @@ class Plugin {
     /**
      * @return LogRepository
      */
-    public function getLogRepo() {
+    public function getLogRepo(): ?LogRepository
+    {
         if($this->logRepo === null) {
             $this->logRepo = new LogRepository($this->wpdb, $this->dropOnDeactivate);
         }
@@ -242,7 +247,8 @@ class Plugin {
     /**
      * @return BackgroundTaskRepository
      */
-    public function getBackgroundTaskRepo() {
+    public function getBackgroundTaskRepo(): ?BackgroundTaskRepository
+    {
         if($this->backgroundTaskRepo === null) {
             $this->backgroundTaskRepo = new BackgroundTaskRepository($this->wpdb, $this->dropOnDeactivate);
         }
@@ -252,7 +258,8 @@ class Plugin {
     /**
      * @return Logger
      */
-    public function getLogger() {
+    public function getLogger(): ?Logger
+    {
         if($this->logger === null) {
             $this->logger = new Logger($this->getLogRepo());
         }
@@ -262,7 +269,8 @@ class Plugin {
     /**
      * @return EntityRepositoryInterface[]
      */
-    public function getRepos() {
+    public function getRepos(): array
+    {
         return [$this->getLogRepo(), $this->getBackgroundTaskRepo()];
     }
 
@@ -274,7 +282,7 @@ class Plugin {
     /**
      * @return OrderSync
      */
-    public function getOrderSync()
+    public function getOrderSync(): ?OrderSync
     {
         if (null === $this->orderSync) {
             $this->orderSync = new OrderSync($this->getIntegrationId());
@@ -285,7 +293,7 @@ class Plugin {
     /**
      * @return ShipmentSync
      */
-    public function getShipmentSync()
+    public function getShipmentSync(): ?ShipmentSync
     {
         if (null === $this->shipmentSync) {
             $this->shipmentSync = new ShipmentSync($this->getIntegrationId());

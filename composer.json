@@ -1,7 +1,7 @@
 {
 	"name": "trackmage/trackmage-woo-shipment-tracking",
 	"type": "wordpress-plugin",
-    "version": "1.0.0",
+    "version": "1.1.0",
 	"description": "TrackMage integrates shipments tracking into your WooCommerce store",
 	"keywords": [
 		"trackmage"
@@ -9,26 +9,37 @@
 	"homepage": "https://github.com/trackmage/trackmage-woo-shipment-tracking",
 	"license": "GPL-3.0-or-later",
 	"require": {
+        "php": "^7.4 | ^8.1",
 		"ext-json": "*",
 		"psr/log": "^1.1",
 		"trackmage/trackmage-sdk-php": "^0.3.2"
 	},
 	"require-dev": {
 		"ext-intl": "*",
-		"automattic/vipwpcs": "^2.0",
-		"composer/composer": "^1.9.0 <1.10.7",
-		"dealerdirect/phpcodesniffer-composer-installer": "^0.5.0",
+		"automattic/vipwpcs": "^2.3",
+		"codeception/module-asserts": "^1.0",
+		"codeception/module-cli": "^1.0",
+		"codeception/module-db": "^1.0",
+		"codeception/module-filesystem": "^1.0",
+		"codeception/module-phpbrowser": "^1.0",
+		"codeception/module-rest": "^2.0",
+		"codeception/module-webdriver": "^1.0",
+		"codeception/util-universalframework": "^1.0",
+		"composer/composer": "^2.2",
+		"lucatume/wp-browser": "^3.0",
 		"phpcompatibility/phpcompatibility-wp": "*",
-		"phpunit/phpunit": "^5.7",
-		"squizlabs/php_codesniffer": "^3.4.2",
-		"wp-coding-standards/wpcs": "^2.1.1",
-		"lucatume/wp-browser": "~2.3.4"
-    },
+		"phpunit/phpunit": "^7.0",
+		"squizlabs/php_codesniffer": "^3.7.1",
+		"wp-coding-standards/wpcs": "^2.3.0"
+	},
 	"config": {
 		"platform": {
-			"php": "5.6.40"
+			"php": "7.4.33"
 		},
-		"sort-packages": true
+		"sort-packages": true,
+        "allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
 	},
 	"autoload": {
 		"psr-4": {

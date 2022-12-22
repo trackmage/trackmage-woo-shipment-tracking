@@ -1,10 +1,10 @@
 === TrackMage - Woo Shipment Tracking ===
 Contributors: trackmage,karser,harbuzniak
 Tags: shipping, tracking, order, status, delivery, shipment tracking, order tracking, order status, carrier, carriers
-Requires at least: 4.9.1
-Tested up to: 5.9.2
-Requires PHP: 5.6
-Stable tag: 1.0.14
+Requires at least: 5.3
+Tested up to: 6.1.1
+Requires PHP: 7.4
+Stable tag: 1.1.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -52,9 +52,9 @@ With TrackMage you can analyze your carrier’s performance across all channels 
 
 = Minimum Requirements =
 
-* WordPress 4.9.1 or greater. WordPress 5.4 or greater is recommended
-* WooCommerce 3.8 or greater. WooCommerce 4.2.0 or greater is recommended
-* PHP version 5.6 or greater. PHP 7.4 or greater is recommended
+* WordPress 5.3 or greater. WordPress 6.0 or greater is recommended
+* WooCommerce 4.5 or greater. WooCommerce 7.0 or greater is recommended
+* PHP version 7.4 or greater. PHP 7.4 or greater is recommended
 * MySQL version 5.6 or greater. MySQL 8.0 or greater is recommended
 
 
@@ -65,6 +65,10 @@ With TrackMage you can analyze your carrier’s performance across all channels 
 3. Go through the Onboarding wizard in the Plugin
 
 == Changelog ==
+= 1.1.0 =
+* Added support for WordPress 6.1.1 and WooCommerce 7.2
+* Bugfixes and enhancements
+
 = 1.0.14 =
 * Added support for WordPress 5.9.2 and WooCommerce 6.3.1
 * Minor bugfixes and enhancements

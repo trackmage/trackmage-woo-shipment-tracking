@@ -7,11 +7,12 @@ use TrackMage\WordPress\Helper;
 
 defined('WPINC') || exit;
 
-$order = wc_get_order($orderId);
-if($order->get_status() !== 'auto-draft'){
-$orderItems = $order->get_items();
-$shipments = Helper::getOrderShipmentsWithJoinedItems($orderId);
-$carriers = Helper::get_shipment_carriers();
+$trackmage_order_id = get_post_meta( $orderId, '_trackmage_order_id', true );
+if(!in_array($trackmage_order_id, [null, false, ''])){
+    $order = wc_get_order($orderId);
+    $orderItems = $order->get_items();
+    $shipments = Helper::getOrderShipmentsWithJoinedItems($orderId);
+    $carriers = Helper::get_shipment_carriers();
 ?>
 <input type="hidden" value="<?php echo $orderId; ?>" name="trackmage_order_id" />
 <div class="shipments">
@@ -61,8 +62,4 @@ $carriers = Helper::get_shipment_carriers();
     <p class="description"><?php _e('Note! The deletion of shipment cannot be undone.', 'trackmage');?></p>
 </div>
 <span class="spinner"></span>
-<?php } else { ?>
-<div class="shipments">
-    <p style="margin-left: 12px;"><strong><?php _e('You cannot add shipments to draft orders.', 'trackmage');?></strong></p>
-</div>
-<?php } ?>
+<?php }

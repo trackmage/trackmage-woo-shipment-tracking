@@ -44,22 +44,14 @@ before_script:
             - tests/_output/*.html
             - build/*.zip
 
-php56_wp52_wc38_build_test:
+php74_wp53_wc45_test:
     <<: *test_tpl
     variables:
         <<: *test_vars
-        PHP_VERSION: '5.6'
-        WORDPRESS_VERSION: '5.2.2'
-        WOOCOMMERCE_VERSION: '3.8.1'
+        PHP_VERSION: '7.4'
+        WORDPRESS_VERSION: '5.3'
+        WOOCOMMERCE_VERSION: '4.5.0'
         ZIP_BUILD: 'true'
-
-php72_wp56_wc48_test:
-    <<: *test_tpl
-    variables:
-        <<: *test_vars
-        PHP_VERSION: '7.2'
-        WORDPRESS_VERSION: '5.6.1'
-        WOOCOMMERCE_VERSION: '4.8.0'
 
 php74_wp58_wc61_test:
     <<: *test_tpl
@@ -77,13 +69,13 @@ php74_wp59_wc63_test:
         WORDPRESS_VERSION: '5.9.2'
         WOOCOMMERCE_VERSION: '6.3.1'
 
-#php80_wp58_wc61_test:
-#    <<: *test_tpl
-#    variables:
-#        <<: *test_vars
-#        PHP_VERSION: '8.0'
-#        WORDPRESS_VERSION: '5.8.3'
-#        WOOCOMMERCE_VERSION: '6.1.0'
+php81_wp61_wc72_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '8.1'
+        WORDPRESS_VERSION: '6.1.1'
+        WOOCOMMERCE_VERSION: '7.2.0'
 #
 #php81_wp58_wc61_test:
 #    <<: *test_tpl

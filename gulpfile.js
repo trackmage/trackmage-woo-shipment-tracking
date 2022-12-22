@@ -1,7 +1,7 @@
 // External packages.
 const gulp = require("gulp"),
   rename = require("gulp-rename"),
-  sass = require("gulp-sass"),
+  sass = require('gulp-sass')(require('sass')),
   wpPot = require("gulp-wp-pot"),
   babel = require("gulp-babel"),
   uglify = require("gulp-uglify"),
@@ -55,7 +55,7 @@ const copyJqueryBsWizardJs = () => {
 const compileScss = () => {
   return gulp
     .src([paths.styles.frontend.src + "**/*.scss"])
-    .pipe(sass())
+    .pipe(sass().on('error', sass.logError))
     .pipe(rename({ extname: ".css" }))
     .pipe(gulp.dest(paths.styles.frontend.dist));
 };
@@ -104,7 +104,7 @@ const minifyJs = () => {
 const compileAdminScss = () => {
   return gulp
     .src([paths.styles.admin.src + "**/*.scss"])
-    .pipe(sass())
+    .pipe(sass().on('error', sass.logError))
     .pipe(rename({ extname: ".css" }))
     .pipe(gulp.dest(paths.styles.admin.dist));
 };

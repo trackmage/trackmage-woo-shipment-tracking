@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * Utilities and helper functions.
  *
@@ -33,7 +33,8 @@ class Helper {
      *
      * @return int 0 if invalid, 1 if valid or 2 otherwise.
      */
-    public static function check_credentials( $client_id = false, $client_secret = false ) {
+    public static function check_credentials( $client_id = false, $client_secret = false ): int
+    {
         $client_id = ($client_id !== false) ? trim($client_id) : get_option( 'trackmage_client_id', '' );
         $client_secret = ($client_secret !== false) ? trim($client_secret) : get_option( 'trackmage_client_secret', '' );
 
@@ -61,7 +62,7 @@ class Helper {
      * @return array|false Of workspaces, or an empty array if no workspaces found.
      * @since 0.1.0
      */
-    public static function get_workspaces($refresh = false) {
+    public static function get_workspaces(bool $refresh = false) {
         $workspaces = get_transient( 'trackmage_workspaces' );
         if ( false === $workspaces || $refresh) {
             try {
@@ -92,7 +93,8 @@ class Helper {
      * @since 0.1.0
      * @return array List of carriers.
      */
-    public static function get_shipment_carriers() {
+    public static function get_shipment_carriers(): array
+    {
         $carriers = get_transient('trackmage_carriers');
 
         if ( false === $carriers ) {
@@ -124,7 +126,8 @@ class Helper {
      * @since 0.1.0
      * @return array List of aliases.
      */
-    public static function get_aliases() {
+    public static function get_aliases(): array
+    {
         $workspaceId = get_option( 'trackmage_workspace', 0 );
         $cachedAliases = get_transient('trackmage_order_statuses');
         $aliases = [];
@@ -151,7 +154,8 @@ class Helper {
      * @return array List of aliases.
      */
 
-    public static function get_used_aliases() {
+    public static function get_used_aliases(): array
+    {
         $usedAliases = get_option( 'trackmage_order_status_aliases', [] );
         return array_values(array_filter($usedAliases));
     }
@@ -160,7 +164,7 @@ class Helper {
      * @param \WC_Order $order
      * @return string|null
      */
-    public static function getOrderTrackingPageLink($order)
+    public static function getOrderTrackingPageLink(\WC_Order $order): ?string
     {
         $order_id = $order->get_id();
         $link = get_post_meta( $order_id, '_trackmage_tracking_page_link', true );
@@ -173,10 +177,8 @@ class Helper {
         return $link;
     }
 
-    /**
-     * @return string|null
-     */
-    public static function getTrackingPageLink( array $filter) {
+    public static function getTrackingPageLink( array $filter): ?string
+    {
         if(empty($filter)) {
             return null;
         }
@@ -196,17 +198,15 @@ class Helper {
                 'filter' => $filter,
             ]]);
             $data = TrackMageClient::item($response);
-            return isset($data['link']) ? $data['link']: null;
+            return $data['link'] ?? null;
         } catch( ClientException $e ) {
-            error_log('Error in getTrackingPageLink: ', TrackMageClient::error($e));
+            error_log('Error in getTrackingPageLink: '. TrackMageClient::error($e));
         }
         return null;
     }
 
-    /**
-     * @return string|null
-     */
-    public static function requestShipmentsInfoByEmail( string $email) {
+    public static function requestShipmentsInfoByEmail( string $email): ?string
+    {
         if(empty($email)) {
             return null;
         }
@@ -216,21 +216,21 @@ class Helper {
         try {
             $response = $client->get( '/workspaces/' . $workspaceId );
             $data = TrackMageClient::item($response);
-            $trackingPageId = isset($data['defaultTrackingPage']) ? $data['defaultTrackingPage'] : null;
+            $trackingPageId = $data['defaultTrackingPage'] ?? null;
             if ($trackingPageId === null || $trackingPageId === '') {
                 error_log(sprintf('defaultTrackingPage is empty for workspace %s', $workspaceId), 0);
                 return null;
             }
             $response = $client->get($trackingPageId);
             $trackingPage = TrackMageClient::item($response);
-            $subdomain = isset($trackingPage['subdomain']) ? $trackingPage['subdomain'] : null;
+            $subdomain = $trackingPage['subdomain'] ?? null;
             if ($subdomain === null || $subdomain === '') {
                 error_log(sprintf('subdomain is empty for tracking page %s', $trackingPageId), 0);
                 return null;
             }
             $response = $client->get( "/public/tracking_page_by_domain/{$subdomain}/link_search/{$email}");
             $data = TrackMageClient::item($response);
-            return isset($data['text']) ? $data['text']: null;
+            return $data['text'] ?? null;
         } catch( ClientException $e ) {
             error_log('Error in getTrackingPageLink: '. TrackMageClient::error($e), 0);
         }
@@ -241,7 +241,7 @@ class Helper {
      * @param int $orderId
      * @return array of shipments
      */
-    public static function getOrderShipmentsWithJoinedItems($orderId)
+    public static function getOrderShipmentsWithJoinedItems($orderId): array
     {
         $trackmageOrderId = get_post_meta( $orderId, '_trackmage_order_id', true );
         if (empty($trackmageOrderId))
@@ -252,12 +252,9 @@ class Helper {
         $order = wc_get_order($orderId);
         $orderItems = self::getOrderItems($order);
         $shipments = $shipmentRepo->findBy(['orderNumbers' => $order->get_order_number()]);
-        $shipmentItems = $shipmentItemRepo->findBy(['orderNumber.id' => $trackmageOrderId]);
         foreach ($shipments as &$shipment) {
-            $items = array_filter($shipmentItems, function($shipmentItem) use ($shipment) {
-                return $shipmentItem['shipment'] === $shipment['@id'];
-            });
-            $shipment['items'] = self::mapOrderItemsToShipmentItem($orderItems, $items);
+            $shipmentItems = $shipmentItemRepo->findBy(['shipment.id' => $shipment['id']]);
+            $shipment['items'] = self::mapOrderItemsToShipmentItem($orderItems, $shipmentItems);
         }
         unset($shipment);
         return $shipments;
@@ -267,7 +264,7 @@ class Helper {
      * @param int $id
      * @return array
      */
-    public static function geShipmentWithJoinedItems($id, $orderId)
+    public static function geShipmentWithJoinedItems($id, $orderId): array
     {
         $shipmentRepo = Plugin::instance()->getShipmentRepo();
         $shipmentItemRepo = Plugin::instance()->getShipmentItemsRepo();
@@ -281,7 +278,7 @@ class Helper {
     }
 
 
-    public static function isBulkSynchronizationInProcess()
+    public static function isBulkSynchronizationInProcess(): bool
     {
         global $wpdb;
         $activeTasks = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM ".($wpdb->prefix.'trackmage_background_task')." WHERE action = %s AND (status = %s OR status = %s)","trackmage_bulk_orders_sync", "processing", "new" ) , ARRAY_A );
@@ -292,10 +289,10 @@ class Helper {
      * @param array $shipment
      * @return array
      */
-    public static function saveShipmentWithJoinedItems(array $shipment)
+    public static function saveShipmentWithJoinedItems(array $shipment): array
     {
         $shipmentRepo = Plugin::instance()->getShipmentRepo();
-        $shipmentId = isset($shipment['id']) ? $shipment['id'] : null;
+        $shipmentId = $shipment['id'] ?? null;
         if (null !== $shipmentId) {
             unset($shipment['id']);
             $shipment = $shipmentRepo->update($shipmentId, $shipment);
@@ -313,14 +310,15 @@ class Helper {
     /**
      * @param int $shipmentId
      */
-    public static function deleteShipment($shipmentId)
+    public static function deleteShipment(int $shipmentId)
     {
         $shipmentRepo = Plugin::instance()->getShipmentRepo();
         do_action('trackmage_delete_shipment', $shipmentId);
         $shipmentRepo->delete($shipmentId);
     }
 
-    public static function getOrderStatuses() {
+    public static function getOrderStatuses(): array
+    {
         $statuses = [];
         $get_statuses = wc_get_order_statuses();
 
@@ -341,14 +339,15 @@ class Helper {
     /**
      * Get order status details by slug.
      *
-     * @since 0.1.0
-     *
-     * @param $slug Status slug.
+     * @param string $slug Status slug.
      * @return array|null Status details or null if not found.
+     *@since 0.1.0
+     *
      */
-    public static function get_order_status_by_slug( $slug ) {
+    public static function get_order_status_by_slug( string $slug ): ?array
+    {
         $statuses = self::getOrderStatuses();
-        return isset( $statuses[ $slug ] ) ? $statuses[ $slug ] : null;
+        return $statuses[$slug] ?? null;
     }
 
     /**
@@ -357,7 +356,8 @@ class Helper {
      * @since 0.1.0
      * @return array Array of headers.
      */
-    public static function getallheaders() {
+    public static function getallheaders(): array
+    {
         $headers = array();
 
         foreach ( $_SERVER as $name => $value ) {
@@ -375,7 +375,8 @@ class Helper {
      * @since 0.1.0
      * @return string Endpoint URL.
      */
-    public static function get_endpoint() {
+    public static function get_endpoint(): string
+    {
         return get_site_url( null, '/?trackmage=callback' );
     }
 
@@ -391,7 +392,8 @@ class Helper {
      * @since 0.1.0
      *
      */
-    public static function add_css_class( $condition = false, $class = '', $leading_space = false, $echo = false ) {
+    public static function add_css_class(bool $condition = false, string $class = '', bool $leading_space = false, bool $echo = false )
+    {
         if ( $condition ) {
             $output = ( $leading_space ? ' ' : '' ) . $class;
 
@@ -408,15 +410,16 @@ class Helper {
      *
      * The leading and trailing spaces will not be printed out if all attributes have empty values.
      *
-     * @since 0.1.0
-     *
      * @param array $atts           Attributes and their values.
-     * @param bool  $leading_space  Whether to add a leading space (default: false).
-     * @param bool  $trailing_space Whether to add a trailing space (default: false).
-     * @param bool  $echo           Whether to echo or return the output (default: false).
+     * @param bool $leading_space  Whether to add a leading space (default: false).
+     * @param bool $trailing_space Whether to add a trailing space (default: false).
+     * @param bool $echo           Whether to echo or return the output (default: false).
      * @return string Tag attributes.
+     *@since 0.1.0
+     *
      */
-    public static function generate_html_tag_atts( $atts, $leading_space = false, $trailing_space = false, $echo = false ) {
+    public static function generate_html_tag_atts(array $atts, bool $leading_space = false, bool $trailing_space = false, bool $echo = false ): string
+    {
         $output =  '';
         $atts_count = 0;
 
@@ -441,13 +444,14 @@ class Helper {
     /**
      * Generates inline style string.
      *
-     * @since 0.1.0
-     *
      * @param array $props Array of CSS properties and their values.
-     * @param bool  $echo  Whether to echo or return the output (default: false).
+     * @param bool $echo  Whether to echo or return the output (default: false).
      * @return string Inline style string.
+     *@since 0.1.0
+     *
      */
-    public static function generate_inline_style( $props, $echo = false ) {
+    public static function generate_inline_style(array $props, bool $echo = false ): string
+    {
         $output = '';
         foreach( $props as $prop => $value ) {
             if ( ! empty( $value ) ) {
@@ -468,14 +472,13 @@ class Helper {
      * @since 1.0.0
      * @return array
      */
-    public static function getScreenIds() {
-        $screenIds = [
+    public static function getScreenIds(): array
+    {
+        return [
             'toplevel_page_trackmage-settings',
             'trackmage_page_trackmage-status-manager',
             'shop_order'
         ];
-
-        return $screenIds;
     }
 
     /**
@@ -484,15 +487,15 @@ class Helper {
      * This helper function works like the native `get_post_meta()`, but
      * also returns the post meta ID.
      *
-     * @param int    $post_id    The post ID.
+     * @param int $post_id    The post ID.
      * @param string $meta_key   The meta key.
      * @param string $meta_value Optional. The meta value (default: '').
      *
-     * @since 1.0.0
-     *
      * @return array|bool Array of meta fields or false if no results found.
+     *@since 1.0.0
+     *
      */
-    public static function get_post_meta( $post_id, $meta_key, $meta_value = '' ) {
+    public static function get_post_meta(int $post_id, string $meta_key, string $meta_value = '' ) {
         global $wpdb;
         if ( '' !== $meta_value ) {
             $results = $wpdb->get_results( $wpdb->prepare( "SELECT meta_id FROM $wpdb->postmeta WHERE post_id = %d AND meta_key = %s AND meta_value = %s", $post_id, $meta_key, $meta_value ) );
@@ -509,11 +512,11 @@ class Helper {
     /**
      * Schedule next background task.
      *
-     * @param int   $delay  Delay before run scheduled task
+     * @param int $delay  Delay before run scheduled task
      *
      * @return int|bool
      */
-    public static function scheduleNextBackgroundTask($delay = 0)
+    public static function scheduleNextBackgroundTask(int $delay = 0)
     {
         $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
         $activeTask = $backgroundTaskRepo->findOneBy(['status'=>'processing']);
@@ -533,7 +536,8 @@ class Helper {
     /**
      * @return int
      */
-    public static function getBgOrdersAmountToProcess() {
+    public static function getBgOrdersAmountToProcess(): int
+    {
         $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
         $tasks = $backgroundTaskRepo->getQuery('SELECT * FROM _TBL_ WHERE status="new" OR status="processing"');
         $count = 0;
@@ -618,13 +622,15 @@ class Helper {
         ) );
     }
 
-    public static function canSync() {
+    public static function canSync(): bool
+    {
         $credentialsIsValid = self::check_credentials();
         $workspace = get_option( 'trackmage_workspace', 0 );
         return $credentialsIsValid && $workspace !== 0;
     }
 
-    public static function mapOrderItemsToShipmentItem(array $orderItems, array $shipmentItems) {
+    public static function mapOrderItemsToShipmentItem(array $orderItems, array $shipmentItems): array
+    {
         return array_map(function($shipmentItem) use ($orderItems){
             $tmOrderItem = explode('/', $shipmentItem['orderItem']);
             $tmOrderItemId = end($tmOrderItem);
@@ -664,19 +670,19 @@ class Helper {
      *
      * @return array|null Array of order item IDs
      */
-    public static function getSyncedOrderItemsByProduct( int $productId ) {
+    public static function getSyncedOrderItemsByProduct( int $productId ): ?array
+    {
         global $wpdb;
-        $results = $wpdb->get_results(
+        return $wpdb->get_results(
             "select order_item_id from {$wpdb->prefix}woocommerce_order_itemmeta where order_item_id IN (select order_item_id from {$wpdb->prefix}wc_order_product_lookup where product_id = {$productId} OR variation_id = {$productId}) AND meta_key = '_trackmage_order_item_id'",
             ARRAY_A);
-        return $results;
     }
 
     /**
      * @param int $orderItemId
      * @return \WC_Order_Item_Product
      */
-    public static function getOrderItem($orderItemId)
+    public static function getOrderItem(int $orderItemId): ?\WC_Order_Item_Product
     {
         $item = \WC_Order_Factory::get_order_item( $orderItemId );
         return $item instanceof \WC_Order_Item_Product ? $item : null;
@@ -684,8 +690,9 @@ class Helper {
 
     /**
      * @return \WC_Order_Item_Product[]
+     * @throws \Exception
      */
-    public static function getOrderItems(\WC_Order $order)
+    public static function getOrderItems(\WC_Order $order): array
     {
         $items = \WC_Data_Store::load( 'order' )->read_items($order, 'line_item');
         /** @var \WC_Order_Item_Product[] $values */
