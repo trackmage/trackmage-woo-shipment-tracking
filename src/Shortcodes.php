@@ -30,10 +30,10 @@ class Shortcodes {
 	}
 
     private function overriderShortcodes() {
-        add_action( 'init', function(){
-            remove_shortcode( 'woocommerce_order_tracking' );
-            add_shortcode( 'woocommerce_order_tracking', __CLASS__.'::order_tracking');
-        }, 11 );
+//        add_action( 'init', function(){
+//            remove_shortcode( 'woocommerce_order_tracking' );
+//            add_shortcode( 'woocommerce_order_tracking', __CLASS__.'::order_tracking');
+//        }, 11 );
     }
 
 }
