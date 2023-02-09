@@ -48,7 +48,7 @@ class AbstractApiRepository {
     {
         try {
             $client   = Plugin::get_client();
-            $criteria['workspace'] = get_option( 'trackmage_workspace' );
+            $criteria['workspace.id'] = get_option( 'trackmage_workspace' );
             if(!empty($limit)) {
                 $criteria['page'] = 1;
                 $criteria['itemsPerPage'] = $limit;

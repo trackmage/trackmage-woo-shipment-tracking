@@ -4,7 +4,7 @@ Tags: shipping, tracking, order, status, delivery, shipment tracking, order trac
 Requires at least: 5.3
 Tested up to: 6.1.1
 Requires PHP: 7.4
-Stable tag: 1.1.1
+Stable tag: 1.2.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -65,6 +65,9 @@ With TrackMage you can analyze your carrier’s performance across all channels 
 3. Go through the Onboarding wizard in the Plugin
 
 == Changelog ==
+= 1.2.0 =
+* Bugfixes and enhancements
+
 = 1.1.1 =
 * Disable override for woocommerce_order_tracking shortcode
 

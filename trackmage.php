@@ -3,7 +3,7 @@
  * Plugin Name:       TrackMage - Woo Shipment Tracking
  * Plugin URI:        https://github.com/trackmage/trackmage-woo-shipment-tracking
  * Description:       TrackMage integrates shipments tracking into your WooCommerce store.
- * Version:           1.1.1
+ * Version:           1.2.0
  * Author:            TrackMage
  * Author URI:        https://trackmage.com
  * Text Domain:       trackmage
@@ -14,9 +14,9 @@
  * Requires at least: 5.3
  * Tested up to: 6.1.1
  * WC requires at least: 4.5.0
- * WC tested up to: 7.2.0
+ * WC tested up to: 7.3.0
  *
- * Copyright (c) 2019-2021 TrackMage
+ * Copyright (c) 2019-2022 TrackMage
  *
  * License: GNU General Public License v3.0
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
