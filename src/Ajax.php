@@ -52,6 +52,7 @@ class Ajax {
             'edit_shipment' => 'editShipment',
             'add_shipment' => 'addShipment',
             'update_shipment' => 'updateShipment',
+            'merge_shipments' => 'mergeShipments',
             'delete_shipment' => 'deleteShipment',
             'add_status' => 'addStatus',
             'update_status' => 'updateStatus',
@@ -304,7 +305,7 @@ class Ajax {
         }
 
         // Request data.
-        if( !isset($_POST['orderId'], $_POST['id']) || (isset($_POST['orderId']) && !is_numeric($_POST['orderId'])) || empty($_POST['id'])) {
+        if( !isset($_POST['orderId'], $_POST['id']) || (!is_numeric($_POST['orderId'])) || empty($_POST['id'])) {
             wp_send_json([]);
         }
         $orderId = absint($_POST['orderId']);
@@ -332,9 +333,9 @@ class Ajax {
         ];
 
         // Order data.
-        $order               = wc_get_order($orderId);
-        $orderItems          = Helper::getOrderItems($order);
+        $order = wc_get_order($orderId);
         try {
+            $orderItems = Helper::getOrderItems($order);
             $mergedItems = [];
             foreach ($shipment['items'] as $item) {
                 $orderItemId = absint($item['order_item_id']);
@@ -376,7 +377,7 @@ class Ajax {
                 'notes' => $notes_html
             ]);
         } catch (\Exception $e) {
-            wp_send_json_error(['message' => $e->getMessage()]);
+            wp_send_json_error(['message' => $e->getMessage(), 'shipmentId' => $shipmentId, 'trackingNumber' => $trackingNumber]);
         }
     }
 
@@ -393,7 +394,7 @@ class Ajax {
         }
 
         // Request data.
-        if( !isset($_POST['orderId'], $_POST['id']) || (isset($_POST['orderId']) && !is_numeric($_POST['orderId'])) || empty($_POST['id'])) {
+        if( !isset($_POST['orderId'], $_POST['id']) || (!is_numeric($_POST['orderId'])) || empty($_POST['id'])) {
             wp_send_json([]);
         }
 
@@ -639,5 +640,59 @@ class Ajax {
                 'used'  => $used_aliases
             ]
         ]);
+    }
+
+    /**
+     * Merge shipments.
+     *
+     * @since 1.2.0
+     */
+    public static function mergeShipments() {
+        check_ajax_referer('merge-shipments', 'security');
+
+        if (! current_user_can('edit_shop_orders')) {
+            wp_die(-1);
+        }
+
+        // Request data.
+        $trackingNumber = isset($_POST['trackingNumber']) ? sanitize_title($_POST['trackingNumber']) : null;
+        $shipmentId = isset($_POST['shipmentId']) ? sanitize_key($_POST['shipmentId']) : null;
+        if(in_array($trackingNumber, ['', null], true) || in_array($shipmentId, ['', null], true) || !isset($_POST['orderId']) || (!is_numeric($_POST['orderId']))) {
+            wp_send_json_error(['message' => 'trackingNumber and shipmentId should be set']);
+        }
+        $orderId = absint($_POST['orderId']);
+        $data = [
+            'workspaceId' => get_option('trackmage_workspace'),
+            'shipmentId' => $shipmentId,
+            'trackingNumber' => strtoupper($trackingNumber),
+        ];
+        $order = wc_get_order($orderId);
+
+        try {
+            $synchronizer = Plugin::instance()->getSynchronizer();
+            $synchronizer->syncOrder($orderId, true);
+
+            // Update shipment details in the database.
+            $shipment = Helper::mergeShipments($data);
+            $order->add_order_note( sprintf( __( 'Shipments were merged', 'trackmage' )), false, true );
+
+            // Get HTML to return.
+            ob_start();
+            include TRACKMAGE_VIEWS_DIR . 'meta-boxes/order-shipments.php';
+            $html = ob_get_clean();
+
+            ob_start();
+            $notes = wc_get_order_notes( array( 'order_id' => $orderId ) );
+            include WC()->plugin_path() . '/includes/admin/meta-boxes/views/html-order-notes.php';
+            $notes_html = ob_get_clean();
+
+            wp_send_json_success([
+                'message' => __('Shipment updated successfully!', 'trackmage'),
+                'html' => $html,
+                'notes' => $notes_html
+            ]);
+        } catch (\Exception $e) {
+            wp_send_json_error(['message' => $e->getMessage(), 'shipmentId' => $shipmentId, 'trackingNumber' => $trackingNumber]);
+        }
     }
 }

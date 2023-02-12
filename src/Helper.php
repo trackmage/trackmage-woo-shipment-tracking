@@ -631,7 +631,7 @@ class Helper {
 
     public static function mapOrderItemsToShipmentItem(array $orderItems, array $shipmentItems): array
     {
-        return array_map(function($shipmentItem) use ($orderItems){
+        return array_filter(array_map(function($shipmentItem) use ($orderItems){
             $tmOrderItem = explode('/', $shipmentItem['orderItem']);
             $tmOrderItemId = end($tmOrderItem);
             foreach ($orderItems as $orderItemId => $order_item){
@@ -641,8 +641,8 @@ class Helper {
                     return $shipmentItem;
                 }
             }
-            return $shipmentItem;
-        }, $shipmentItems);
+            return null;
+        }, $shipmentItems));
     }
 
     public static function unlinkAllOrders()
@@ -704,5 +704,17 @@ class Helper {
             $result[$item->get_id()] = $item;
         }
         return $result;
+    }
+
+    public static function mergeShipments(array $data): array
+    {
+        $client = Plugin::get_client();
+        $response = $client->post("/shipments/merge", [
+            'headers' => [
+                'Content-Type' => 'application/ld+json'
+            ],
+            'json' => $data
+        ]);
+        return TrackMageClient::item($response);
     }
 }

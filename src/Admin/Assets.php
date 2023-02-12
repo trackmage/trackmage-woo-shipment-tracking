@@ -143,6 +143,7 @@ class Assets {
                     'addShipment' => wp_create_nonce('add-shipment'),
                     'editShipment' => wp_create_nonce('edit-shipment'),
                     'updateShipment' => wp_create_nonce('update-shipment'),
+                    'mergeShipments' => wp_create_nonce('merge-shipments'),
                     'deleteShipment' => wp_create_nonce('delete-shipment'),
                 ],
                 'i18n' => [

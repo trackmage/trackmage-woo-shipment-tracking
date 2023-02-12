@@ -61,6 +61,67 @@
     return groupEl;
   }
 
+  function showMergeShipmentsDialog(shipmentId, trackingNumber) {
+    const container = $(`<div>It seems that you are trying to add tracking number ${trackingNumber.toUpperCase()} to two different shipments. Please use a different tracking number or connect to existing shipment.</div>`);
+    //$('body').append(container);
+    const doMerge = () => {
+      const data = {
+        action: "trackmage_merge_shipments",
+        security: params.metaBoxes.nonces.mergeShipments,
+        trackingNumber: trackingNumber,
+        shipmentId: shipmentId,
+        orderId: params.metaBoxes.orderId
+      };
+
+      $.ajax({
+        url: params.main.urls.ajax,
+        method: "post",
+        data: data,
+        beforeSend: function() {
+          trackmageBlockUi($("#trackmage-shipment-tracking .inside"));
+          $(container).dialog('close');
+        },
+        success: function(response) {
+          const alert = {
+            title: response?.success
+              ? params.main.i18n.success
+              : params.main.i18n.failure,
+            message: response?.data?.message
+              ? response.data.message
+              : !response?.success
+                ? params.main.i18n.unknownError
+                : "",
+            type: response?.success ? "success" : "failure"
+          };
+
+          trackmageAlert(alert.title, alert.message, alert.type, true);
+
+          // Re-load the meta box.
+          $("#trackmage-shipment-tracking .inside").html(
+            response.data.html
+          );
+
+          let notesContainer = $("ul.order_notes").parent();
+          $("ul.order_notes").remove();
+          notesContainer.prepend($(response.data.notes));
+        },
+        error: function(response) {
+          const message = response?.data?.message || params.main.i18n.unknownError;
+          trackmageAlert(
+            params.main.i18n.failure,
+            message,
+            "failure",
+            true
+          );
+        },
+        complete: function() {
+          trackmageUnblockUi($("#trackmage-shipment-tracking .inside"));
+        }
+      });
+    };
+    trackmageConfirmDialog(container, doMerge, 'Error', 'Connect to existing');
+  }
+
   // Add items row.
   $(document).on(
     "click",
@@ -207,6 +268,10 @@
                 trackmageBlockUi($("#trackmage-shipment-tracking .inside"));
               },
               success: function(response) {
+                if(response?.success === false && !!response?.data?.shipmentId && (response?.data?.message || '').includes('It seems that you are trying to add the same tracking number to two different shipments')) {
+                  showMergeShipmentsDialog(response?.data?.shipmentId, response?.data?.trackingNumber);
+                  return;
+                }
                 const alert = {
                   title: response?.success
                     ? params.main.i18n.success
@@ -218,6 +283,7 @@
                     : "",
                   type: response?.success ? "success" : "failure"
                 };
+
                 trackmageAlert(alert.title, alert.message, alert.type, true);
 
                 // Re-load the meta box.
@@ -529,7 +595,7 @@
         params.metaBoxes.i18n.confirmDeleteShipment,
         params.metaBoxes.i18n.yes
       ).then(function(yesno) {
-        if(yesno == 'yes'){
+        if(yesno === 'yes'){
           deleteShipment(shipment);
         }else{
           return false;
