@@ -100,7 +100,7 @@ class OrderSync implements EntitySyncInterface
                         $this->sync($order_id);
                         return;
                     }
-                    throw $e;
+                    throw new SynchronizationException(TrackMageClient::error($e), $e->getCode(), $e);
                 }
             } else {
                 try {
@@ -124,7 +124,7 @@ class OrderSync implements EntitySyncInterface
                         $this->sync($order_id);
                         return;
                     }
-                    throw $e;
+                    throw new SynchronizationException(TrackMageClient::error($e), $e->getCode(), $e);
                 }
             }
             $this->getChangesDetector()->lockChanges(new ArrayAccessDecorator($order));
@@ -190,8 +190,13 @@ class OrderSync implements EntitySyncInterface
     {
         $client = Plugin::get_client();
         $query['itemsPerPage'] = 1;
-        $response = $client->get("/workspaces/{$workspace}/orders", ['query' => $query]);
-        $items = TrackMageClient::collection($response);
+        $items = [];
+        try {
+            $response = $client->get("/workspaces/{$workspace}/orders", ['query' => $query]);
+            $items = TrackMageClient::collection($response);
+        } catch ( ClientException $e) {
+            throw new \RuntimeException(TrackMageClient::error($e));
+        }
         return isset($items[0]) ? $items[0] : null;
     }
 

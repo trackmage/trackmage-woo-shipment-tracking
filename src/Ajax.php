@@ -9,6 +9,9 @@
 
 namespace TrackMage\WordPress;
 
+use GuzzleHttp\Exception\ClientException;
+use TrackMage\Client\TrackMageClient;
+
 defined('WPINC') || exit;
 
 /**
@@ -674,7 +677,7 @@ class Ajax {
 
             // Update shipment details in the database.
             $shipment = Helper::mergeShipments($data);
-            $order->add_order_note( sprintf( __( 'Shipments were merged', 'trackmage' )), false, true );
+            $order->add_order_note(sprintf(__('Shipments were merged', 'trackmage')), false, true);
 
             // Get HTML to return.
             ob_start();
@@ -682,7 +685,7 @@ class Ajax {
             $html = ob_get_clean();
 
             ob_start();
-            $notes = wc_get_order_notes( array( 'order_id' => $orderId ) );
+            $notes = wc_get_order_notes(array('order_id' => $orderId));
             include WC()->plugin_path() . '/includes/admin/meta-boxes/views/html-order-notes.php';
             $notes_html = ob_get_clean();
 
@@ -691,6 +694,8 @@ class Ajax {
                 'html' => $html,
                 'notes' => $notes_html
             ]);
+        } catch (ClientException $e) {
+            wp_send_json_error(['message' => TrackMageClient::error($e), 'shipmentId' => $shipmentId, 'trackingNumber' => $trackingNumber]);
         } catch (\Exception $e) {
             wp_send_json_error(['message' => $e->getMessage(), 'shipmentId' => $shipmentId, 'trackingNumber' => $trackingNumber]);
         }

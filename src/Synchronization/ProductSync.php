@@ -97,7 +97,7 @@ class ProductSync implements EntitySyncInterface
                         $this->sync($productId);
                         return;
                     }
-                    throw $e;
+                    throw new SynchronizationException(TrackMageClient::error($e), $e->getCode(), $e);
                 }
             } else {
                 try {
@@ -118,7 +118,7 @@ class ProductSync implements EntitySyncInterface
                         $this->sync($productId);
                         return;
                     }
-                    throw $e;
+                    throw new SynchronizationException(TrackMageClient::error($e), $e->getCode(), $e);
                 }
             }
             $this->getChangesDetector()->lockChanges(new ArrayAccessDecorator($product));
@@ -183,8 +183,13 @@ class ProductSync implements EntitySyncInterface
     {
         $client = Plugin::get_client();
         $query['itemsPerPage'] = 1;
-        $response = $client->get("/products", ['query' => $query]);
-        $items = TrackMageClient::collection($response);
+        $items = [];
+        try {
+            $response = $client->get("/products", ['query' => $query]);
+            $items = TrackMageClient::collection($response);
+        } catch ( ClientException $e) {
+            throw new \RuntimeException(TrackMageClient::error($e));
+        }
         return isset($items[0]) ? $items[0] : null;
     }
 
