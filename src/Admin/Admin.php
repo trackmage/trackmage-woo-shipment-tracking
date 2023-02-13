@@ -221,8 +221,12 @@ class Admin {
             try {
                 $client->delete('/workflows/'.$integration, [RequestOptions::QUERY => ['deleteData'=>$deleteData]]);
             } catch(ClientException $e){
-                error_log('Unable to delete workflow: '.TrackMageClient::error($e));
-                add_action( 'admin_notices', [$this,'showErrorNotice'] );
+                $error = TrackMageClient::error($e);
+                $error = trim(str_contains($error, ':') ? explode(':', $error)[1] : $error);
+                error_log('Unable to delete workflow: '.$error);
+                add_settings_error('trackmage_workspace', 0, $error);
+                set_transient('trackmage_error', $error, 10);
+                add_action( 'admin_notices', [$this, 'showErrorNotice'], 1 );
                 return $old_value;
             }
         }
@@ -264,9 +268,13 @@ class Admin {
                 $integration = "/workflows/{$integrations[0]['id']}";
             }
         } catch( ClientException $e ) {
-            error_log('An error during request to TrackMage: '.TrackMageClient::error($e));
+            $error = TrackMageClient::error($e);
+            $error = trim(str_contains($error, ':') ? explode(':', $error)[1] : $error);
+            error_log('An error during request to TrackMage: ' . $error);
             $this->lockedChangesAt = null;
-            add_action( 'admin_notices', [$this,'showErrorNotice'] );
+            add_settings_error('trackmage_workspace', 0, $error);
+            set_transient('trackmage_error', $error, 10);
+            add_action( 'admin_notices', [$this, 'showErrorNotice'], 1 );
             return $old_value;
         }
 
@@ -289,9 +297,13 @@ class Admin {
             $response = $client->post('/workflows', ['json' => $workflow]);
             $data = TrackMageClient::item($response);
         } catch( ClientException $e ) {
-            error_log('Unable to create webhook: '.TrackMageClient::error($e));
+            $error = TrackMageClient::error($e);
+            $error = trim(str_contains($error, ':') ? explode(':', $error)[1] : $error);
+            error_log('Unable to create webhook: '.$error);
             $this->lockedChangesAt = null;
-            add_action( 'admin_notices', [$this,'showErrorNotice'] );
+            add_settings_error('trackmage_workspace', 0, $error);
+            set_transient('trackmage_error', $error, 10);
+            add_action( 'admin_notices', [$this, 'showErrorNotice'], 1 );
             return $old_value;
         }
 
@@ -365,9 +377,11 @@ class Admin {
     }
 
     public function showErrorNotice() {
+        $error = get_transient('trackmage_error');
+        $msg = !$error ? 'An error occurred during changing workspace. Please try again later or contact with <a href="mailto:support@trackmage.com">TrackMage.com support</a>' : esc_html($error);
             ?>
-        <div class="error notice">
-            <p><?php _e( 'An error occurred during changing workspace. Please try again later or contact with <a href="mailto:support@trackmage.com">TrackMage.com support</a>', 'trackmage' ); ?></p>
+        <div class="error notice notice-error">
+            <p><?php _e( $msg, 'trackmage' ); ?></p>
         </div>
             <?php
     }

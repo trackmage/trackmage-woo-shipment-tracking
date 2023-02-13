@@ -238,6 +238,11 @@ class Wizard {
                         Helper::unlinkAllProducts();
                     }
                     update_option( 'trackmage_workspace', $workspaceId );
+                    $error = get_transient( 'trackmage_error' );
+                    delete_transient('trackmage_error');
+                    if(!empty($error)) {
+                        throw new \Exception(trim(str_contains($error, ':') ? explode(':', $error)[1] : $error));
+                    }
                     $workspaces = Helper::get_workspaces();
                     if (false !== $idx = array_search($workspaceId, array_column($workspaces, 'id'))) {
                         update_option('trackmage_team', $workspaces[$idx]['team']);
