@@ -338,8 +338,19 @@ class Ajax {
         // Order data.
         $order = wc_get_order($orderId);
         try {
-            $orderItems = Helper::getOrderItems($order);
+            $shipmentRepo = Plugin::instance()->getShipmentRepo();
+            $shipmentItemRepo = Plugin::instance()->getShipmentItemsRepo();
+            //
+            $tmShipment = $shipmentRepo->find($shipmentId);
+            $anotherOrders = array_filter($tmShipment['orderNumbers'], fn(string $on) => strtoupper(trim($on)) !== strtoupper($order->get_order_number()));
             $mergedItems = [];
+            foreach ($anotherOrders as $anotherOrder) {
+                $shipmentItemsForOrder = $shipmentItemRepo->findBy(['shipment.id' => $shipmentId, 'orderItem.order.orderNumber' => $anotherOrder]);
+                $mergedItems = array_merge($mergedItems, $shipmentItemsForOrder);
+            }
+
+            $orderItems = Helper::getOrderItems($order);
+
             foreach ($shipment['items'] as $item) {
                 $orderItemId = absint($item['order_item_id']);
                 if ( isset( $mergedItems[ $orderItemId ] ) ) {
@@ -351,7 +362,7 @@ class Ajax {
                         }
                     }
                 } else {
-                    $mergedItems[ $orderItemId ]        = $item;
+                    $mergedItems[ $orderItemId ] = $item;
                     $mergedItems[ $orderItemId ]['qty'] = (int) $mergedItems[ $orderItemId ]['qty'];
                 }
             }
@@ -403,29 +414,33 @@ class Ajax {
 
         $orderId = absint($_POST['orderId']);
         $shipmentId = sanitize_key($_POST['id']);
-
-        // Delete shipment record from the database.
-        Helper::deleteShipment($shipmentId);
-
-        // Order data.
-        $order               = wc_get_order($orderId);
-        $orderItems          = Helper::getOrderItems($order);
-
-        /** @var \WP_User $user */
-        $user = wp_get_current_user();
-        $userName = null !== $user ? $user->user_login : 'unknown';
-
-        $order->add_order_note( sprintf( __( 'Shipment %s was deleted by %s.', 'trackmage' ), $shipmentId, $userName), false, true );
-
+        $unlink = boolval($_POST['unlink']);
         try {
+            // Delete shipment record from the database.
+            if ($unlink === true) {
+                Helper::unlinkShipmentFromOrder($shipmentId, $orderId);
+            } else {
+                Helper::deleteShipment($shipmentId);
+            }
+
+            // Order data.
+            $order = wc_get_order($orderId);
+            $orderItems = Helper::getOrderItems($order);
+
+            /** @var \WP_User $user */
+            $user = wp_get_current_user();
+            $userName = null !== $user ? $user->user_login : 'unknown';
+
+            $order->add_order_note(sprintf(__('Shipment %s was %s by %s.', 'trackmage'), $shipmentId, $unlink ? 'unlinked' : 'deleted', $userName), false, true);
+
             // Get HTML to return.
             ob_start();
             include TRACKMAGE_VIEWS_DIR . 'meta-boxes/order-shipments.php';
             $html = ob_get_clean();
 
             ob_start();
-            $notes = wc_get_order_notes( array( 'order_id' => $orderId ) );
-            include WC()->plugin_path().'/includes/admin/meta-boxes/views/html-order-notes.php';
+            $notes = wc_get_order_notes(array('order_id' => $orderId));
+            include WC()->plugin_path() . '/includes/admin/meta-boxes/views/html-order-notes.php';
             $notes_html = ob_get_clean();
 
             wp_send_json_success([
@@ -433,7 +448,8 @@ class Ajax {
                 'html' => $html,
                 'notes' => $notes_html
             ]);
-
+        } catch (ClientException $e) {
+            wp_send_json_error(['message' => TrackMageClient::error($e)]);
         } catch (\Exception $e) {
             wp_send_json_error(['message' => $e->getMessage()]);
         }

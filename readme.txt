@@ -66,6 +66,7 @@ With TrackMage you can analyze your carrier’s performance across all channels 
 
 == Changelog ==
 = 1.2.0 =
+* Add support for WooCommerce up to 7.4.0
 * Bugfixes and enhancements
 
 = 1.1.1 =

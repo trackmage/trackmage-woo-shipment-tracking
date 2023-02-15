@@ -354,7 +354,8 @@
             .trigger("change");
 
           let index = 1;
-          items.forEach(item => {
+          Object.keys(items).forEach(idx => {
+            const item = items[idx];
             const itemEl = $(
               `#trackmage-shipment-tracking .edit-shipment .items__rows .items__row:nth-of-type(${index})`
             );
@@ -524,7 +525,7 @@
     }
   );
 
-  function deleteShipment(shipment){
+  function deleteShipment(shipment, unlink = false){
     const shipmentId = $(shipment).data("id");
     $.ajax({
       url: params.main.urls.ajax,
@@ -533,7 +534,8 @@
         action: 'trackmage_delete_shipment',
         security: params.metaBoxes.nonces.deleteShipment,
         orderId: params.metaBoxes.orderId,
-        id: shipmentId
+        id: shipmentId,
+        unlink
       },
       beforeSend: function() {
         trackmageBlockUi($("#trackmage-shipment-tracking .inside"));
@@ -597,6 +599,33 @@
       ).then(function(yesno) {
         if(yesno === 'yes'){
           deleteShipment(shipment);
+        }else{
+          return false;
+        }
+      });
+    }
+  );
+
+  /*
+   * Delete shipment.
+   */
+  $(document).on(
+    "click",
+    "#trackmage-shipment-tracking .shipment__actions__action--unlink",
+    function (e) {
+      e.preventDefault();
+
+      const shipment = $(this).closest(".shipment");
+      window.trackmageConfirmDialog(
+        '#delete-shipment-confirm-dialog',
+        function(){
+          return true;
+        },
+        params.metaBoxes.i18n.confirmUnlinkShipment,
+        params.metaBoxes.i18n.yes
+      ).then(function(yesno) {
+        if(yesno === 'yes'){
+          deleteShipment(shipment, true);
         }else{
           return false;
         }

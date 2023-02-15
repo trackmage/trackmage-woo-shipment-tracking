@@ -308,13 +308,39 @@ class Helper {
     }
 
     /**
-     * @param int $shipmentId
+     * @param string $shipmentId
      */
-    public static function deleteShipment(int $shipmentId)
+    public static function deleteShipment(string $shipmentId)
     {
         $shipmentRepo = Plugin::instance()->getShipmentRepo();
         do_action('trackmage_delete_shipment', $shipmentId);
         $shipmentRepo->delete($shipmentId);
+    }
+
+    /**
+     * @param string $shipmentId
+     * @param int $orderId
+     */
+    public static function unlinkShipmentFromOrder(string $shipmentId, int $orderId)
+    {
+        $order = wc_get_order($orderId);
+        $shipmentRepo = Plugin::instance()->getShipmentRepo();
+        do_action('trackmage_unlink_shipment', $shipmentId, $orderId);
+        $shipment = $shipmentRepo->find($shipmentId);
+        $orderNumber = strtoupper($order->get_order_number());
+        $orderNumbers = $shipment['orderNumbers'] ?? [];
+        if(!in_array($orderNumber, $orderNumbers, true)) {
+            return;
+        }
+        if(count($orderNumbers) === 1) {
+            self::deleteShipment($shipmentId);
+            return;
+        }
+
+        $newOrders = array_filter($orderNumbers, fn(string $on) => $on !== $orderNumber);
+        $shipment = $shipmentRepo->update($shipmentId, [
+            'orderNumbers' => $newOrders
+        ]);
     }
 
     public static function getOrderStatuses(): array

@@ -148,6 +148,7 @@ class Assets {
                 ],
                 'i18n' => [
                     'confirmDeleteShipment' => __('Are you sure you want to delete this shipment?', 'trackmage'),
+                    'confirmUnlinkShipment' => __('Are you sure you want to unlink this shipment?', 'trackmage'),
                     'yes' => __('Yes', 'trackmage'),
                     'cancel' => __('Cancel', 'trackmage')
                 ],

@@ -59,7 +59,7 @@ if(!in_array($trackmage_order_id, [null, false, ''])){
     </div>
 </div>
 <div id="delete-shipment-confirm-dialog" class="hidden">
-    <p class="description"><?php _e('Note! The deletion of shipment cannot be undone.', 'trackmage');?></p>
+    <p class="description"><?php _e('Note! The deletion/unlinking of shipment cannot be undone.', 'trackmage');?></p>
 </div>
 <span class="spinner"></span>
 <?php }

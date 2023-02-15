@@ -14,7 +14,7 @@
  * Requires at least: 5.3
  * Tested up to: 6.1.1
  * WC requires at least: 4.5.0
- * WC tested up to: 7.3.0
+ * WC tested up to: 7.4.0
  *
  * Copyright (c) 2019-2022 TrackMage
  *
@@ -130,7 +130,6 @@ load_plugin_textdomain( 'trackmage', false, dirname( plugin_basename( __FILE__ )
  */
 function trackMageActivate() {
     $plugin = Plugin::instance();
-    $plugin->init();
     foreach($plugin->getRepos() as $repository) {
         try {
             $repository->init();
@@ -140,6 +139,7 @@ function trackMageActivate() {
         }
     }
     $plugin->dropOldTables();
+    $plugin->init();
     if(!get_transient('trackmage-wizard-notice'))
         set_transient( 'trackmage-wizard-notice', true );
 }
