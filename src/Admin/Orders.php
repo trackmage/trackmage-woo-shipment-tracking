@@ -107,9 +107,7 @@ class Orders {
     public function order_statuses( $order_statuses ) {
         $custom_statuses = get_option( 'trackmage_custom_order_statuses', [] );
         // Register custom order statuses added by our plugin.
-        $order_statuses = array_merge( $order_statuses, $custom_statuses );
-
-        return $order_statuses;
+        return array_merge( $order_statuses, $custom_statuses );
     }
 
     /**

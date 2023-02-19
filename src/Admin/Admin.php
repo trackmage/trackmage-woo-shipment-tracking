@@ -275,7 +275,7 @@ class Admin {
             add_settings_error('trackmage_workspace', 0, $error);
             set_transient('trackmage_error', $error, 10);
             add_action( 'admin_notices', [$this, 'showErrorNotice'], 1 );
-            return $old_value;
+            return null;
         }
 
         $workflow = [
@@ -304,7 +304,7 @@ class Admin {
             add_settings_error('trackmage_workspace', 0, $error);
             set_transient('trackmage_error', $error, 10);
             add_action( 'admin_notices', [$this, 'showErrorNotice'], 1 );
-            return $old_value;
+            return null;
         }
 
         if (false !== $idx = array_search($value, array_column($workspaces, 'id'))) {
