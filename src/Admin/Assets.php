@@ -88,7 +88,7 @@ class Assets {
                     'noSelect'     => __('— Select —', 'trackmage'),
                     'success'      => __('Success', 'trackmage'),
                     'failure'      => __('Failure', 'trackmage'),
-                    'unknownError' => __('Unknown error occured. Please try again later.', 'trackmage'),
+                    'unknownError' => __('Unknown error occurred. Please try again later.', 'trackmage'),
                     'cannot_edit'      => __('Please save your order before edit shipments', 'trackmage'),
                     'ok' => __('OK', 'trackmage'),
                     'cancel' => __('Cancel', 'trackmage')

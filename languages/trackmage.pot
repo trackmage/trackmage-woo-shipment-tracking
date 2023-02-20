@@ -492,11 +492,11 @@ msgid "Trigger sync"
 msgstr ""
 
 #: src/Admin/Wizard.php:115
-msgid "Unknown error occured."
+msgid "Unknown error occurred."
 msgstr ""
 
 #: src/Admin/Assets.php:88
-msgid "Unknown error occured. Please try again later."
+msgid "Unknown error occurred. Please try again later."
 msgstr ""
 
 #: src/Admin/Wizard.php:280

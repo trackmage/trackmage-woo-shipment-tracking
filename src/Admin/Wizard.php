@@ -112,7 +112,7 @@ class Wizard {
                 'noSelect'     => __('— Select —', 'trackmage'),
                 'success'      => __('Success', 'trackmage'),
                 'failure'      => __('Failure', 'trackmage'),
-                'unknownError' => __('Unknown error occured.', 'trackmage'),
+                'unknownError' => __('Unknown error occurred.', 'trackmage'),
                 'testCredentials'  => __('Test Credentials', 'trackmage'),
                 'successValidKeys' => __('Valid credentials. Click on <em>“Save Changes”</em> for the changes to take effect.', 'trackmage'),
             ],

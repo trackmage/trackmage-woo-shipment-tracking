@@ -531,11 +531,11 @@ msgid "Trigger sync"
 msgstr "Запустить синхронизацию"
 
 #: src/Admin/Wizard.php:115
-msgid "Unknown error occured."
+msgid "Unknown error occurred."
 msgstr "Произошла неизвестная ошибка."
 
 #: src/Admin/Assets.php:88
-msgid "Unknown error occured. Please try again later."
+msgid "Unknown error occurred. Please try again later."
 msgstr "Произошла неизвестная ошибка. Пожалуйста, повторите попытку позже."
 
 #: src/Admin/Wizard.php:280
