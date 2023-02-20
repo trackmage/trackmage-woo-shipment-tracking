@@ -461,7 +461,7 @@ class Ajax {
      * @since 1.0.0
      * @todo Refactor error handling using Exceptions instead of $errors array.
      */
-    public function updateStatus() {
+    public static function updateStatus() {
         check_ajax_referer('update-status', 'security');
 
         if (! current_user_can('manage_woocommerce')) {
@@ -549,7 +549,7 @@ class Ajax {
      * @since 1.0.0
      * @todo Refactor error handling using Exceptions instead of $errors array.
      */
-    public function addStatus() {
+    public static function addStatus() {
         check_ajax_referer('add-status', 'security');
 
         if (! current_user_can('manage_woocommerce')) {
@@ -616,7 +616,7 @@ class Ajax {
      * @since 1.0.0
      * @todo Refactor error handling using Exceptions instead of $errors array.
      */
-    public function deleteStatus() {
+    public static function deleteStatus() {
         check_ajax_referer('delete-status', 'security');
 
         if (! current_user_can('manage_woocommerce')) {

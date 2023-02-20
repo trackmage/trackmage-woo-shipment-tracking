@@ -143,6 +143,7 @@ class Helper {
                 set_transient('trackmage_order_statuses', $cachedAliases, 3600);
             } catch( ClientException $e ) {
                 error_log('Unable to fetch statuses: '.TrackMageClient::error($e));
+                throw new RuntimeException('Unable to fetch statuses: '.TrackMageClient::error($e), $e->getCode(), $e);
             }
         }
         return $aliases;
