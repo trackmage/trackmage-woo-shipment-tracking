@@ -193,39 +193,44 @@
     "click",
     "#trackmage-shipment-tracking .shipment__actions__action--edit",
     function(e) {
-      const shipment = $(this).closest(".shipment");
+      const shipment = $(this).closest("tr.shipment");
       const shipmentId = $(shipment).data("id");
 
       // Show the edit shipment form.
-      $("#trackmage-shipment-tracking .edit-shipment").show();
 
       // Toggle action group.
-      const actionGroup = toggleActionGroup("edit");
+      const shipmentActions = $(shipment).find('.shipment__actions').eq(0);
+      const actionGroup = $('div.actions .actions__action-group.actions__action-group--edit').clone();
+      $(shipmentActions).find('.shipment__actions__wrap').hide();
+      $(shipmentActions).append(actionGroup);
+      $(actionGroup).addClass('shipment__actions__wrap').show();
 
       // On cancel.
       $(actionGroup)
         .off("click", ".btn-cancel")
         .on("click", ".btn-cancel", e => {
           e.preventDefault();
-          toggleActionGroup("default");
-          $("#trackmage-shipment-tracking .edit-shipment").hide();
+          //toggleActionGroup("default");
+          $(actionGroup).remove();
+          $(shipmentActions).find('.shipment__actions__wrap').show();
+          $("#trackmage-shipment-tracking tr#edit-tr-"+shipmentId).remove();
         });
 
       // On save.
-      $(document)
+      $(actionGroup)
         .off(
           "click",
-          "#trackmage-shipment-tracking .actions__action-group--edit .btn-save"
+          ".btn-save"
         )
         .on(
           "click",
-          "#trackmage-shipment-tracking .actions__action-group--edit .btn-save",
+          ".btn-save",
           function(e) {
             e.preventDefault();
 
             let items = [];
             $(
-              "#trackmage-shipment-tracking .edit-shipment .items__rows .items__row"
+              "#trackmage-shipment-tracking tr#edit-tr-"+shipmentId +" .edit-shipment .items__rows .items__row"
             ).each(function() {
               const id = $(this)
                 .find('[name="id"]')
@@ -252,10 +257,10 @@
               orderId: params.metaBoxes.orderId,
               id: shipmentId,
               trackingNumber: $(
-                '#trackmage-shipment-tracking .edit-shipment [name="tracking_number"]'
+                "#trackmage-shipment-tracking tr#edit-tr-"+shipmentId +' .edit-shipment [name="tracking_number"]'
               ).val(),
               carrier: $(
-                '#trackmage-shipment-tracking .edit-shipment [name="carrier"]'
+                "#trackmage-shipment-tracking tr#edit-tr-"+shipmentId +' .edit-shipment [name="carrier"]'
               ).val(),
               items: items
             };
@@ -342,7 +347,9 @@
             .css("display", "block");
 
           // Append the HTML.
-          $("#trackmage-shipment-tracking .edit-shipment").html(html);
+          const formDiv = $("#trackmage-shipment-tracking .shipments + .edit-shipment").clone().append($(html)).show();
+          const formTr = $('<tr></tr>').attr('id', 'edit-tr-'+shipmentId).append($('<td></td>').attr('style', 'padding: 0 !important').attr('colspan', 5).append($(formDiv)));
+          $(formTr).insertAfter($(shipment));
 
           // Init selectWoo and set values.
           $(html)
@@ -357,7 +364,7 @@
           Object.keys(items).forEach(idx => {
             const item = items[idx];
             const itemEl = $(
-              `#trackmage-shipment-tracking .edit-shipment .items__rows .items__row:nth-of-type(${index})`
+              `#trackmage-shipment-tracking tr#edit-tr-${shipmentId} .edit-shipment .items__rows .items__row:nth-of-type(${index})`
             );
             const itemIdEl = $(itemEl).find('[name="id"]');
             const itemProductEl = $(itemEl).find('[name="order_item_id"]');
