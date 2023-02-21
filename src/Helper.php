@@ -653,7 +653,7 @@ class Helper {
     {
         $credentialsIsValid = self::check_credentials();
         $workspace = get_option( 'trackmage_workspace', 0 );
-        return $credentialsIsValid && $workspace !== 0;
+        return $credentialsIsValid && !in_array($workspace, [0, null, false]);
     }
 
     public static function mapOrderItemsToShipmentItem(array $orderItems, array $shipmentItems): array
