@@ -156,7 +156,7 @@ class Admin {
             wp_send_json_error([
                 'status' => 'error',
                 'errors' => [
-                    __('We could not perform the check. Please try again.', 'trackmage'),
+                    __('We could not perform the check. Please check credentials in TrackMage and try again.', 'trackmage'),
                 ]
             ]);
         }
