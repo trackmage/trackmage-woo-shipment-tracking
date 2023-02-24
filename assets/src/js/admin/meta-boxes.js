@@ -61,6 +61,67 @@
     return groupEl;
   }
 
+  function showMergeShipmentsDialog(shipmentId, trackingNumber) {
+    const container = $(`<div>It seems that you are trying to add tracking number ${trackingNumber.toUpperCase()} to two different shipments. Please use a different tracking number or connect to existing shipment.</div>`);
+    //$('body').append(container);
+    const doMerge = () => {
+      const data = {
+        action: "trackmage_merge_shipments",
+        security: params.metaBoxes.nonces.mergeShipments,
+        trackingNumber: trackingNumber,
+        shipmentId: shipmentId,
+        orderId: params.metaBoxes.orderId
+      };
+
+      $.ajax({
+        url: params.main.urls.ajax,
+        method: "post",
+        data: data,
+        beforeSend: function() {
+          trackmageBlockUi($("#trackmage-shipment-tracking .inside"));
+          $(container).dialog('close');
+        },
+        success: function(response) {
+          const alert = {
+            title: response?.success
+              ? params.main.i18n.success
+              : params.main.i18n.failure,
+            message: response?.data?.message
+              ? response.data.message
+              : !response?.success
+                ? params.main.i18n.unknownError
+                : "",
+            type: response?.success ? "success" : "failure"
+          };
+
+          trackmageAlert(alert.title, alert.message, alert.type, true);
+
+          // Re-load the meta box.
+          $("#trackmage-shipment-tracking .inside").html(
+            response.data.html
+          );
+
+          let notesContainer = $("ul.order_notes").parent();
+          $("ul.order_notes").remove();
+          notesContainer.prepend($(response.data.notes));
+        },
+        error: function(response) {
+          const message = response?.data?.message || params.main.i18n.unknownError;
+          trackmageAlert(
+            params.main.i18n.failure,
+            message,
+            "failure",
+            true
+          );
+        },
+        complete: function() {
+          trackmageUnblockUi($("#trackmage-shipment-tracking .inside"));
+        }
+      });
+    };
+    trackmageConfirmDialog(container, doMerge, 'Error', 'Connect to existing');
+  }
+
   // Add items row.
   $(document).on(
     "click",
@@ -132,39 +193,44 @@
     "click",
     "#trackmage-shipment-tracking .shipment__actions__action--edit",
     function(e) {
-      const shipment = $(this).closest(".shipment");
+      const shipment = $(this).closest("tr.shipment");
       const shipmentId = $(shipment).data("id");
 
       // Show the edit shipment form.
-      $("#trackmage-shipment-tracking .edit-shipment").show();
 
       // Toggle action group.
-      const actionGroup = toggleActionGroup("edit");
+      const shipmentActions = $(shipment).find('.shipment__actions').eq(0);
+      const actionGroup = $('div.actions .actions__action-group.actions__action-group--edit').clone();
+      $(shipmentActions).find('.shipment__actions__wrap').hide();
+      $(shipmentActions).append(actionGroup);
+      $(actionGroup).addClass('shipment__actions__wrap').show();
 
       // On cancel.
       $(actionGroup)
         .off("click", ".btn-cancel")
         .on("click", ".btn-cancel", e => {
           e.preventDefault();
-          toggleActionGroup("default");
-          $("#trackmage-shipment-tracking .edit-shipment").hide();
+          //toggleActionGroup("default");
+          $(actionGroup).remove();
+          $(shipmentActions).find('.shipment__actions__wrap').show();
+          $("#trackmage-shipment-tracking tr#edit-tr-"+shipmentId).remove();
         });
 
       // On save.
-      $(document)
+      $(actionGroup)
         .off(
           "click",
-          "#trackmage-shipment-tracking .actions__action-group--edit .btn-save"
+          ".btn-save"
         )
         .on(
           "click",
-          "#trackmage-shipment-tracking .actions__action-group--edit .btn-save",
+          ".btn-save",
           function(e) {
             e.preventDefault();
 
             let items = [];
             $(
-              "#trackmage-shipment-tracking .edit-shipment .items__rows .items__row"
+              "#trackmage-shipment-tracking tr#edit-tr-"+shipmentId +" .edit-shipment .items__rows .items__row"
             ).each(function() {
               const id = $(this)
                 .find('[name="id"]')
@@ -191,10 +257,10 @@
               orderId: params.metaBoxes.orderId,
               id: shipmentId,
               trackingNumber: $(
-                '#trackmage-shipment-tracking .edit-shipment [name="tracking_number"]'
+                "#trackmage-shipment-tracking tr#edit-tr-"+shipmentId +' .edit-shipment [name="tracking_number"]'
               ).val(),
               carrier: $(
-                '#trackmage-shipment-tracking .edit-shipment [name="carrier"]'
+                "#trackmage-shipment-tracking tr#edit-tr-"+shipmentId +' .edit-shipment [name="carrier"]'
               ).val(),
               items: items
             };
@@ -207,6 +273,10 @@
                 trackmageBlockUi($("#trackmage-shipment-tracking .inside"));
               },
               success: function(response) {
+                if(response?.success === false && !!response?.data?.shipmentId && (response?.data?.message || '').includes('It seems that you are trying to add the same tracking number to two different shipments')) {
+                  showMergeShipmentsDialog(response?.data?.shipmentId, response?.data?.trackingNumber);
+                  return;
+                }
                 const alert = {
                   title: response?.success
                     ? params.main.i18n.success
@@ -218,6 +288,7 @@
                     : "",
                   type: response?.success ? "success" : "failure"
                 };
+
                 trackmageAlert(alert.title, alert.message, alert.type, true);
 
                 // Re-load the meta box.
@@ -276,7 +347,9 @@
             .css("display", "block");
 
           // Append the HTML.
-          $("#trackmage-shipment-tracking .edit-shipment").html(html);
+          const formDiv = $("#trackmage-shipment-tracking .shipments + .edit-shipment").clone().append($(html)).show();
+          const formTr = $('<tr></tr>').attr('id', 'edit-tr-'+shipmentId).append($('<td></td>').attr('style', 'padding: 0 !important').attr('colspan', 5).append($(formDiv)));
+          $(formTr).insertAfter($(shipment));
 
           // Init selectWoo and set values.
           $(html)
@@ -288,9 +361,10 @@
             .trigger("change");
 
           let index = 1;
-          items.forEach(item => {
+          Object.keys(items).forEach(idx => {
+            const item = items[idx];
             const itemEl = $(
-              `#trackmage-shipment-tracking .edit-shipment .items__rows .items__row:nth-of-type(${index})`
+              `#trackmage-shipment-tracking tr#edit-tr-${shipmentId} .edit-shipment .items__rows .items__row:nth-of-type(${index})`
             );
             const itemIdEl = $(itemEl).find('[name="id"]');
             const itemProductEl = $(itemEl).find('[name="order_item_id"]');
@@ -458,7 +532,7 @@
     }
   );
 
-  function deleteShipment(shipment){
+  function deleteShipment(shipment, unlink = false){
     const shipmentId = $(shipment).data("id");
     $.ajax({
       url: params.main.urls.ajax,
@@ -467,7 +541,8 @@
         action: 'trackmage_delete_shipment',
         security: params.metaBoxes.nonces.deleteShipment,
         orderId: params.metaBoxes.orderId,
-        id: shipmentId
+        id: shipmentId,
+        unlink
       },
       beforeSend: function() {
         trackmageBlockUi($("#trackmage-shipment-tracking .inside"));
@@ -529,8 +604,35 @@
         params.metaBoxes.i18n.confirmDeleteShipment,
         params.metaBoxes.i18n.yes
       ).then(function(yesno) {
-        if(yesno == 'yes'){
+        if(yesno === 'yes'){
           deleteShipment(shipment);
+        }else{
+          return false;
+        }
+      });
+    }
+  );
+
+  /*
+   * Delete shipment.
+   */
+  $(document).on(
+    "click",
+    "#trackmage-shipment-tracking .shipment__actions__action--unlink",
+    function (e) {
+      e.preventDefault();
+
+      const shipment = $(this).closest(".shipment");
+      window.trackmageConfirmDialog(
+        '#delete-shipment-confirm-dialog',
+        function(){
+          return true;
+        },
+        params.metaBoxes.i18n.confirmUnlinkShipment,
+        params.metaBoxes.i18n.yes
+      ).then(function(yesno) {
+        if(yesno === 'yes'){
+          deleteShipment(shipment, true);
         }else{
           return false;
         }

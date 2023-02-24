@@ -88,7 +88,7 @@ class Assets {
                     'noSelect'     => __('— Select —', 'trackmage'),
                     'success'      => __('Success', 'trackmage'),
                     'failure'      => __('Failure', 'trackmage'),
-                    'unknownError' => __('Unknown error occured. Please try again later.', 'trackmage'),
+                    'unknownError' => __('Unknown error occurred. Please try again later.', 'trackmage'),
                     'cannot_edit'      => __('Please save your order before edit shipments', 'trackmage'),
                     'ok' => __('OK', 'trackmage'),
                     'cancel' => __('Cancel', 'trackmage')
@@ -143,10 +143,12 @@ class Assets {
                     'addShipment' => wp_create_nonce('add-shipment'),
                     'editShipment' => wp_create_nonce('edit-shipment'),
                     'updateShipment' => wp_create_nonce('update-shipment'),
+                    'mergeShipments' => wp_create_nonce('merge-shipments'),
                     'deleteShipment' => wp_create_nonce('delete-shipment'),
                 ],
                 'i18n' => [
                     'confirmDeleteShipment' => __('Are you sure you want to delete this shipment?', 'trackmage'),
+                    'confirmUnlinkShipment' => __('Are you sure you want to unlink this shipment?', 'trackmage'),
                     'yes' => __('Yes', 'trackmage'),
                     'cancel' => __('Cancel', 'trackmage')
                 ],

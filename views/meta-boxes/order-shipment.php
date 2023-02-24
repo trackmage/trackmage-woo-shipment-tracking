@@ -31,7 +31,11 @@ $carrier = false !== $carrierKey ? esc_attr($carriers[$carrierKey]['name']) : __
             <?php if($shipment['shippedAt'] === null):?>
                 <a class="shipment__actions__action shipment__actions__action--edit button button-secondary"><?php echo __('Edit', 'trackmage')?></a>
             <?php endif; ?>
+            <?php if(count($shipment['orderNumbers'] ?? []) < 2): ?>
             <a class="shipment__actions__action shipment__actions__action--delete button button-secondary"><?php echo __('Delete', 'trackmage')?></a>
+            <?php else:?>
+            <a class="shipment__actions__action shipment__actions__action--unlink button button-secondary"><?php echo __('Unlink Shipment', 'trackmage')?></a>
+            <?php endif;?>
         </div>
     </td>
 </tr>

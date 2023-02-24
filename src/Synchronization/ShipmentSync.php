@@ -72,14 +72,19 @@ class ShipmentSync implements EntitySyncInterface
                 try {
                     $data = [
                         'trackingNumber' => $shipment['tracking_number'],
-                        'email'          => $order->get_billing_email(),
-                        'phoneNumber'    => $order->get_billing_phone(),
                     ];
+                    if(!in_array($order, [null, false], true)) {
+                        $data['email'] = $order->get_billing_email();
+                        $data['phoneNumber'] = $order->get_billing_phone();
+                    }
                     if (isset($shipment['carrier'])) {
                         $data['originCarrier'] = $shipment['carrier'] === 'auto' ? null : $shipment['carrier'];
                     }
                     if ( isset( $shipment['items'] ) ) {
                         $data['shipmentItems'] = $this->getShipmentItemsForSync( $shipment['items'], Helper::getOrderItems($order) );
+                    }
+                    if ( isset( $shipment['orderNumbers'] ) ) {
+                        $data['orderNumbers'] = $shipment['orderNumbers'];
                     }
                     $response = $client->put( '/shipments/' . $trackmage_id, [
                         'headers' => [
@@ -111,7 +116,12 @@ class ShipmentSync implements EntitySyncInterface
     }
 
     private function getShipmentItemsForSync( array $items, array $orderItems ) {
-        return array_map(function($item) use ($orderItems){
+        return array_map(/**
+         * @throws \Exception
+         */ function($item) use ($orderItems){
+            if(isset($item['@id']) && isset($item['orderItem'])) {
+                return $item;
+            }
             $newItem = [];
             $newItem['qty'] = (int)$item['qty'];
             if (isset($item['id']) && !empty($item['id'])){

@@ -86,7 +86,7 @@
     $(editRow).insertAfter(row);
 
     $.each(params.statusManager.used_aliases, function(idx, key){
-      if(alias != key) {
+      if(alias !== key) {
         $(editRow).find("select[name=status_alias] option[value=" + key + "]").eq(0).hide();
       }else {
         $(editRow).find("select[name=status_alias] option").removeAttr("selected");
@@ -106,7 +106,7 @@
       .val(alias);
 
     // Disable name and slug field if not a custom status.
-    if (isCustom != 1) {
+    if (isCustom !== 1) {
       $(editRow)
         .find('[name="status_slug"], [name="status_name"]')
         .prop("disabled", true);
@@ -307,7 +307,7 @@
     function addRow(name, slug, alias) {
       let statusManagerBody = $("#statusManager tbody");
       let row = `
-            <tr id="status-${slug}" data-status-name="${name}" data-status-slug="${slug}" data-status-alias="${alias}" data-status-is-cusotm="1">
+            <tr id="status-${slug}" data-status-name="${name}" data-status-slug="${slug}" data-status-alias="${alias}" data-status-is-custom="1">
               <td>
                 <span data-update-status-name>${name}</span>
                 <div class="row-actions">

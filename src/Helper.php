@@ -143,6 +143,7 @@ class Helper {
                 set_transient('trackmage_order_statuses', $cachedAliases, 3600);
             } catch( ClientException $e ) {
                 error_log('Unable to fetch statuses: '.TrackMageClient::error($e));
+                throw new RuntimeException('Unable to fetch statuses: '.TrackMageClient::error($e), $e->getCode(), $e);
             }
         }
         return $aliases;
@@ -308,13 +309,39 @@ class Helper {
     }
 
     /**
-     * @param int $shipmentId
+     * @param string $shipmentId
      */
-    public static function deleteShipment(int $shipmentId)
+    public static function deleteShipment(string $shipmentId)
     {
         $shipmentRepo = Plugin::instance()->getShipmentRepo();
         do_action('trackmage_delete_shipment', $shipmentId);
         $shipmentRepo->delete($shipmentId);
+    }
+
+    /**
+     * @param string $shipmentId
+     * @param int $orderId
+     */
+    public static function unlinkShipmentFromOrder(string $shipmentId, int $orderId)
+    {
+        $order = wc_get_order($orderId);
+        $shipmentRepo = Plugin::instance()->getShipmentRepo();
+        do_action('trackmage_unlink_shipment', $shipmentId, $orderId);
+        $shipment = $shipmentRepo->find($shipmentId);
+        $orderNumber = strtoupper($order->get_order_number());
+        $orderNumbers = $shipment['orderNumbers'] ?? [];
+        if(!in_array($orderNumber, $orderNumbers, true)) {
+            return;
+        }
+        if(count($orderNumbers) === 1) {
+            self::deleteShipment($shipmentId);
+            return;
+        }
+
+        $newOrders = array_filter($orderNumbers, fn(string $on) => $on !== $orderNumber);
+        $shipment = $shipmentRepo->update($shipmentId, [
+            'orderNumbers' => $newOrders
+        ]);
     }
 
     public static function getOrderStatuses(): array
@@ -626,12 +653,12 @@ class Helper {
     {
         $credentialsIsValid = self::check_credentials();
         $workspace = get_option( 'trackmage_workspace', 0 );
-        return $credentialsIsValid && $workspace !== 0;
+        return $credentialsIsValid === self::CREDENTIALS_VALID && !in_array($workspace, [0, null, false]);
     }
 
     public static function mapOrderItemsToShipmentItem(array $orderItems, array $shipmentItems): array
     {
-        return array_map(function($shipmentItem) use ($orderItems){
+        return array_filter(array_map(function($shipmentItem) use ($orderItems){
             $tmOrderItem = explode('/', $shipmentItem['orderItem']);
             $tmOrderItemId = end($tmOrderItem);
             foreach ($orderItems as $orderItemId => $order_item){
@@ -641,8 +668,8 @@ class Helper {
                     return $shipmentItem;
                 }
             }
-            return $shipmentItem;
-        }, $shipmentItems);
+            return null;
+        }, $shipmentItems));
     }
 
     public static function unlinkAllOrders()
@@ -704,5 +731,17 @@ class Helper {
             $result[$item->get_id()] = $item;
         }
         return $result;
+    }
+
+    public static function mergeShipments(array $data): array
+    {
+        $client = Plugin::get_client();
+        $response = $client->post("/shipments/merge", [
+            'headers' => [
+                'Content-Type' => 'application/ld+json'
+            ],
+            'json' => $data
+        ]);
+        return TrackMageClient::item($response);
     }
 }

@@ -76,6 +76,15 @@ php81_wp61_wc72_test:
         PHP_VERSION: '8.1'
         WORDPRESS_VERSION: '6.1.1'
         WOOCOMMERCE_VERSION: '7.2.0'
+
+php74_wp611_wc740_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '7.4'
+        WORDPRESS_VERSION: '6.1.1'
+        WOOCOMMERCE_VERSION: '7.4.0'
+
 #
 #php81_wp58_wc61_test:
 #    <<: *test_tpl

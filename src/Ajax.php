@@ -9,6 +9,9 @@
 
 namespace TrackMage\WordPress;
 
+use GuzzleHttp\Exception\ClientException;
+use TrackMage\Client\TrackMageClient;
+
 defined('WPINC') || exit;
 
 /**
@@ -52,6 +55,7 @@ class Ajax {
             'edit_shipment' => 'editShipment',
             'add_shipment' => 'addShipment',
             'update_shipment' => 'updateShipment',
+            'merge_shipments' => 'mergeShipments',
             'delete_shipment' => 'deleteShipment',
             'add_status' => 'addStatus',
             'update_status' => 'updateStatus',
@@ -304,7 +308,7 @@ class Ajax {
         }
 
         // Request data.
-        if( !isset($_POST['orderId'], $_POST['id']) || (isset($_POST['orderId']) && !is_numeric($_POST['orderId'])) || empty($_POST['id'])) {
+        if( !isset($_POST['orderId'], $_POST['id']) || (!is_numeric($_POST['orderId'])) || empty($_POST['id'])) {
             wp_send_json([]);
         }
         $orderId = absint($_POST['orderId']);
@@ -332,10 +336,21 @@ class Ajax {
         ];
 
         // Order data.
-        $order               = wc_get_order($orderId);
-        $orderItems          = Helper::getOrderItems($order);
+        $order = wc_get_order($orderId);
         try {
+            $shipmentRepo = Plugin::instance()->getShipmentRepo();
+            $shipmentItemRepo = Plugin::instance()->getShipmentItemsRepo();
+            //
+            $tmShipment = $shipmentRepo->find($shipmentId);
+            $anotherOrders = array_filter($tmShipment['orderNumbers'], fn(string $on) => strtoupper(trim($on)) !== strtoupper($order->get_order_number()));
             $mergedItems = [];
+            foreach ($anotherOrders as $anotherOrder) {
+                $shipmentItemsForOrder = $shipmentItemRepo->findBy(['shipment.id' => $shipmentId, 'orderItem.order.orderNumber' => $anotherOrder]);
+                $mergedItems = array_merge($mergedItems, $shipmentItemsForOrder);
+            }
+
+            $orderItems = Helper::getOrderItems($order);
+
             foreach ($shipment['items'] as $item) {
                 $orderItemId = absint($item['order_item_id']);
                 if ( isset( $mergedItems[ $orderItemId ] ) ) {
@@ -347,7 +362,7 @@ class Ajax {
                         }
                     }
                 } else {
-                    $mergedItems[ $orderItemId ]        = $item;
+                    $mergedItems[ $orderItemId ] = $item;
                     $mergedItems[ $orderItemId ]['qty'] = (int) $mergedItems[ $orderItemId ]['qty'];
                 }
             }
@@ -376,7 +391,7 @@ class Ajax {
                 'notes' => $notes_html
             ]);
         } catch (\Exception $e) {
-            wp_send_json_error(['message' => $e->getMessage()]);
+            wp_send_json_error(['message' => $e->getMessage(), 'shipmentId' => $shipmentId, 'trackingNumber' => $trackingNumber]);
         }
     }
 
@@ -393,35 +408,39 @@ class Ajax {
         }
 
         // Request data.
-        if( !isset($_POST['orderId'], $_POST['id']) || (isset($_POST['orderId']) && !is_numeric($_POST['orderId'])) || empty($_POST['id'])) {
+        if( !isset($_POST['orderId'], $_POST['id']) || (!is_numeric($_POST['orderId'])) || empty($_POST['id'])) {
             wp_send_json([]);
         }
 
         $orderId = absint($_POST['orderId']);
         $shipmentId = sanitize_key($_POST['id']);
-
-        // Delete shipment record from the database.
-        Helper::deleteShipment($shipmentId);
-
-        // Order data.
-        $order               = wc_get_order($orderId);
-        $orderItems          = Helper::getOrderItems($order);
-
-        /** @var \WP_User $user */
-        $user = wp_get_current_user();
-        $userName = null !== $user ? $user->user_login : 'unknown';
-
-        $order->add_order_note( sprintf( __( 'Shipment %s was deleted by %s.', 'trackmage' ), $shipmentId, $userName), false, true );
-
+        $unlink = boolval($_POST['unlink']);
         try {
+            // Delete shipment record from the database.
+            if ($unlink === true) {
+                Helper::unlinkShipmentFromOrder($shipmentId, $orderId);
+            } else {
+                Helper::deleteShipment($shipmentId);
+            }
+
+            // Order data.
+            $order = wc_get_order($orderId);
+            $orderItems = Helper::getOrderItems($order);
+
+            /** @var \WP_User $user */
+            $user = wp_get_current_user();
+            $userName = null !== $user ? $user->user_login : 'unknown';
+
+            $order->add_order_note(sprintf(__('Shipment %s was %s by %s.', 'trackmage'), $shipmentId, $unlink ? 'unlinked' : 'deleted', $userName), false, true);
+
             // Get HTML to return.
             ob_start();
             include TRACKMAGE_VIEWS_DIR . 'meta-boxes/order-shipments.php';
             $html = ob_get_clean();
 
             ob_start();
-            $notes = wc_get_order_notes( array( 'order_id' => $orderId ) );
-            include WC()->plugin_path().'/includes/admin/meta-boxes/views/html-order-notes.php';
+            $notes = wc_get_order_notes(array('order_id' => $orderId));
+            include WC()->plugin_path() . '/includes/admin/meta-boxes/views/html-order-notes.php';
             $notes_html = ob_get_clean();
 
             wp_send_json_success([
@@ -429,7 +448,8 @@ class Ajax {
                 'html' => $html,
                 'notes' => $notes_html
             ]);
-
+        } catch (ClientException $e) {
+            wp_send_json_error(['message' => TrackMageClient::error($e)]);
         } catch (\Exception $e) {
             wp_send_json_error(['message' => $e->getMessage()]);
         }
@@ -441,7 +461,7 @@ class Ajax {
      * @since 1.0.0
      * @todo Refactor error handling using Exceptions instead of $errors array.
      */
-    public function updateStatus() {
+    public static function updateStatus() {
         check_ajax_referer('update-status', 'security');
 
         if (! current_user_can('manage_woocommerce')) {
@@ -529,7 +549,7 @@ class Ajax {
      * @since 1.0.0
      * @todo Refactor error handling using Exceptions instead of $errors array.
      */
-    public function addStatus() {
+    public static function addStatus() {
         check_ajax_referer('add-status', 'security');
 
         if (! current_user_can('manage_woocommerce')) {
@@ -596,7 +616,7 @@ class Ajax {
      * @since 1.0.0
      * @todo Refactor error handling using Exceptions instead of $errors array.
      */
-    public function deleteStatus() {
+    public static function deleteStatus() {
         check_ajax_referer('delete-status', 'security');
 
         if (! current_user_can('manage_woocommerce')) {
@@ -639,5 +659,61 @@ class Ajax {
                 'used'  => $used_aliases
             ]
         ]);
+    }
+
+    /**
+     * Merge shipments.
+     *
+     * @since 1.2.0
+     */
+    public static function mergeShipments() {
+        check_ajax_referer('merge-shipments', 'security');
+
+        if (! current_user_can('edit_shop_orders')) {
+            wp_die(-1);
+        }
+
+        // Request data.
+        $trackingNumber = isset($_POST['trackingNumber']) ? sanitize_title($_POST['trackingNumber']) : null;
+        $shipmentId = isset($_POST['shipmentId']) ? sanitize_key($_POST['shipmentId']) : null;
+        if(in_array($trackingNumber, ['', null], true) || in_array($shipmentId, ['', null], true) || !isset($_POST['orderId']) || (!is_numeric($_POST['orderId']))) {
+            wp_send_json_error(['message' => 'trackingNumber and shipmentId should be set']);
+        }
+        $orderId = absint($_POST['orderId']);
+        $data = [
+            'workspaceId' => get_option('trackmage_workspace'),
+            'shipmentId' => $shipmentId,
+            'trackingNumber' => strtoupper($trackingNumber),
+        ];
+        $order = wc_get_order($orderId);
+
+        try {
+            $synchronizer = Plugin::instance()->getSynchronizer();
+            $synchronizer->syncOrder($orderId, true);
+
+            // Update shipment details in the database.
+            $shipment = Helper::mergeShipments($data);
+            $order->add_order_note(sprintf(__('Shipments were merged', 'trackmage')), false, true);
+
+            // Get HTML to return.
+            ob_start();
+            include TRACKMAGE_VIEWS_DIR . 'meta-boxes/order-shipments.php';
+            $html = ob_get_clean();
+
+            ob_start();
+            $notes = wc_get_order_notes(array('order_id' => $orderId));
+            include WC()->plugin_path() . '/includes/admin/meta-boxes/views/html-order-notes.php';
+            $notes_html = ob_get_clean();
+
+            wp_send_json_success([
+                'message' => __('Shipment updated successfully!', 'trackmage'),
+                'html' => $html,
+                'notes' => $notes_html
+            ]);
+        } catch (ClientException $e) {
+            wp_send_json_error(['message' => TrackMageClient::error($e), 'shipmentId' => $shipmentId, 'trackingNumber' => $trackingNumber]);
+        } catch (\Exception $e) {
+            wp_send_json_error(['message' => $e->getMessage(), 'shipmentId' => $shipmentId, 'trackingNumber' => $trackingNumber]);
+        }
     }
 }
