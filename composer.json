@@ -1,7 +1,7 @@
 {
 	"name": "trackmage/trackmage-woo-shipment-tracking",
 	"type": "wordpress-plugin",
-    "version": "1.2.0",
+    "version": "1.2.1",
 	"description": "TrackMage integrates shipments tracking into your WooCommerce store",
 	"keywords": [
 		"trackmage"
