@@ -50,7 +50,9 @@ class Assets {
         }
 
         // Enqueue admin styles.
-        wp_enqueue_style('trackmage-bootstrap');
+        if(str_contains($screenId, 'trackmage')) {
+            wp_enqueue_style('trackmage-bootstrap');
+        }
         wp_enqueue_style('trackmage_admin');
     }
 
