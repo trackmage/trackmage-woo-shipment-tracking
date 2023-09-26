@@ -313,8 +313,8 @@
                 <div class="row-actions">
                   <span class="inline"><button type="button" class="button-link edit-status">${
                     params.statusManager.i18n.edit
-                  }</button> | </span>
-                  <span class="inline delete"><button type="button" class="button-link delete-status">${
+                  }</button></span>
+                  <span class="inline delete"> | <button type="button" class="button-link delete-status">${
                     params.statusManager.i18n.delete
                   }</button></span>
                 </div>
@@ -347,71 +347,84 @@
     "click",
     "#statusManager .row-actions .delete-status",
     function(e) {
-      if (confirm(params.statusManager.i18n.confirmDeleteStatus)) {
-        let row = $(this).closest("tr");
-        let slug = $(row).data("status-slug");
+      let row = $(this).closest("tr");
+      let slug = $(row).data("status-slug");
+      let statusToMigrate = null;
+      const options = $('#statusManager tr[id*="status-wc"]').toArray().filter(item => $(item).data('status-slug') !== slug).map(item => '<option value="'+$(item).data('status-slug')+'">'+$(item).data('status-slug')+'</option>');
+      const html = $('<div><p>Choose status to migrate orders to:<p><select required id="status_to_migrate">'+options.join()+'</select></div>');
 
-        // Request data.
-        let data = {
-          action: "trackmage_delete_status",
-          security: params.statusManager.nonces.deleteStatus,
-          slug: slug
-        };
+      const cb = () => {
+        statusToMigrate = $('#status_to_migrate').val();
+        return true;
+      };
 
-        $.ajax({
-          url: params.main.urls.ajax,
-          method: "post",
-          data: data,
-          beforeSend: function() {},
-          success: function(response) {
-            if (response.success) {
-              deleteRow();
+      trackmageConfirmDialog(html, cb, params.statusManager.i18n.confirmDeleteStatus, params.statusManager.i18n.delete).then(function(yesno) {
+        if(yesno === 'yes'){
+          // Request data.
+          const data = {
+            action: "trackmage_delete_status",
+            security: params.statusManager.nonces.deleteStatus,
+            slug,
+            statusToMigrate
+          };
 
-              params.statusManager.used_aliases = response.data.result.used;
+          $.ajax({
+            url: params.main.urls.ajax,
+            method: "post",
+            data,
+            beforeSend: function() {},
+            success: function(response) {
+              if (response.success) {
+                deleteRow();
 
-              $(".add-status select[name=status_alias] option").show();
-              $.each(params.statusManager.used_aliases, function(idx, value){
-                $(".add-status select[name=status_alias] option[value="+value+"]").hide();
-              });
-            }
+                params.statusManager.used_aliases = response.data.result.used;
 
-            const alert = {
-              title: response.success
-                ? params.main.i18n.success
-                : params.main.i18n.failure,
-              message: response.data.message
-                ? response.data.message
-                : !response.success
-                ? params.main.i18n.unknownError
-                : "",
-              type: response.success ? "success" : "failure"
-            };
+                $(".add-status select[name=status_alias] option").show();
+                $.each(params.statusManager.used_aliases, function(idx, value){
+                  $(".add-status select[name=status_alias] option[value="+value+"]").hide();
+                });
+              }
 
-            trackmageAlert(alert.title, alert.message, alert.type, true);
-          },
-          error: function() {
-            trackmageAlert(
-              params.main.i18n.failure,
-              params.main.i18n.unknownError,
-              "failure",
-              true
-            );
-          }
-        });
+              const alert = {
+                title: response.success
+                  ? params.main.i18n.success
+                  : params.main.i18n.failure,
+                message: response.data.message
+                  ? response.data.message
+                  : !response.success
+                    ? params.main.i18n.unknownError
+                    : "",
+                type: response.success ? "success" : "failure"
+              };
 
-        function deleteRow() {
-          $(row).effect(
-            "highlight",
-            {
-              color: "#ffe0e3"
+              trackmageAlert(alert.title, alert.message, alert.type, true);
             },
-            500
-          );
-          setTimeout(() => {
-            $(row).remove();
-          }, 500);
+            error: function() {
+              trackmageAlert(
+                params.main.i18n.failure,
+                params.main.i18n.unknownError,
+                "failure",
+                true
+              );
+            }
+          });
+
+          function deleteRow() {
+            $(row).effect(
+              "highlight",
+              {
+                color: "#ffe0e3"
+              },
+              500
+            );
+            setTimeout(() => {
+              $(row).remove();
+            }, 500);
+          }
+        }else{
+          return false;
         }
-      }
+      });
     }
   );
 })(jQuery, window, document);

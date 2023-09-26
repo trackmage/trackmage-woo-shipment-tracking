@@ -2,9 +2,9 @@
 Contributors: trackmage,karser,harbuzniak
 Tags: shipping, tracking, order, status, delivery, shipment tracking, order tracking, order status, carrier, carriers
 Requires at least: 5.3
-Tested up to: 6.1.1
+Tested up to: 6.3.1
 Requires PHP: 7.4
-Stable tag: 1.2.1
+Stable tag: 2.0.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -65,6 +65,10 @@ With TrackMage you can analyze your carrier’s performance across all channels 
 3. Go through the Onboarding wizard in the Plugin
 
 == Changelog ==
+= 2.0.0 =
+* Add support for WooCommerce up to 8.1.1 and WordPress 6.3.1
+* Bugfixes and enhancements
+
 = 1.2.1 =
 * Enqueue bootstrap only on trackmage settings pages
 

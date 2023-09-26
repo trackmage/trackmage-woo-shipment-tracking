@@ -82,7 +82,7 @@ if (PHP_VERSION_ID < 50600 || (!is_plugin_active('woocommerce/woocommerce.php') 
 
 if ( ! defined( 'TRACKMAGE_VERSION' ) ) {
     // phpcs:ignore NeutronStandard.Constants.DisallowDefine.Define
-    define( 'TRACKMAGE_VERSION', '1.2.0' );
+    define( 'TRACKMAGE_VERSION', '2.0.0' );
 }
 
 if ( ! defined( 'TRACKMAGE_DIR' ) ) {

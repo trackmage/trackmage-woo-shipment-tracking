@@ -66,13 +66,14 @@ class Assets {
         $screen   = get_current_screen();
         $screenId = $screen ? $screen->id : '';
         $suffix   = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
+        $source = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? 'src' : 'dist';
 
         // Register admin scripts.
 
-        wp_register_script('trackmage-admin', TRACKMAGE_URL . 'assets/dist/js/admin/main' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
-        wp_register_script('trackmage-admin-settings', TRACKMAGE_URL . 'assets/dist/js/admin/settings' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
-        wp_register_script('trackmage-admin-status-manager', TRACKMAGE_URL . 'assets/dist/js/admin/status-manager' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
-        wp_register_script('trackmage-admin-meta-boxes', TRACKMAGE_URL . 'assets/dist/js/admin/meta-boxes' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
+        wp_register_script('trackmage-admin', TRACKMAGE_URL . 'assets/'.$source.'/js/admin/main' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
+        wp_register_script('trackmage-admin-settings', TRACKMAGE_URL . 'assets/'.$source.'/js/admin/settings' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
+        wp_register_script('trackmage-admin-status-manager', TRACKMAGE_URL . 'assets/'.$source.'/js/admin/status-manager' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
+        wp_register_script('trackmage-admin-meta-boxes', TRACKMAGE_URL . 'assets/'.$source.'/js/admin/meta-boxes' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
 
         if (in_array($screenId, Helper::getScreenIds(), true)) {
             // External scripts.
