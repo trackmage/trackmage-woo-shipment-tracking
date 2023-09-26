@@ -45,7 +45,7 @@ class Assets {
 
         // Enqueue WooCommerce styles.
         if(function_exists('WC')){
-            wp_enqueue_style('select2', \WC()->plugin_url() . '/assets/css/select2.css', array(), WC_VERSION);
+            wp_enqueue_style('select2', \WC()->plugin_url() . '/assets/css/select2.css', [], WC_VERSION);
             wp_enqueue_style('woocommerce_admin_styles');
         }
 
@@ -74,7 +74,7 @@ class Assets {
         wp_register_script('trackmage-admin-status-manager', TRACKMAGE_URL . 'assets/dist/js/admin/status-manager' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
         wp_register_script('trackmage-admin-meta-boxes', TRACKMAGE_URL . 'assets/dist/js/admin/meta-boxes' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
 
-        if (in_array($screenId, Helper::getScreenIds())) {
+        if (in_array($screenId, Helper::getScreenIds(), true)) {
             // External scripts.
             wp_enqueue_script('selectWoo');
             wp_enqueue_script( 'jquery-ui-dialog' ); // jquery and jquery-ui should be dependencies, didn't check though...

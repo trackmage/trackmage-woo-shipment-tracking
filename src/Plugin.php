@@ -115,7 +115,7 @@ class Plugin {
             $type = get_post_type($postId);
             if ($type === 'shop_order'){
                 foreach ($this->getShipmentRepo()->findBy(['orderNumbers' => $postId]) as $shipment) {
-                    if (in_array($postId, isset($shipment['orderNumbers']) ? $shipment['orderNumbers'] : [], true)) {
+                    if (in_array($postId, $shipment['orderNumbers'] ?? [], true)) {
                         Helper::deleteShipment($shipment['id']);
                     }
                 }

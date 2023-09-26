@@ -441,11 +441,11 @@ class Helper {
      * @param bool $leading_space  Whether to add a leading space (default: false).
      * @param bool $trailing_space Whether to add a trailing space (default: false).
      * @param bool $echo           Whether to echo or return the output (default: false).
-     * @return string Tag attributes.
+     * @return string|void Tag attributes.
      *@since 0.1.0
      *
      */
-    public static function generate_html_tag_atts(array $atts, bool $leading_space = false, bool $trailing_space = false, bool $echo = false ): string
+    public static function generate_html_tag_atts(array $atts, bool $leading_space = false, bool $trailing_space = false, bool $echo = false )
     {
         $output =  '';
         $atts_count = 0;
@@ -473,11 +473,11 @@ class Helper {
      *
      * @param array $props Array of CSS properties and their values.
      * @param bool $echo  Whether to echo or return the output (default: false).
-     * @return string Inline style string.
+     * @return string|void Inline style string.
      *@since 0.1.0
      *
      */
-    public static function generate_inline_style(array $props, bool $echo = false ): string
+    public static function generate_inline_style(array $props, bool $echo = false )
     {
         $output = '';
         foreach( $props as $prop => $value ) {
@@ -653,7 +653,7 @@ class Helper {
     {
         $credentialsIsValid = self::check_credentials();
         $workspace = get_option( 'trackmage_workspace', 0 );
-        return $credentialsIsValid === self::CREDENTIALS_VALID && !in_array($workspace, [0, null, false]);
+        return $credentialsIsValid === self::CREDENTIALS_VALID && !in_array($workspace, [0, null, false, ''], true);
     }
 
     public static function mapOrderItemsToShipmentItem(array $orderItems, array $shipmentItems): array

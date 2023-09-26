@@ -217,7 +217,7 @@ class Admin {
         $integration = get_option('trackmage_integration', '');
         $webhook = get_option('trackmage_webhook', '');
 
-        if (! empty($integration) && in_array($old_value, array_map(function($ws){ return $ws['id'];}, $workspaces), true)) {
+        if (! empty($integration) && in_array($old_value, array_map(fn($ws) => $ws['id'], $workspaces), true)) {
             try {
                 $client->delete('/workflows/'.$integration, [RequestOptions::QUERY => ['deleteData'=>$deleteData]]);
             } catch(ClientException $e){
