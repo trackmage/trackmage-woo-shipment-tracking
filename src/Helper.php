@@ -46,11 +46,19 @@ class Helper {
             if (!get_transient($key)) {
                 $client = new TrackMageClient( $client_id, $client_secret, null, TRACKMAGE_API_DOMAIN);
                 $client->validateCredentials();
-                set_transient($key, true);
+                set_transient($key, true, 60);
             }
             return self::CREDENTIALS_VALID;
         } catch( ClientException $e ) {
-            error_log('Unable to check credentials: '.TrackMageClient::error($e));
+            $errorMsg = TrackMageClient::error($e);
+            $alreadySent = get_transient('trackmage_error_shown');
+            if(!$alreadySent) {
+                add_action('admin_notices', static function () use ($errorMsg) {
+                    printf('<div class="error"><p>%s: %s</p></div>', __('TrackMage synchronization does not work. Please check <a href="/wp-admin/admin.php?page=trackmage-settings">settings</a> and fix'), $errorMsg);
+                });
+                set_transient('trackmage_error_shown', true, 5);
+            }
+            error_log('Unable to check credentials: '.$errorMsg);
         }
         return self::CREDENTIALS_ERROR;
     }
@@ -252,7 +260,7 @@ class Helper {
         $shipmentItemRepo = Plugin::instance()->getShipmentItemsRepo();
         $order = wc_get_order($orderId);
         $orderItems = self::getOrderItems($order);
-        $shipments = $shipmentRepo->findBy(['orderNumbers' => $order->get_order_number()]);
+        $shipments = $shipmentRepo->findBy(['orderNumbers' => $order->get_order_number()]) ?? [];
         foreach ($shipments as &$shipment) {
             $shipmentItems = $shipmentItemRepo->findBy(['shipment.id' => $shipment['id']]);
             $shipment['items'] = self::mapOrderItemsToShipmentItem($orderItems, $shipmentItems);
