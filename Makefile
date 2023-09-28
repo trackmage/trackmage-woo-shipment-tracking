@@ -58,6 +58,9 @@ init:
 		--skip-email --allow-root
 	# Empty the main site of all content.
 	wp site empty --yes --allow-root --path=/var/www/html
+	wp core update --allow-root --path=${WP_FOLDER} \
+	    --version=${WORDPRESS_VERSION} \
+	    --force
 
 	# Install the Airplane Mode plugin to speed up the Driver tests.
 	if [ ! -d ${WP_FOLDER}/wp-content/plugins/airplane-mode ]; then \
