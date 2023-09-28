@@ -46,6 +46,8 @@ class Admin {
 
         add_filter('pre_update_option_trackmage_delete_data', [$this, 'trigger_delete_data'], 10, 3);
         add_filter('pre_update_option_trackmage_trigger_sync', [$this, 'trigger_sync'], 20, 3);
+        add_filter( 'plugin_row_meta', [$this, 'plugin_row_meta'], 10, 2 );
+        add_filter( 'plugin_action_links_' . TRACKMAGE_PLUGIN_BASENAME, [ $this, 'plugin_action_links' ] );
     }
 
     /**
@@ -208,10 +210,14 @@ class Admin {
         }
         $this->lockedChangesAt = time();
         $deleteData = isset($_POST['trackmage_delete_data']) && $_POST['trackmage_delete_data'] === '1';
+
+        $workspaces = Helper::get_workspaces(true);
+        if (!empty($value) && !in_array($value, array_column($workspaces, 'id'))) {
+            add_settings_error('trackmage_workspace', 0, 'Trackmage cannot be connected to selected workspace: '.$value);
+            return $old_value;
+        }
         $client = Plugin::get_client();
         $url = Helper::get_endpoint();
-
-        $workspaces = Helper::get_workspaces();
 
         // Find and remove any activated integration and webhook, if any.
         $integration = get_option('trackmage_integration', '');
@@ -384,5 +390,31 @@ class Admin {
             <p><?php _e( $msg, 'trackmage' ); ?></p>
         </div>
             <?php
+    }
+
+    public function plugin_row_meta( $links, $file ) {
+        if ( TRACKMAGE_PLUGIN_BASENAME !== $file ) {
+            return $links;
+        }
+        $docs_url = 'https://help.trackmage.com/en';
+        $api_docs_url = 'https://docs.trackmage.com/docs/';
+        $community_support_url = 'mailto:support@trackmage.com';
+        $pricing_url = 'https://trackmage.com/pricing/';
+        $row_meta = array(
+            'docs'    => '<a href="' . esc_url( $docs_url ) . '" aria-label="' . esc_attr__( 'View Trackmage documentation', 'trackmage' ) . '">' . esc_html__( 'User Guide', 'trackmage' ) . '</a>',
+            'apidocs' => '<a href="' . esc_url( $api_docs_url ) . '" aria-label="' . esc_attr__( 'View Trackmage API docs', 'trackmage' ) . '">' . esc_html__( 'For Developers', 'trackmage' ) . '</a>',
+            'pricing' => '<a href="' . esc_url( $pricing_url ) . '" aria-label="' . esc_attr__( 'View Trackmage Pricing', 'trackmage' ) . '">' . esc_html__( 'Pricing', 'trackmage' ) . '</a>',
+            'support' => '<a href="' . esc_url( $community_support_url ) . '" aria-label="' . esc_attr__( 'Contact Us', 'trackmage' ) . '">' . esc_html__( 'Contact Support', 'trackmage' ) . '</a>',
+        );
+
+        return array_merge( $links, $row_meta );
+    }
+
+    public function plugin_action_links( $links ) {
+        $action_links = array(
+            'settings' => '<a href="' . admin_url( 'admin.php?page=trackmage-settings' ) . '" aria-label="' . esc_attr__( 'View Trackmage settings', 'trackmage' ) . '">' . esc_html__( 'Settings', 'trackmage' ) . '</a>',
+        );
+
+        return array_merge( $action_links, $links );
     }
 }

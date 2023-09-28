@@ -75,20 +75,25 @@ class Helper {
         if ( false === $workspaces || $refresh) {
             try {
                 $client   = Plugin::get_client();
-                $response = $client->get( '/workspaces' );
-                $result = TrackMageClient::collection($response);
-                $workspaces = [];
+                $result = TrackMageClient::collection($client->get( '/workspaces' ));
+                $teams = TrackMageClient::collection($client->get('/teams'));
 
-                foreach ( $result as $workspace ) {
-                    $workspaces[] = [
+                $workspaces = array_map(
+                    fn(array $workspace) => [
                         'id'    => $workspace['id'],
                         'title' => $workspace['title'],
                         'team'  => $workspace['team']
-                    ];
+                    ],
+                    array_filter($result, fn(array $workspace) => self::isWorkspaceAvailable($workspace, $teams))
+                );
+                if(count($workspaces) > 0) {
+                    set_transient('trackmage_workspaces', $workspaces, 3600);
+                } else {
+                    delete_transient('trackmage_workspaces');
                 }
-                set_transient( 'trackmage_workspaces', $workspaces, 3600 );
             } catch ( ClientException $e ) {
                 error_log('Unable to fetch workspaces: '.TrackMageClient::error($e));
+                delete_transient('trackmage_workspaces');
                 return false;
             }
         }
@@ -751,5 +756,27 @@ class Helper {
             'json' => $data
         ]);
         return TrackMageClient::item($response);
+    }
+
+    private static function isWorkspaceAvailable(array $workspace, array $teams): bool
+    {
+        $currentWorkspace = get_option('trackmage_workspace', null);
+        if(!in_array($currentWorkspace, [null, ''], true) && $workspace['id'] === $currentWorkspace) {
+            return true;
+        }
+        if($workspace['ecommerceIntegrationType'] !== null) {
+            return false;
+        }
+        if(!in_array($workspace['scheduledForDelete'], [null, false], true)) {
+            return false;
+        }
+        if($workspace['team'] === null) {
+            return false;
+        }
+        $wsTeam = current(array_filter($teams, fn(array $team) => str_contains($workspace['team'], $team['id'])));
+        if($wsTeam === false) {
+            return false;
+        }
+        return $wsTeam['subscription'] !== null && in_array($wsTeam['subscription']['status'], ['active', 'non_renewing'], true);
     }
 }

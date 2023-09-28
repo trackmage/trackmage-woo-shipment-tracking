@@ -108,6 +108,8 @@ if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
 
 define('TRACKMAGE_PLUGIN_FILE',	__FILE__);
 
+define('TRACKMAGE_PLUGIN_BASENAME', plugin_basename( TRACKMAGE_PLUGIN_FILE ));
+
 if (!defined('TRACKMAGE_API_DOMAIN')) {
     define('TRACKMAGE_API_DOMAIN', 'https://api.trackmage.com');
 }
