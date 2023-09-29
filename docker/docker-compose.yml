@@ -19,7 +19,7 @@ services:
         command: mysqld --debug-no-sync
 
     wp:
-        image: wordpress:php${PHP_VERSION:-7.4}-apache
+        image: wordpress:php${PHP_VERSION:-7.4}-fpm
         depends_on:
             - db
         environment:
