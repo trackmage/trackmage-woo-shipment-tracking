@@ -2,12 +2,12 @@ version: '3.2'
 
 services:
 
-    chromedriver:
-        image: selenium/standalone-chrome:3.141.59-oxygen
-        depends_on:
-            - db
-        extra_hosts:
-            - "wp.test:127.0.0.1"
+#    chromedriver:
+#        image: selenium/standalone-chrome:3.141.59-oxygen
+#        depends_on:
+#            - db
+#        extra_hosts:
+#            - "wp.test:127.0.0.1"
 
     db:
         image: mariadb:10.3.6
