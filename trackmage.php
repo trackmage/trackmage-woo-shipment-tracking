@@ -100,8 +100,10 @@ if ( ! defined( 'TRACKMAGE_URL' ) ) {
     define( 'TRACKMAGE_URL', plugin_dir_url( __FILE__ ) );
 }
 
+$content = file_get_contents(__DIR__ . '/vendor/composer/autoload_real.php');
+$composerAutoloaderInitClassName = preg_match('/class\s+(ComposerAutoloaderInit[a-zA-Z0-9_]+)/', $content, $matches) ? $matches[1] ?? null : null;
 // Load Composer autoloader.
-if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
+if ( file_exists( __DIR__ . '/vendor/autoload.php' ) && (null === $composerAutoloaderInitClassName || !class_exists($composerAutoloaderInitClassName, false))) {
     require_once __DIR__ . '/vendor/autoload.php';
 }
 

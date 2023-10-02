@@ -22,6 +22,8 @@ services:
         image: wordpress:php${PHP_VERSION:-7.4}-fpm
         depends_on:
             - db
+        security_opt:
+            - seccomp:unconfined
         environment:
             WORDPRESS_DB_NAME: wp_site
             WORDPRESS_DB_HOST: db
