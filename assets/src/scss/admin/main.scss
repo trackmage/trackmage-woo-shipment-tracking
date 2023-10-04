@@ -2,6 +2,10 @@
 @import "alerts";
 @import "order";
 
+:root {
+  --wp-admin-theme-color: #007cba;
+}
+
 .clear-fix {
   display: block;
   clear: both;
