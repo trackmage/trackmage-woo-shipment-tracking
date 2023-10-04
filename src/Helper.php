@@ -74,7 +74,7 @@ class Helper {
         $workspaces = get_transient( 'trackmage_workspaces' );
         if ( false === $workspaces || $refresh) {
             try {
-                $client   = Plugin::get_client();
+                $client = Plugin::get_client();
                 $result = TrackMageClient::collection($client->get( '/workspaces' ));
                 $teams = TrackMageClient::collection($client->get('/teams'));
 
