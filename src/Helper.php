@@ -72,7 +72,7 @@ class Helper {
      */
     public static function get_workspaces(bool $refresh = false) {
         $workspaces = get_transient( 'trackmage_workspaces' );
-        if ( false === $workspaces || $refresh) {
+        if ( false === $workspaces || $refresh !== false) {
             try {
                 $client = Plugin::get_client();
                 $result = TrackMageClient::collection($client->get( '/workspaces' ));
@@ -84,7 +84,7 @@ class Helper {
                         'title' => $workspace['title'],
                         'team'  => $workspace['team']
                     ],
-                    array_filter($result, fn(array $workspace) => self::isWorkspaceAvailable($workspace, $teams))
+                    array_values(array_filter($result, fn(array $workspace) => self::isWorkspaceAvailable($workspace, $teams)))
                 );
                 if(count($workspaces) > 0) {
                     set_transient('trackmage_workspaces', $workspaces, 3600);

@@ -25,6 +25,11 @@ $statuses = Helper::getOrderStatuses();
 $sync_statuses = (array) get_option( 'trackmage_sync_statuses', [] );
 $isInSync = Helper::isBulkSynchronizationInProcess();
 $apiKeysError = get_transient('trackmage_error_shown');
+$error = get_transient('trackmage-remove-integration-error');
+if($error) {
+    delete_transient('trackmage-remove-integration-error');
+    echo $error;
+}
 ?>
 
 

@@ -362,10 +362,12 @@ class Admin {
             $logger->info('Run Reset all plugin settings and data', ['deleteData' => $deleteData]);
             $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
             $backgroundTaskRepo->truncate();
+            $integration = get_option('trackmage_integration', '');
             Helper::clearTransients();
             Helper::clearOptions();
+            Helper::unlinkAllOrders();
+            Helper::unlinkAllProducts();
             try{
-                $integration = get_option('trackmage_integration', '');
                 if(!empty($integration)){
                     $client = Plugin::get_client();
                     $client->delete('/workflows/' . $integration, [RequestOptions::QUERY => ['deleteData' => $deleteData]]);
@@ -373,14 +375,13 @@ class Admin {
                 set_transient( 'trackmage-wizard-notice', true );
                 $logger->info('Finish Reset all plugin settings and data');
                 wp_redirect(admin_url('admin.php?page=trackmage-wizard'));
-                die();
             }catch(\Exception $e){
                 $errorMsg = $e->getMessage();
                 $logger->error('Error during resetting: ' . $e->getMessage(), $e->getTrace());
-                add_action('admin_notices', static function () use ($errorMsg) {
-                    printf('<div class="error"><p>%s: %s</p></div>', __('Please contact TrackMage reset plugin error'), $errorMsg);
-                });
+                set_transient( 'trackmage-remove-integration-error', sprintf('<div class="notice notice-error"><p>%s: %s</p></div>', __('Please contact TrackMage support. Reset plugin error'), $errorMsg) );
+                wp_redirect(admin_url('admin.php?page=trackmage-settings&se=1'));
             }
+            die();
         }
         return 0;
     }
