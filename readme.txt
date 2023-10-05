@@ -12,31 +12,60 @@ TrackMage integrates shipments tracking into your WooCommerce store.
 
 == Description ==
 
-This plugin connects your WooCommerce store to TrackMage. It automatically imports orders with the statuses you choose, synchronizes all the shipment data in real-time and helps create shipments in your store.
+= FREE INSTALLATION =
 
-TrackMage is a shipment tracking system that shows your customers where their parcels are, helps provide support and gets reviews on autopilot.
+TrackMage is a super tool for WooCommerce that makes order management and shipment tracking smooth.
 
-No Strings Attached, No Credit Card Required - Try TrackMage now.
-And btw, if you are just starting out, there is Forever Free plan with 100 Parcels Per Month.
+This tool is perfect for keeping your customers happy and boosting your sales!
 
-= FOR EVERY ECOMMERCE STORE OWNER =
+You can try it for free for two weeks. If you have 100 or fewer orders per month, you can keep using it for free!
 
-It works for all types of eCommerce store owners with different shipment volumes - from dropshippers who ship several parcels a month to sellers with thousands of parcels and multiple suppliers.
+Adding TrackMage to your admin panel is simple, helping you start a shipment with just one click!
 
-TrackMage supports 597 carriers and tracks your parcels (inbound and outbound) from the US, Europe, Asia and literally all shipping companies in the world.
+= TRACK YOUR SHIPMENTS EASILY =
 
-It handles multi-store setup, and you can have a separate workspace for each store, each warehouse and everything else to directly match your organizational structure.
+TrackMage keeps track of all your tracking numbers.
 
+You can check the latest info on all your shipments from different carriers in your TrackMage account.
 
-= CUT YOUR CUSTOMER SUPPORT EXPENSES =
+You can also check each shipment in the orders on your WooCommerce admin account.
 
-TrackMage Tracking Page will help you inform your customers about the status of their order. They will have access to the tracking information at all times. This reduces the frequency of complaints, refunds, and disputes.
+This makes it a handy all-in-one tracking tool for easy WooCommerce order management.
 
-TrackMage also offers pre-configured email notifications for all the typical shipment statuses and related events.
+You can track every shipment tracking number without any effort, making sure you always know where your packages are.
 
-= OPTIMIZE YOUR SHIPPING COSTS =
+= INTEGRATE TRACKMAGE WIDGETS =
 
-With TrackMage you can analyze your carrier’s performance across all channels and use that data to cut the costs.
+Adding TrackMage widgets to your WooCommerce store is easy.
+This way, your customers can effortlessly track their orders.
+They can search using their email, order tracking number, or tracking shipment number, making it super easy to follow any shipment.
+
+- Add the TrackMage Tracking Page Widgets to your WooCommerce store for easy order tracking. This lets customers search by email, order, or tracking number.
+- Add an Email Validation Widget to your checkout form to reduce order mistakes.
+- Add Customizable Product slider widgets with a product feed one-step setup.
+
+= AUTOMATED EMAIL NOTIFICATIONS =
+
+TrackMage can send automatic emails to your customers to let them know about their shipments.
+
+- The emails can be personalized and written in different languages.
+- This keeps your customers in the loop and encourages them to buy again from your store.
+- Notifications about shipping status will come from your email. You can change the messages by adding your logo and URL, making people more likely to recognize your brand and buy from your WooCommerce store again.
+
+= PERSONALIZED TRACKING PAGE =
+
+- TrackMage creates a branded order tracking page just for you, complete with your logo, social media links, and product sliders.
+- Tracking Page guides visitors to your site instead of the carrier's, increasing search results and bringing in more traffic.
+- It displays tracking info along with your store's product sliders. And that’s an additional ad for your goods!
+
+= CONNECT WITH SHIPPING PROVIDERS =
+
+- TrackMage connects you with 1200+ shipping providers worldwide, including UPS, DHL, USPS, FedEx, China Post, and many others.
+- The tracking results received from various carriers are presented in a standardized layout.
+
+= ANALYZE & TAKE ACTION =
+
+- Get powerful insight into carrier performance and shipping average transit data.
 
 == Screenshots ==
 
