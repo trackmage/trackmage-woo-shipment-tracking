@@ -363,13 +363,15 @@ class Admin {
             $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
             $backgroundTaskRepo->truncate();
             $integration = get_option('trackmage_integration', '');
+            $client_id = get_option('trackmage_client_id', '');
+            $client_secret = get_option('trackmage_client_secret', '');
             Helper::clearTransients();
             Helper::clearOptions();
             Helper::unlinkAllOrders();
             Helper::unlinkAllProducts();
             try{
                 if(!empty($integration)){
-                    $client = Plugin::get_client();
+                    $client = Plugin::get_client(['client_id' => $client_id, 'client_secret' => $client_secret]);
                     $client->delete('/workflows/' . $integration, [RequestOptions::QUERY => ['deleteData' => $deleteData]]);
                 }
                 set_transient( 'trackmage-wizard-notice', true );
