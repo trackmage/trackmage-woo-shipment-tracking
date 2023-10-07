@@ -85,14 +85,29 @@ php74_wp611_wc740_test:
         WORDPRESS_VERSION: '6.1.1'
         WOOCOMMERCE_VERSION: '7.4.0'
 
-#
-#php81_wp58_wc61_test:
-#    <<: *test_tpl
-#    variables:
-#        <<: *test_vars
-#        PHP_VERSION: '8.1'
-#        WORDPRESS_VERSION: '5.8.3'
-#        WOOCOMMERCE_VERSION: '6.1.0'
+php74_wp631_wc811_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '7.4'
+        WORDPRESS_VERSION: '6.3.1'
+        WOOCOMMERCE_VERSION: '8.1.1'
+
+php81_wp631_wc811_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '8.1'
+        WORDPRESS_VERSION: '6.3.1'
+        WOOCOMMERCE_VERSION: '8.1.1'
+
+php82_wp631_wc811_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '8.2'
+        WORDPRESS_VERSION: '6.3.1'
+        WOOCOMMERCE_VERSION: '8.1.1'
 
 publish:
     stage: deploy

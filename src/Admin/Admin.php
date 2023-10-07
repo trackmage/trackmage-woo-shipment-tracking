@@ -46,6 +46,8 @@ class Admin {
 
         add_filter('pre_update_option_trackmage_delete_data', [$this, 'trigger_delete_data'], 10, 3);
         add_filter('pre_update_option_trackmage_trigger_sync', [$this, 'trigger_sync'], 20, 3);
+        add_filter( 'plugin_row_meta', [$this, 'plugin_row_meta'], 10, 2 );
+        add_filter( 'plugin_action_links_' . TRACKMAGE_PLUGIN_BASENAME, [ $this, 'plugin_action_links' ] );
     }
 
     /**
@@ -208,16 +210,20 @@ class Admin {
         }
         $this->lockedChangesAt = time();
         $deleteData = isset($_POST['trackmage_delete_data']) && $_POST['trackmage_delete_data'] === '1';
+
+        $workspaces = Helper::get_workspaces(true);
+        if (!empty($value) && !in_array($value, array_column($workspaces, 'id'))) {
+            add_settings_error('trackmage_workspace', 0, 'Trackmage cannot be connected to selected workspace: '.$value);
+            return $old_value;
+        }
         $client = Plugin::get_client();
         $url = Helper::get_endpoint();
-
-        $workspaces = Helper::get_workspaces();
 
         // Find and remove any activated integration and webhook, if any.
         $integration = get_option('trackmage_integration', '');
         $webhook = get_option('trackmage_webhook', '');
 
-        if (! empty($integration) && in_array($old_value, array_map(function($ws){ return $ws['id'];}, $workspaces), true)) {
+        if (! empty($integration) && in_array($old_value, array_map(fn($ws) => $ws['id'], $workspaces), true)) {
             try {
                 $client->delete('/workflows/'.$integration, [RequestOptions::QUERY => ['deleteData'=>$deleteData]]);
             } catch(ClientException $e){
@@ -354,23 +360,29 @@ class Admin {
             $logger     = Plugin::instance()->getLogger();
             $deleteData = isset($_POST['trackmage_delete_data']) && $_POST['trackmage_delete_data'] === '1';
             $logger->info('Run Reset all plugin settings and data', ['deleteData' => $deleteData]);
+            $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
+            $backgroundTaskRepo->truncate();
+            $integration = get_option('trackmage_integration', '');
+            $client_id = get_option('trackmage_client_id', '');
+            $client_secret = get_option('trackmage_client_secret', '');
+            Helper::clearTransients();
+            Helper::clearOptions();
+            Helper::unlinkAllOrders();
+            Helper::unlinkAllProducts();
             try{
-                $integration = get_option('trackmage_integration', '');
                 if(!empty($integration)){
-                    $client = Plugin::get_client();
+                    $client = Plugin::get_client(['client_id' => $client_id, 'client_secret' => $client_secret]);
                     $client->delete('/workflows/' . $integration, [RequestOptions::QUERY => ['deleteData' => $deleteData]]);
                 }
-
-                $backgroundTaskRepo = Plugin::instance()->getBackgroundTaskRepo();
-                $backgroundTaskRepo->truncate();
-                Helper::clearTransients();
-                Helper::clearOptions();
                 set_transient( 'trackmage-wizard-notice', true );
+                $logger->info('Finish Reset all plugin settings and data');
+                wp_redirect(admin_url('admin.php?page=trackmage-wizard'));
             }catch(\Exception $e){
+                $errorMsg = $e->getMessage();
                 $logger->error('Error during resetting: ' . $e->getMessage(), $e->getTrace());
+                set_transient( 'trackmage-remove-integration-error', sprintf('<div class="notice notice-error"><p>%s: %s</p></div>', __('Please contact TrackMage support. Reset plugin error'), $errorMsg) );
+                wp_redirect(admin_url('admin.php?page=trackmage-settings&se=1'));
             }
-            $logger->info('Finish Reset all plugin settings and data');
-            wp_redirect(admin_url('admin.php?page=trackmage-wizard'));
             die();
         }
         return 0;
@@ -384,5 +396,31 @@ class Admin {
             <p><?php _e( $msg, 'trackmage' ); ?></p>
         </div>
             <?php
+    }
+
+    public function plugin_row_meta( $links, $file ) {
+        if ( TRACKMAGE_PLUGIN_BASENAME !== $file ) {
+            return $links;
+        }
+        $docs_url = 'https://help.trackmage.com/en';
+        $api_docs_url = 'https://docs.trackmage.com/docs/';
+        $community_support_url = 'mailto:support@trackmage.com';
+        $pricing_url = 'https://trackmage.com/pricing/';
+        $row_meta = array(
+            'docs'    => '<a href="' . esc_url( $docs_url ) . '" aria-label="' . esc_attr__( 'View Trackmage documentation', 'trackmage' ) . '">' . esc_html__( 'User Guide', 'trackmage' ) . '</a>',
+            'apidocs' => '<a href="' . esc_url( $api_docs_url ) . '" aria-label="' . esc_attr__( 'View Trackmage API docs', 'trackmage' ) . '">' . esc_html__( 'For Developers', 'trackmage' ) . '</a>',
+            'pricing' => '<a href="' . esc_url( $pricing_url ) . '" aria-label="' . esc_attr__( 'View Trackmage Pricing', 'trackmage' ) . '">' . esc_html__( 'Pricing', 'trackmage' ) . '</a>',
+            'support' => '<a href="' . esc_url( $community_support_url ) . '" aria-label="' . esc_attr__( 'Contact Us', 'trackmage' ) . '">' . esc_html__( 'Contact Support', 'trackmage' ) . '</a>',
+        );
+
+        return array_merge( $links, $row_meta );
+    }
+
+    public function plugin_action_links( $links ) {
+        $action_links = array(
+            'settings' => '<a href="' . admin_url( 'admin.php?page=trackmage-settings' ) . '" aria-label="' . esc_attr__( 'View Trackmage settings', 'trackmage' ) . '">' . esc_html__( 'Settings', 'trackmage' ) . '</a>',
+        );
+
+        return array_merge( $action_links, $links );
     }
 }

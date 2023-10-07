@@ -625,6 +625,7 @@ class Ajax {
 
         $slug = isset($_POST['slug']) ? sanitize_key($_POST['slug']) : '';
         $name = isset($_POST['name']) ? sanitize_title($_POST['name']) : '';
+        $statusToMigrate = isset($_POST['statusToMigrate']) ? sanitize_key($_POST['statusToMigrate']) : null;
         $custom_statuses = get_option('trackmage_custom_order_statuses', []);
         $status_aliases = get_option('trackmage_order_status_aliases', []);
 
@@ -639,10 +640,25 @@ class Ajax {
             $errors[] = __('Core statuses and statuses created by other plugins and themes cannot be deleted.', 'trackmage');
         }
 
+        if(null === $statusToMigrate) {
+            $errors[] = _('Please choose status to migrate orders to', 'trackmage');
+        }
+
         if (! empty($errors)) {
             wp_send_json_error([
                 'message' => $errors,
             ]);
+        }
+
+        $orders = wc_get_orders(array(
+                'limit'=>-1,
+                'type'=> 'shop_order',
+                'status'=> [$slug],
+            )
+        );
+        foreach ($orders as $order) {
+            $order->set_status(str_replace('wc-', '', $statusToMigrate));
+            $order->save();
         }
 
         unset( $custom_statuses[ $slug ], $status_aliases[ $slug ] );

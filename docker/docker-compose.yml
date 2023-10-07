@@ -2,12 +2,12 @@ version: '3.2'
 
 services:
 
-    chromedriver:
-        image: selenium/standalone-chrome:3.141.59-oxygen
-        depends_on:
-            - db
-        extra_hosts:
-            - "wp.test:127.0.0.1"
+#    chromedriver:
+#        image: selenium/standalone-chrome:3.141.59-oxygen
+#        depends_on:
+#            - db
+#        extra_hosts:
+#            - "wp.test:127.0.0.1"
 
     db:
         image: mariadb:10.3.6
@@ -19,9 +19,11 @@ services:
         command: mysqld --debug-no-sync
 
     wp:
-        image: wordpress:php${PHP_VERSION:-7.4}-apache
+        image: wordpress:php${PHP_VERSION:-7.4}-fpm
         depends_on:
             - db
+        security_opt:
+            - seccomp:unconfined
         environment:
             WORDPRESS_DB_NAME: wp_site
             WORDPRESS_DB_HOST: db

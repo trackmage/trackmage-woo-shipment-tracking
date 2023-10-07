@@ -13,31 +13,31 @@ class OrdersMapper extends AbstractMapper {
 
 
     protected $map = [
-        "orderStatus"            =>  [
-            "title"                => "",
-            "code"              => "status"
+        "orderStatus" => [
+            "title" => "",
+            "code" => "status"
         ],
-        "shippingAddress"   =>  [
-            "addressLine1"      =>  "_shipping_address_1",
-            "addressLine2"      =>  "_shipping_address_2",
-            "company"           =>  "_shipping_company",
-            "city"              =>  "_shipping_city",
-            "countryIso2"       =>  "_shipping_country",
-            "firstName"         =>  "_shipping_first_name",
-            "lastName"          =>  "_shipping_last_name",
-            "postcode"          =>  "_shipping_postcode",
-            "state"             =>  "_shipping_state" // full name to code
+        "shippingAddress" => [
+            "addressLine1" => "_shipping_address_1",
+            "addressLine2" => "_shipping_address_2",
+            "company" => "_shipping_company",
+            "city" => "_shipping_city",
+            "countryIso2" => "_shipping_country",
+            "firstName" => "_shipping_first_name",
+            "lastName" => "_shipping_last_name",
+            "postcode" => "_shipping_postcode",
+            "state" => "_shipping_state" // full name to code
         ],
-        "billingAddress"    => [
-            "addressLine1"      =>  "_billing_address_1",
-            "addressLine2"      =>  "_billing_address_2",
-            "city"              =>  "_billing_city",
-            "company"           =>  "_billing_company",
-            "countryIso2"       =>  "_billing_country",
-            "firstName"         =>  "_billing_first_name",
-            "lastName"          =>  "_billing_last_name",
-            "postcode"          =>  "_billing_postcode",
-            "state"             =>  "_billing_state" // full name to code
+        "billingAddress" => [
+            "addressLine1" => "_billing_address_1",
+            "addressLine2" => "_billing_address_2",
+            "city" => "_billing_city",
+            "company" => "_billing_company",
+            "countryIso2" => "_billing_country",
+            "firstName" => "_billing_first_name",
+            "lastName" => "_billing_last_name",
+            "postcode" => "_billing_postcode",
+            "state" => "_billing_state" // full name to code
         ]
     ];
 
@@ -46,7 +46,8 @@ class OrdersMapper extends AbstractMapper {
      *
      * @return bool
      */
-    public function supports( array $item ) {
+    public function supports( array $item ): bool
+    {
         return isset($item['entity']) && $item['entity'] === 'orders';
     }
 
@@ -56,7 +57,7 @@ class OrdersMapper extends AbstractMapper {
      * @param array $item
      */
     public function handle( array $item ) {
-        $this->data = isset( $item['data'] ) ? $item['data'] : [];
+        $this->data = $item['data'] ?? [];
         if ( empty( $this->data ) ) {
             throw new InvalidArgumentException( 'Unable to handle order because data is empty' );
         }
@@ -65,12 +66,12 @@ class OrdersMapper extends AbstractMapper {
             throw new InvalidArgumentException( 'Unable to handle order because there are no updated fields' );
         }
 
-        $trackMageId = isset($this->data['id']) ? $this->data['id'] : '';
+        $trackMageId = $this->data['id'] ?? '';
         if ( empty( $trackMageId ) ) {
             throw new InvalidArgumentException( 'Unable to handle order because there is no TrackMage Id' );
         }
 
-        $orderId = isset( $this->data['externalSourceSyncId'] ) ? $this->data['externalSourceSyncId'] : '';
+        $orderId = $this->data['externalSourceSyncId'] ?? '';
         if ( empty( $orderId ) ) {
             throw new InvalidArgumentException( 'Unable to handle order because there is no externalSourceSyncId' );
         }
@@ -89,7 +90,7 @@ class OrdersMapper extends AbstractMapper {
                     $this->entity->update_status($this->getWpStatus($this->data['orderStatus']));
                 }else{
                     $parts = explode('.', $field);
-                    if(isset($parts[0]) && isset($this->map[$parts[0]]) && isset($parts[1]) && isset($this->map[$parts[0]][$parts[1]])){
+                    if(isset($parts[0], $this->map[$parts[0]], $parts[1], $this->map[$parts[0]][$parts[1]])){
                         update_post_meta($orderId, $this->map[$parts[0]][$parts[1]], $this->data[$parts[0]][$parts[1]]);
                     }
                 }
@@ -100,7 +101,8 @@ class OrdersMapper extends AbstractMapper {
         }
     }
 
-    protected function validateData() {
+    protected function validateData(): bool
+    {
         // check if workspace is correct
         if(!isset($this->data['workspace']) || "/workspaces/".$this->workspace !== $this->data['workspace'])
             throw new InvalidArgumentException('Unable to handle because workspace is not correct');
@@ -111,7 +113,7 @@ class OrdersMapper extends AbstractMapper {
     /**
      * @return string
      */
-    private function getWpStatus($tmStatus)
+    private function getWpStatus($tmStatus): string
     {
         $usedAliases = get_option( 'trackmage_order_status_aliases', [] );
         // search status in aliases

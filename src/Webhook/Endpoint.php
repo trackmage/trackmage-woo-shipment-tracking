@@ -11,9 +11,6 @@ namespace TrackMage\WordPress\Webhook;
 use TrackMage\WordPress\Exception\RuntimeException;
 use TrackMage\WordPress\Helper;
 use TrackMage\WordPress\Webhook\Mappers\OrdersMapper;
-use TrackMage\WordPress\Webhook\Mappers\OrderItemsMapper;
-use TrackMage\WordPress\Webhook\Mappers\ShipmentsMapper;
-use TrackMage\WordPress\Webhook\Mappers\ShipmentItemsMapper;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -77,7 +74,7 @@ class Endpoint {
         }
 		global $wp;
 
-		if ( isset($_GET['trackmage']) && !empty( $_GET['trackmage'] ) ) {
+		if (!empty( $_GET['trackmage'] )) {
 			$wp->query_vars['trackmage'] = sanitize_key( wp_unslash( $_GET['trackmage'] ) );
 		}
 
@@ -130,7 +127,7 @@ class Endpoint {
 	    $responseData = json_decode($response, true);
 	    try{
             $data = $responseData['data'];
-            foreach ($data as $key => $item){
+            foreach ($data as $item){
                 $updater = $this->resolveUpdater($item);
                 $updater->handle($item);
             }

@@ -46,11 +46,19 @@ class Helper {
             if (!get_transient($key)) {
                 $client = new TrackMageClient( $client_id, $client_secret, null, TRACKMAGE_API_DOMAIN);
                 $client->validateCredentials();
-                set_transient($key, true);
+                set_transient($key, true, 60);
             }
             return self::CREDENTIALS_VALID;
         } catch( ClientException $e ) {
-            error_log('Unable to check credentials: '.TrackMageClient::error($e));
+            $errorMsg = TrackMageClient::error($e);
+            $alreadySent = get_transient('trackmage_error_shown');
+            if(!$alreadySent) {
+                add_action('admin_notices', static function () use ($errorMsg) {
+                    printf('<div class="error"><p>%s: %s</p></div>', __('TrackMage synchronization does not work. Please check <a href="/wp-admin/admin.php?page=trackmage-settings">settings</a> and fix'), $errorMsg);
+                });
+                set_transient('trackmage_error_shown', true, 5);
+            }
+            error_log('Unable to check credentials: '.$errorMsg);
         }
         return self::CREDENTIALS_ERROR;
     }
@@ -64,23 +72,28 @@ class Helper {
      */
     public static function get_workspaces(bool $refresh = false) {
         $workspaces = get_transient( 'trackmage_workspaces' );
-        if ( false === $workspaces || $refresh) {
+        if ( false === $workspaces || $refresh !== false) {
             try {
-                $client   = Plugin::get_client();
-                $response = $client->get( '/workspaces' );
-                $result = TrackMageClient::collection($response);
-                $workspaces = [];
+                $client = Plugin::get_client();
+                $result = TrackMageClient::collection($client->get( '/workspaces' ));
+                $teams = TrackMageClient::collection($client->get('/teams'));
 
-                foreach ( $result as $workspace ) {
-                    $workspaces[] = [
+                $workspaces = array_map(
+                    fn(array $workspace) => [
                         'id'    => $workspace['id'],
                         'title' => $workspace['title'],
                         'team'  => $workspace['team']
-                    ];
+                    ],
+                    array_values(array_filter($result, fn(array $workspace) => self::isWorkspaceAvailable($workspace, $teams)))
+                );
+                if(count($workspaces) > 0) {
+                    set_transient('trackmage_workspaces', $workspaces, 3600);
+                } else {
+                    delete_transient('trackmage_workspaces');
                 }
-                set_transient( 'trackmage_workspaces', $workspaces, 3600 );
             } catch ( ClientException $e ) {
                 error_log('Unable to fetch workspaces: '.TrackMageClient::error($e));
+                delete_transient('trackmage_workspaces');
                 return false;
             }
         }
@@ -252,7 +265,7 @@ class Helper {
         $shipmentItemRepo = Plugin::instance()->getShipmentItemsRepo();
         $order = wc_get_order($orderId);
         $orderItems = self::getOrderItems($order);
-        $shipments = $shipmentRepo->findBy(['orderNumbers' => $order->get_order_number()]);
+        $shipments = $shipmentRepo->findBy(['orderNumbers' => $order->get_order_number()]) ?? [];
         foreach ($shipments as &$shipment) {
             $shipmentItems = $shipmentItemRepo->findBy(['shipment.id' => $shipment['id']]);
             $shipment['items'] = self::mapOrderItemsToShipmentItem($orderItems, $shipmentItems);
@@ -441,11 +454,11 @@ class Helper {
      * @param bool $leading_space  Whether to add a leading space (default: false).
      * @param bool $trailing_space Whether to add a trailing space (default: false).
      * @param bool $echo           Whether to echo or return the output (default: false).
-     * @return string Tag attributes.
+     * @return string|void Tag attributes.
      *@since 0.1.0
      *
      */
-    public static function generate_html_tag_atts(array $atts, bool $leading_space = false, bool $trailing_space = false, bool $echo = false ): string
+    public static function generate_html_tag_atts(array $atts, bool $leading_space = false, bool $trailing_space = false, bool $echo = false )
     {
         $output =  '';
         $atts_count = 0;
@@ -473,11 +486,11 @@ class Helper {
      *
      * @param array $props Array of CSS properties and their values.
      * @param bool $echo  Whether to echo or return the output (default: false).
-     * @return string Inline style string.
+     * @return string|void Inline style string.
      *@since 0.1.0
      *
      */
-    public static function generate_inline_style(array $props, bool $echo = false ): string
+    public static function generate_inline_style(array $props, bool $echo = false )
     {
         $output = '';
         foreach( $props as $prop => $value ) {
@@ -653,7 +666,7 @@ class Helper {
     {
         $credentialsIsValid = self::check_credentials();
         $workspace = get_option( 'trackmage_workspace', 0 );
-        return $credentialsIsValid === self::CREDENTIALS_VALID && !in_array($workspace, [0, null, false]);
+        return $credentialsIsValid === self::CREDENTIALS_VALID && !in_array($workspace, [0, null, false, ''], true);
     }
 
     public static function mapOrderItemsToShipmentItem(array $orderItems, array $shipmentItems): array
@@ -743,5 +756,27 @@ class Helper {
             'json' => $data
         ]);
         return TrackMageClient::item($response);
+    }
+
+    private static function isWorkspaceAvailable(array $workspace, array $teams): bool
+    {
+        $currentWorkspace = get_option('trackmage_workspace', null);
+        if(!in_array($currentWorkspace, [null, ''], true) && $workspace['id'] === $currentWorkspace) {
+            return true;
+        }
+        if($workspace['ecommerceIntegrationType'] !== null) {
+            return false;
+        }
+        if(!in_array($workspace['scheduledForDelete'], [null, false], true)) {
+            return false;
+        }
+        if($workspace['team'] === null) {
+            return false;
+        }
+        $wsTeam = current(array_filter($teams, fn(array $team) => str_contains($workspace['team'], $team['id'])));
+        if($wsTeam === false) {
+            return false;
+        }
+        return $wsTeam['subscription'] !== null && in_array($wsTeam['subscription']['status'], ['active', 'non_renewing'], true);
     }
 }

@@ -47,7 +47,7 @@ class Orders {
      * @since 0.1.0
      */
     public function add_meta_box(string $post_type, ?\WP_Post $post = null): void {
-        if($post_type === 'shop_order' && null !== $post && !in_array($trackmage_order_id = get_post_meta( $post->ID, '_trackmage_order_id', true ), [null, false, ''])) {
+        if($post_type === 'shop_order' && null !== $post && !in_array($trackmage_order_id = get_post_meta( $post->ID, '_trackmage_order_id', true ), [null, false, ''], true) && Helper::canSync()) {
             add_meta_box(
                 'trackmage-shipment-tracking',
                 __( 'TrackMage Shipment Tracking', 'trackmage' ),

@@ -45,7 +45,7 @@ class Assets {
 
         // Enqueue WooCommerce styles.
         if(function_exists('WC')){
-            wp_enqueue_style('select2', \WC()->plugin_url() . '/assets/css/select2.css', array(), WC_VERSION);
+            wp_enqueue_style('select2', \WC()->plugin_url() . '/assets/css/select2.css', [], WC_VERSION);
             wp_enqueue_style('woocommerce_admin_styles');
         }
 
@@ -66,15 +66,16 @@ class Assets {
         $screen   = get_current_screen();
         $screenId = $screen ? $screen->id : '';
         $suffix   = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
+        $source = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? 'src' : 'dist';
 
         // Register admin scripts.
 
-        wp_register_script('trackmage-admin', TRACKMAGE_URL . 'assets/dist/js/admin/main' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
-        wp_register_script('trackmage-admin-settings', TRACKMAGE_URL . 'assets/dist/js/admin/settings' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
-        wp_register_script('trackmage-admin-status-manager', TRACKMAGE_URL . 'assets/dist/js/admin/status-manager' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
-        wp_register_script('trackmage-admin-meta-boxes', TRACKMAGE_URL . 'assets/dist/js/admin/meta-boxes' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
+        wp_register_script('trackmage-admin', TRACKMAGE_URL . 'assets/'.$source.'/js/admin/main' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
+        wp_register_script('trackmage-admin-settings', TRACKMAGE_URL . 'assets/'.$source.'/js/admin/settings' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
+        wp_register_script('trackmage-admin-status-manager', TRACKMAGE_URL . 'assets/'.$source.'/js/admin/status-manager' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
+        wp_register_script('trackmage-admin-meta-boxes', TRACKMAGE_URL . 'assets/'.$source.'/js/admin/meta-boxes' . $suffix . '.js', ['jquery', 'jquery-effects-highlight', 'wc-enhanced-select', 'selectWoo'], TRACKMAGE_VERSION, true);
 
-        if (in_array($screenId, Helper::getScreenIds())) {
+        if (in_array($screenId, Helper::getScreenIds(), true)) {
             // External scripts.
             wp_enqueue_script('selectWoo');
             wp_enqueue_script( 'jquery-ui-dialog' ); // jquery and jquery-ui should be dependencies, didn't check though...

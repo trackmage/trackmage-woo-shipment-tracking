@@ -6,9 +6,9 @@
 use TrackMage\WordPress\Helper;
 
 defined('WPINC') || exit;
-
+/** @var int $orderId */
 $trackmage_order_id = get_post_meta( $orderId, '_trackmage_order_id', true );
-if(!in_array($trackmage_order_id, [null, false, ''])){
+if(!in_array($trackmage_order_id, [null, false, ''], true)){
     $order = wc_get_order($orderId);
     $orderItems = $order->get_items();
     $shipments = Helper::getOrderShipmentsWithJoinedItems($orderId);

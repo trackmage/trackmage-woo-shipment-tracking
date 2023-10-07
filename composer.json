@@ -1,7 +1,7 @@
 {
 	"name": "trackmage/trackmage-woo-shipment-tracking",
 	"type": "wordpress-plugin",
-    "version": "1.2.1",
+    "version": "2.0.0",
 	"description": "TrackMage integrates shipments tracking into your WooCommerce store",
 	"keywords": [
 		"trackmage"
@@ -9,7 +9,7 @@
 	"homepage": "https://github.com/trackmage/trackmage-woo-shipment-tracking",
 	"license": "GPL-3.0-or-later",
 	"require": {
-        "php": "^7.4 | ^8.1",
+        "php": "^7.4 | ^8.1 | ^8.2",
 		"ext-json": "*",
 		"psr/log": "^1.1",
 		"trackmage/trackmage-sdk-php": "^0.3.2"

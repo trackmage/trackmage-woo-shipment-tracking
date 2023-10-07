@@ -41,8 +41,10 @@ $used_aliases = [];
                     <td>
                         <span data-update-status-name><?php echo esc_attr($status['name']); ?></span>
                         <div class="row-actions">
-                            <span class="inline"><button type="button" class="button-link edit-status"><?php _e( 'Edit', 'trackmage' ); ?></button> | </span>
-                            <span class="inline delete"><button type="button" class="button-link delete-status"><?php _e( 'Delete', 'trackmage' ); ?></button></span>
+                            <span class="inline"><button type="button" class="button-link edit-status"><?php _e( 'Edit', 'trackmage' ); ?></button></span>
+                            <?php if($status['is_custom']):?>
+                                <span class="inline delete"> | <button type="button" class="button-link delete-status"><?php _e( 'Delete', 'trackmage' ); ?></button></span>
+                            <?php endif;?>
                         </div>
                     </td>
                     <td><span data-update-status-slug><?php echo esc_attr($slug); ?></span></td>
