@@ -93,6 +93,14 @@ php74_wp631_wc811_test:
         WORDPRESS_VERSION: '6.3.1'
         WOOCOMMERCE_VERSION: '8.1.1'
 
+php74_wp632_wc821_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '7.4'
+        WORDPRESS_VERSION: '6.3.2'
+        WOOCOMMERCE_VERSION: '8.2.1'
+
 php81_wp631_wc811_test:
     <<: *test_tpl
     variables:
