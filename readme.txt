@@ -1,10 +1,10 @@
 === TrackMage - Woo Shipment Tracking ===
 Contributors: trackmage,karser,harbuzniak
 Tags: shipping, tracking, order, status, delivery, shipment tracking, order tracking, order status, carrier, carriers
+Stable tag: 2.0.1
 Requires at least: 5.3
 Tested up to: 6.3.2
 Requires PHP: 7.4
-Stable tag: 2.0.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
