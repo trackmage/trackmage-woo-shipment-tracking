@@ -1,9 +1,9 @@
 === TrackMage - Woo Shipment Tracking ===
 Contributors: trackmage,karser,harbuzniak
 Tags: shipping, tracking, order, status, delivery, shipment tracking, order tracking, order status, carrier, carriers
-Stable tag: 2.0.1
+Stable tag: 2.0.2
 Requires at least: 5.3
-Tested up to: 6.3.2
+Tested up to: 6.4.1
 Requires PHP: 7.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -94,8 +94,8 @@ TrackMage can send automatic emails to your customers to let them know about the
 3. Go through the Onboarding wizard in the Plugin
 
 == Changelog ==
-= 2.0.1 =
-* Add support for WooCommerce up to 8.2.1 and WordPress 6.3.2
+= 2.0.2 =
+* Add support for WooCommerce up to 8.2.2 and WordPress 6.4.1
 * Bugfixes and enhancements
 
 = 2.0.0 =

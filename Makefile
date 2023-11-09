@@ -1,8 +1,8 @@
 SHELL := /bin/bash
 
-PHP_VERSION ?= 5.6
-WORDPRESS_VERSION ?= 5.2.2
-WOOCOMMERCE_VERSION ?= 3.8.1
+PHP_VERSION ?= 7.4
+WORDPRESS_VERSION ?= 5.3.0
+WOOCOMMERCE_VERSION ?= 4.5.0
 ZIP_BUILD ?= false
 GIT_BRANCH ?= master
 TEST_PLUGIN_NAME := trackmage-woo-shipment-tracking
