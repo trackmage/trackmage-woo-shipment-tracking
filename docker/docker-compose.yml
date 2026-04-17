@@ -20,21 +20,6 @@ services:
         # the same unconfined profile for the PHP test runner.
         security_opt:
             - seccomp:unconfined
-        # Shrink InnoDB footprint so the init step does not fail with
-        # error 28 (ENOSPC) when preallocating log files on overlayfs (the
-        # 10.11 default is a 96MiB log file that fallocate cannot extend
-        # on the CI runner's layered filesystem). These settings are only
-        # used for CI throwaway data.
-        command:
-            - mariadbd
-            - --innodb-log-file-size=8M
-            - --innodb-buffer-pool-size=64M
-            - --innodb-doublewrite=0
-        # Mount /var/lib/mysql as tmpfs so it bypasses the runner's docker
-        # overlayfs, which is full enough that even a few-KB ddl_recovery.log
-        # write returns ENOSPC. Data is throwaway for CI, RAM is fine.
-        tmpfs:
-            - /var/lib/mysql
         environment:
             MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "yes"
             MARIADB_DATABASE: wp_site
