@@ -30,6 +30,11 @@ services:
             - --innodb-log-file-size=8M
             - --innodb-buffer-pool-size=64M
             - --innodb-doublewrite=0
+        # Mount /var/lib/mysql as tmpfs so it bypasses the runner's docker
+        # overlayfs, which is full enough that even a few-KB ddl_recovery.log
+        # write returns ENOSPC. Data is throwaway for CI, RAM is fine.
+        tmpfs:
+            - /var/lib/mysql
         environment:
             MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "yes"
             MARIADB_DATABASE: wp_site
