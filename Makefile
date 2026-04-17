@@ -109,7 +109,7 @@ test:
 	vendor/bin/codecept run wpunit
 #	vendor/bin/codecept run functional
 	if [ "${ZIP_BUILD}" = true ]; then \
-		make comment; \
+		make comment || echo "PR comment step failed (likely invalid GITHUB_TOKEN); not failing the build"; \
 	fi
 
 comment: export COMMENT := Download build ${CI_JOB_URL}/artifacts/browse
