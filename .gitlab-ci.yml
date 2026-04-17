@@ -28,7 +28,11 @@ before_script:
         - echo ${COMPOSE_PROJECT_NAME}
         - npm ci && npm run build && rm -rf node_modules/
         - docker-compose up -d db
-        - docker-compose run --rm waiter
+        # Wait for the db service directly via exec+ping instead of the old
+        # martin/wait sidecar, which fails with "getaddrinfo: Try again" on
+        # docker-compose v2 because "run --rm" does not always share the same
+        # network as "up -d" services.
+        - for i in $(seq 1 60); do docker-compose exec -T db mariadb-admin ping -u root --silent 2>/dev/null && break; echo "db not ready (attempt $i/60)"; sleep 2; done
         - docker-compose exec -T db bash -c 'mysql -u root -e "CREATE DATABASE IF NOT EXISTS wp_test"'
         - docker-compose up -d
     script:
