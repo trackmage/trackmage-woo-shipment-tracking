@@ -20,6 +20,16 @@ services:
         # the same unconfined profile for the PHP test runner.
         security_opt:
             - seccomp:unconfined
+        # Shrink InnoDB footprint so the init step does not fail with
+        # error 28 (ENOSPC) when preallocating log files on overlayfs (the
+        # 10.11 default is a 96MiB log file that fallocate cannot extend
+        # on the CI runner's layered filesystem). These settings are only
+        # used for CI throwaway data.
+        command:
+            - mariadbd
+            - --innodb-log-file-size=8M
+            - --innodb-buffer-pool-size=64M
+            - --innodb-doublewrite=0
         environment:
             MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "yes"
             MARIADB_DATABASE: wp_site
