@@ -212,6 +212,9 @@ class Admin {
         $deleteData = isset($_POST['trackmage_delete_data']) && $_POST['trackmage_delete_data'] === '1';
 
         $workspaces = Helper::get_workspaces(true);
+        if (!is_array($workspaces)) {
+            $workspaces = [];
+        }
         if (!empty($value) && !in_array($value, array_column($workspaces, 'id'))) {
             add_settings_error('trackmage_workspace', 0, 'Trackmage cannot be connected to selected workspace: '.$value);
             return $old_value;

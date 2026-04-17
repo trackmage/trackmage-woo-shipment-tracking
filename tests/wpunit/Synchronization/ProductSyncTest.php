@@ -35,7 +35,7 @@ class ProductSyncTest extends WPTestCase {
     protected function _before()
     {
         $this->productSync = new ProductSync(self::INTEGRATION);
-        update_option('trackmage_workspace', self::TM_WS_ID);
+        delete_option('trackmage_workspace'); add_option('trackmage_workspace', self::TM_WS_ID);
         add_option('trackmage_team', self::TM_TEAM_ID);
     }
 

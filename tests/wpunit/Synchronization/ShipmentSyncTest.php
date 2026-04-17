@@ -78,7 +78,7 @@ class ShipmentSyncTest extends WPTestCase
     {
         //GIVEN
         update_option('trackmage_sync_statuses', ['wc-completed']);
-        update_option('trackmage_workspace', self::TM_WS_ID);
+        delete_option('trackmage_workspace'); add_option('trackmage_workspace', self::TM_WS_ID);
 
         $requests = [];
         $guzzleClient = $this->createClient([
@@ -135,7 +135,7 @@ class ShipmentSyncTest extends WPTestCase
     public function testAlreadyExistsShipmentSendsUpdateToTrackMage()
     {
         //GIVEN
-        update_option('trackmage_workspace', self::TM_WS_ID);
+        delete_option('trackmage_workspace'); add_option('trackmage_workspace', self::TM_WS_ID);
 
         $requests = [];
         $guzzleClient = $this->createClient([
@@ -180,7 +180,7 @@ class ShipmentSyncTest extends WPTestCase
     public function testShipmentSendsDelete()
     {
         //GIVEN
-        update_option('trackmage_workspace', self::TM_WS_ID);
+        delete_option('trackmage_workspace'); add_option('trackmage_workspace', self::TM_WS_ID);
 
         $requests = [];
         $guzzleClient = $this->createClient([
