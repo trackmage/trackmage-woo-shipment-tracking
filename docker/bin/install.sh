@@ -3,6 +3,13 @@
 echo 'APT::Acquire::Retries "3";' > /etc/apt/apt.conf.d/80-retries
 apt-get -y update && apt-get install -y jq libicu-dev mariadb-client rsync zip unzip wget
 
+# Newer mariadb-client packages default to requiring TLS to the server, but
+# the pinned mariadb:10.3.6 service does not advertise SSL. Disable SSL
+# globally for every client invocation (wp-cli, mysql, mysqldump) so the
+# test bootstrap can talk to the DB.
+mkdir -p /etc/mysql/conf.d
+printf '[client]\nssl=0\n\n[mysql]\nssl=0\n\n[mysqldump]\nssl=0\n' > /etc/mysql/conf.d/disable-ssl.cnf
+
 docker-php-ext-configure intl && docker-php-ext-install intl
 
 # Ensure MySQL PDO and mysqli drivers are available for Codeception and
