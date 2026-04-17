@@ -14,6 +14,12 @@ services:
         # built with SSL support and the modern mariadb-client requires TLS
         # by default, which made wp db export fail with "SSL is required".
         image: mariadb:10.11
+        # mariadb 10.5+ uses POSIX timer_create() which the default docker
+        # seccomp profile on older daemons (the shared CI runner) blocks,
+        # causing "Can't initialize timers" on startup. The wp service has
+        # the same unconfined profile for the PHP test runner.
+        security_opt:
+            - seccomp:unconfined
         environment:
             MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "yes"
             MARIADB_DATABASE: wp_site
