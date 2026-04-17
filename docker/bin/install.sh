@@ -4,6 +4,17 @@ echo 'APT::Acquire::Retries "3";' > /etc/apt/apt.conf.d/80-retries
 apt-get -y update && apt-get install -y jq libicu-dev mariadb-client rsync zip unzip wget
 
 docker-php-ext-configure intl && docker-php-ext-install intl
+
+# Ensure MySQL PDO and mysqli drivers are available for Codeception and
+# WordPress. The upstream wordpress:php*-fpm images install mysqli but not
+# pdo_mysql, which Codeception's Db module requires. Guard with a check so
+# a re-run (or an image that already has the extension) does not error.
+for ext in pdo_mysql mysqli; do
+    if ! php -m | grep -qi "^${ext}$"; then
+        docker-php-ext-install "$ext"
+    fi
+done
+
 php -m
 
 curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
