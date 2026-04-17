@@ -32,7 +32,22 @@ before_script:
         # martin/wait sidecar, which fails with "getaddrinfo: Try again" on
         # docker-compose v2 because "run --rm" does not always share the same
         # network as "up -d" services.
-        - for i in $(seq 1 60); do docker-compose exec -T db mariadb-admin ping -u root --silent 2>/dev/null && break; echo "db not ready (attempt $i/60)"; sleep 2; done
+        - |
+          ok=0
+          for i in $(seq 1 60); do
+            if docker-compose exec -T db mariadb-admin ping -u root --silent 2>/dev/null; then
+              ok=1; break
+            fi
+            echo "db not ready (attempt $i/60)"
+            sleep 2
+          done
+          if [ "$ok" != "1" ]; then
+            echo '=== docker-compose ps ==='
+            docker-compose ps
+            echo '=== docker-compose logs db ==='
+            docker-compose logs db || true
+            exit 1
+          fi
         - docker-compose exec -T db bash -c 'mysql -u root -e "CREATE DATABASE IF NOT EXISTS wp_test"'
         - docker-compose up -d
     script:

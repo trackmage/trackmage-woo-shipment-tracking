@@ -15,14 +15,15 @@ services:
         # by default, which made wp db export fail with "SSL is required".
         image: mariadb:10.11
         environment:
-            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+            MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "yes"
+            MARIADB_DATABASE: wp_site
+            MARIADB_USER: wordpress
+            MARIADB_PASSWORD: wordpress
+            # Legacy MYSQL_* aliases kept for older mariadb images, harmless on 10.11.
+            MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
             MYSQL_DATABASE: wp_site
-            MYSQL_USER: wordrpess
+            MYSQL_USER: wordpress
             MYSQL_PASSWORD: wordpress
-        # --debug-no-sync is only available in debug builds of mariadb, which
-        # the official 10.11 release image is not. Use innodb_flush_log_at_trx_commit=0
-        # to get equivalent "skip fsync for speed" behaviour in release builds.
-        command: mysqld --innodb-flush-log-at-trx-commit=0 --sync-binlog=0
 
     wp:
         image: wordpress:php${PHP_VERSION:-7.4}-fpm
