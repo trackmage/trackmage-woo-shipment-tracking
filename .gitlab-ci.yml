@@ -48,7 +48,10 @@ before_script:
             docker-compose logs db || true
             exit 1
           fi
-        - docker-compose exec -T db bash -c 'mysql -u root -e "CREATE DATABASE IF NOT EXISTS wp_test"'
+        # Force TCP instead of unix socket (the 10.11 image does not expose the
+        # socket at the classic /run/mysqld/mysqld.sock path visible to the
+        # client CLI).
+        - docker-compose exec -T db mariadb -u root -h 127.0.0.1 -e "CREATE DATABASE IF NOT EXISTS wp_test"
         - docker-compose up -d
     script:
         - docker-compose exec -T wp bash -c '/project/docker/bin/install.sh'
