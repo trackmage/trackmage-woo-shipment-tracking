@@ -168,15 +168,29 @@ function trackMageDeactivate() {
  * declaration before its own boot sequence finishes. Feature-detected so the
  * plugin keeps working on WooCommerce versions older than 7.1 (which is when
  * FeaturesUtil was introduced) without raising the WC minimum floor.
+ *
+ * Features declared:
+ * - custom_order_tables: HPOS compatibility (see the WC_Order CRUD usage
+ *   throughout the plugin).
+ * - cart_checkout_blocks: the plugin does not inject fields or content into
+ *   the cart/checkout forms (tracking info is surfaced post-purchase via
+ *   order meta, emails, and the [woocommerce_order_tracking] shortcode), so
+ *   it is compatible with the React-based Cart and Checkout blocks.
  */
 function trackMageDeclareWooCompat() {
-    if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
-        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
-            'custom_order_tables',
-            TRACKMAGE_PLUGIN_FILE,
-            true
-        );
+    if (!class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+        return;
     }
+    \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+        'custom_order_tables',
+        TRACKMAGE_PLUGIN_FILE,
+        true
+    );
+    \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+        'cart_checkout_blocks',
+        TRACKMAGE_PLUGIN_FILE,
+        true
+    );
 }
 
 /**
