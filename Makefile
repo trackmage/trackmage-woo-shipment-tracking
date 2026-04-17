@@ -94,7 +94,10 @@ init:
 	# Make sure everyone can write to the tests/_data folder.
 	# sudo chmod -R 777 tests/_data
 	# Export a dump of the just installed database to the _data folder of the project.
-	wp db export /project/tests/_data/dump.sql --allow-root --path=/var/www/html
+	# Using mariadb-dump directly with --skip-ssl bypasses wp-cli's internal
+	# mysqli charset query which, under PHP 8.3 + mariadb 10.11 (no server
+	# SSL advertised), errors with "SSL is required" before the dump starts.
+	mariadb-dump -h db -u root --skip-ssl wp_site > /project/tests/_data/dump.sql
 
 test: export BUILD_FLAVOR := PHP${PHP_VERSION}WP${WORDPRESS_VERSION}WC${WOOCOMMERCE_VERSION}
 test:
