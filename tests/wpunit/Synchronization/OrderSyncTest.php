@@ -49,7 +49,7 @@ class OrderSyncTest extends WPTestCase {
         //GIVEN
         update_option('trackmage_sync_statuses', ['wc-completed']);
         update_option('trackmage_order_status_aliases', ['wc-completed' => 'completed']);
-        add_option('trackmage_workspace', self::TM_WS_ID);
+        update_option('trackmage_workspace', self::TM_WS_ID);
         set_transient('trackmage_order_statuses',[self::TM_WS_ID => ['new'=>'New','pending'=>'Pending', 'completed'=>'Completed']]);
 
         $requests = [];
@@ -113,7 +113,7 @@ class OrderSyncTest extends WPTestCase {
     public function testAlreadySyncedOrderSendsUpdateToTrackMage()
     {
         //GIVEN
-        add_option('trackmage_workspace', self::TM_WS_ID);
+        update_option('trackmage_workspace', self::TM_WS_ID);
         update_option('trackmage_order_status_aliases', ['wc-pending' => 'pending']);
         set_transient('trackmage_order_statuses',[self::TM_WS_ID => ['new'=>'New','pending'=>'Pending','completed'=>'Completed']]);
 
@@ -171,7 +171,7 @@ class OrderSyncTest extends WPTestCase {
     public function testAlreadySyncedOrderIsNotSentTwice()
     {
         //GIVEN
-        add_option('trackmage_workspace', self::TM_WS_ID);
+        update_option('trackmage_workspace', self::TM_WS_ID);
         update_option('trackmage_order_status_aliases', ['wc-completed' => 'completed']);
         set_transient('trackmage_order_statuses',[self::TM_WS_ID => ['new'=>'New','pending'=>'Pending', 'completed'=>'Completed']]);
 
@@ -201,7 +201,7 @@ class OrderSyncTest extends WPTestCase {
     public function testIfSameExistsItLookUpIdByExternalSyncId()
     {
         //GIVEN
-        add_option('trackmage_workspace', self::TM_WS_ID);
+        update_option('trackmage_workspace', self::TM_WS_ID);
         set_transient('trackmage_order_statuses',[self::TM_WS_ID => ['new'=>'New','pending'=>'Pending']]);
 
         $requests = [];
@@ -233,7 +233,7 @@ class OrderSyncTest extends WPTestCase {
     public function testAlreadySyncedButDeletedOrderGetsPostedOnceAgain()
     {
         //GIVEN
-        add_option('trackmage_workspace', self::TM_WS_ID);
+        update_option('trackmage_workspace', self::TM_WS_ID);
         set_transient('trackmage_order_statuses',[self::TM_WS_ID => ['new'=>'New','pending'=>'Pending']]);
 
         $requests = [];
@@ -287,7 +287,7 @@ class OrderSyncTest extends WPTestCase {
         //GIVEN
         update_option('trackmage_sync_statuses', ['wc-completed']);
         update_option('trackmage_order_status_aliases', ['wc-completed' => 'completed']);
-        add_option('trackmage_workspace', self::TM_WS_ID);
+        update_option('trackmage_workspace', self::TM_WS_ID);
         set_transient('trackmage_order_statuses',[self::TM_WS_ID => ['new'=>'New','pending'=>'Pending', 'completed'=>'Completed']]);
 
         $requests = [];
@@ -315,7 +315,7 @@ class OrderSyncTest extends WPTestCase {
     public function testAlreadySyncedOrderSendsDelete()
     {
         //GIVEN
-        add_option('trackmage_workspace', self::TM_WS_ID);
+        update_option('trackmage_workspace', self::TM_WS_ID);
 
         $requests = [];
         $guzzleClient = $this->createClient([

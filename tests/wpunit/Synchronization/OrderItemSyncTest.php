@@ -49,7 +49,7 @@ class OrderItemSyncTest extends WPTestCase
         $product->save();
         self::$product = $product;
 
-        add_option('trackmage_workspace', self::TM_WS_ID);
+        update_option('trackmage_workspace', self::TM_WS_ID);
         add_option('trackmage_webhook', self::TM_WEBHOOK_ID);
     }
 
