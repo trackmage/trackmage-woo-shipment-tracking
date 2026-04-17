@@ -37,8 +37,11 @@
 			"php": "7.4.33"
 		},
 		"sort-packages": true,
-        "allow-plugins": {
+		"allow-plugins": {
 			"dealerdirect/phpcodesniffer-composer-installer": true
+		},
+		"audit": {
+			"ignore": ["PKSA-z3gr-8qht-p93v"]
 		}
 	},
 	"autoload": {
