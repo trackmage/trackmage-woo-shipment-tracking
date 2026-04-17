@@ -23,6 +23,7 @@ before_script:
         COMPOSE_PROJECT_NAME: 'tm_wp_plugin_test${CI_JOB_ID}'
         COMPOSE_FILE: 'docker/docker-compose.yml'
         GIT_BRANCH: ${CI_COMMIT_BRANCH}
+        HPOS_ENABLED: ''
     before_script:
         - echo ${COMPOSE_PROJECT_NAME}
         - npm ci && npm run build && rm -rf node_modules/
@@ -116,6 +117,34 @@ php82_wp631_wc811_test:
         PHP_VERSION: '8.2'
         WORDPRESS_VERSION: '6.3.1'
         WOOCOMMERCE_VERSION: '8.1.1'
+
+# Verify the compatibility claims added in plugin 2.1.0: WP 6.9 + WC 10.7
+# across PHP 8.3 and 8.4, with one job exercising HPOS (custom order tables)
+# to catch regressions in the WC_Order CRUD sweep.
+php83_wp69_wc107_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '8.3'
+        WORDPRESS_VERSION: '6.9'
+        WOOCOMMERCE_VERSION: '10.7.0'
+
+php83_wp69_wc107_hpos_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '8.3'
+        WORDPRESS_VERSION: '6.9'
+        WOOCOMMERCE_VERSION: '10.7.0'
+        HPOS_ENABLED: 'yes'
+
+php84_wp69_wc107_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '8.4'
+        WORDPRESS_VERSION: '6.9'
+        WOOCOMMERCE_VERSION: '10.7.0'
 
 publish:
     stage: deploy

@@ -3,6 +3,7 @@ SHELL := /bin/bash
 PHP_VERSION ?= 7.4
 WORDPRESS_VERSION ?= 5.3.0
 WOOCOMMERCE_VERSION ?= 4.5.0
+HPOS_ENABLED ?=
 ZIP_BUILD ?= false
 GIT_BRANCH ?= master
 TEST_PLUGIN_NAME := trackmage-woo-shipment-tracking
@@ -77,6 +78,13 @@ init:
 		unzip -qq wc.zip -d ${WP_FOLDER}/wp-content/plugins && rm wc.zip; \
 	fi
 	wp plugin activate woocommerce --allow-root --path=/var/www/html
+
+	# Enable High-Performance Order Storage (HPOS) when requested by the CI
+	# job. Fresh install with no existing orders, so no migration is needed.
+	if [ "${HPOS_ENABLED}" = "yes" ]; then \
+		wp option update woocommerce_feature_custom_order_tables_enabled yes --allow-root --path=/var/www/html; \
+		wp option update woocommerce_custom_orders_table_enabled yes --allow-root --path=/var/www/html; \
+	fi
 
 	# setup the plugin
 	rm -rf ${WP_FOLDER}/wp-content/plugins/${TEST_PLUGIN_NAME} || true
