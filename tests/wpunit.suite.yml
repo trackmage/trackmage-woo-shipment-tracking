@@ -19,7 +19,13 @@ modules:
             adminEmail: "%TEST_SITE_ADMIN_EMAIL%"
             title: "Test"
             isolatedInstall: false
-#            plugins: [] #All plugins are already installed by Makefile
+            # Both load (require_once the main file) AND activate are needed:
+            # activatePlugins alone only writes the active_plugins option, it
+            # does not require the plugin file, so WC() stays undefined when
+            # tests start under newer wp-browser versions.
+            plugins:
+                - woocommerce/woocommerce.php
+                - trackmage-woo-shipment-tracking/trackmage.php
             activatePlugins:
                 - woocommerce/woocommerce.php
                 - trackmage-woo-shipment-tracking/trackmage.php
