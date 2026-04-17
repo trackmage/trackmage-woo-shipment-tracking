@@ -32,10 +32,12 @@ before_script:
         # martin/wait sidecar, which fails with "getaddrinfo: Try again" on
         # docker-compose v2 because "run --rm" does not always share the same
         # network as "up -d" services.
+        # Ping + create both go over TCP (-h 127.0.0.1) so the readiness
+        # signal matches the transport used for the follow-up create.
         - |
           ok=0
           for i in $(seq 1 60); do
-            if docker-compose exec -T db mariadb-admin ping -u root --silent 2>/dev/null; then
+            if docker-compose exec -T db mariadb-admin -u root -h 127.0.0.1 ping --silent 2>/dev/null; then
               ok=1; break
             fi
             echo "db not ready (attempt $i/60)"
@@ -48,11 +50,7 @@ before_script:
             docker-compose logs db || true
             exit 1
           fi
-        # Use mariadb-admin (same transport as the ping loop above) rather
-        # than the mariadb CLI: socket is ready when the ping succeeds, but
-        # the TCP listener sometimes isn't yet, and the admin tool accepts
-        # "create" natively without needing a SQL statement.
-        - docker-compose exec -T db mariadb-admin -u root create wp_test
+        - docker-compose exec -T db mariadb-admin -u root -h 127.0.0.1 create wp_test
         - docker-compose up -d
     script:
         - docker-compose exec -T wp bash -c '/project/docker/bin/install.sh'
