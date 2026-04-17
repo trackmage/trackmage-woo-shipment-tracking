@@ -19,7 +19,10 @@ services:
             MYSQL_DATABASE: wp_site
             MYSQL_USER: wordrpess
             MYSQL_PASSWORD: wordpress
-        command: mysqld --debug-no-sync
+        # --debug-no-sync is only available in debug builds of mariadb, which
+        # the official 10.11 release image is not. Use innodb_flush_log_at_trx_commit=0
+        # to get equivalent "skip fsync for speed" behaviour in release builds.
+        command: mysqld --innodb-flush-log-at-trx-commit=0 --sync-binlog=0
 
     wp:
         image: wordpress:php${PHP_VERSION:-7.4}-fpm
