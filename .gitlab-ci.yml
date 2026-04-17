@@ -48,10 +48,11 @@ before_script:
             docker-compose logs db || true
             exit 1
           fi
-        # Force TCP instead of unix socket (the 10.11 image does not expose the
-        # socket at the classic /run/mysqld/mysqld.sock path visible to the
-        # client CLI).
-        - docker-compose exec -T db mariadb -u root -h 127.0.0.1 -e "CREATE DATABASE IF NOT EXISTS wp_test"
+        # Use mariadb-admin (same transport as the ping loop above) rather
+        # than the mariadb CLI: socket is ready when the ping succeeds, but
+        # the TCP listener sometimes isn't yet, and the admin tool accepts
+        # "create" natively without needing a SQL statement.
+        - docker-compose exec -T db mariadb-admin -u root create wp_test
         - docker-compose up -d
     script:
         - docker-compose exec -T wp bash -c '/project/docker/bin/install.sh'
