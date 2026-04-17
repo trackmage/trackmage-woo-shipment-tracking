@@ -64,7 +64,7 @@ class OrderItemSync implements EntitySyncInterface
             return;
         }
 
-        $trackmage_order_id = get_post_meta( $orderId, '_trackmage_order_id', true );
+        $trackmage_order_id = $order ? $order->get_meta('_trackmage_order_id', true) : '';
         if (empty($trackmage_order_id)) {
             throw new SynchronizationException('Unable to sync order item because order is not yet synced');
         }

@@ -55,20 +55,30 @@ class Synchronizer
         add_action( 'woocommerce_update_order', [ $this, 'syncOrder' ], 10, 1 );
         add_action( 'woocommerce_checkout_update_order_meta', [ $this, 'syncOrder' ], 10, 1 );
 
-        add_action('wp_trash_post', function ($postId) {//woocommerce_trash_order is not fired
+        // Classic CPT storage still fires wp_trash_post / before_delete_post; HPOS
+        // does not, so parallel WooCommerce-level hooks are registered below.
+        // A static dedupe guard prevents double-processing when both fire on
+        // classic stores in modern WooCommerce.
+        add_action('wp_trash_post', function ($postId) {
             $type = get_post_type($postId);
             if ($type === 'shop_order'){
-                $this->syncOrder($postId, true);
+                $this->trashOrderOnce($postId);
             }
         }, 10, 1);
-        add_action('before_delete_post', function ($postId) { //woocommerce_delete_order is not fired
+        add_action('before_delete_post', function ($postId) {
             $type = get_post_type($postId);
             if ($type === 'shop_order'){
-                $this->deleteOrder($postId);
+                $this->deleteOrderOnce($postId);
             }
             if ($type === 'product'){
                 $this->deleteProduct($postId);
             }
+        }, 10, 1);
+        add_action('woocommerce_trash_order', function ($orderId) {
+            $this->trashOrderOnce((int)$orderId);
+        }, 10, 1);
+        add_action('woocommerce_before_delete_order', function ($orderId) {
+            $this->deleteOrderOnce((int)$orderId);
         }, 10, 1);
 
         add_action( 'woocommerce_update_product', [ $this, 'syncProduct' ], 10, 1 );
@@ -81,6 +91,34 @@ class Synchronizer
 
     }
 
+    /**
+     * Run the trash handler for an order at most once per request, regardless
+     * of whether it was triggered via the WP post hook or the WC order hook.
+     */
+    private function trashOrderOnce(int $orderId): void
+    {
+        static $seen = [];
+        if (isset($seen[$orderId])) {
+            return;
+        }
+        $seen[$orderId] = true;
+        $this->syncOrder($orderId, true);
+    }
+
+    /**
+     * Run the delete handler for an order at most once per request, regardless
+     * of whether it was triggered via the WP post hook or the WC order hook.
+     */
+    private function deleteOrderOnce(int $orderId): void
+    {
+        static $seen = [];
+        if (isset($seen[$orderId])) {
+            return;
+        }
+        $seen[$orderId] = true;
+        $this->deleteOrder($orderId);
+    }
+
     public function bulkOrdersSync($orderIds = [], $taskId = null){
         try{
             $this->logger->info(self::TAG.'Start to processing orders', ['orderIds'=>$orderIds,'taskId'=>$taskId]);
@@ -88,7 +126,11 @@ class Synchronizer
                 $this->backgroundTaskRepository->update(['status'=>'processing'],['id'=>$taskId]);
 
             foreach ($orderIds as $orderId){
-                delete_post_meta( $orderId, '_trackmage_hash');
+                $order = wc_get_order($orderId);
+                if ($order) {
+                    $order->delete_meta_data('_trackmage_hash');
+                    $order->save();
+                }
                 $this->syncOrder($orderId);
             }
 

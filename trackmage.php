@@ -121,6 +121,7 @@ if (!defined('TRACKMAGE_APP_DOMAIN')) {
     define('TRACKMAGE_APP_DOMAIN', 'https://app.trackmage.com');
 }
 
+add_action('before_woocommerce_init', 'trackMageDeclareWooCompat');
 add_action('plugins_loaded', 'trackMageInit');
 add_action('init', 'trackMageLoadTextdomain');
 register_activation_hook(__FILE__, 'trackMageActivate');
@@ -159,6 +160,24 @@ function trackMageDeactivate() {
     Helper::clearTransients();
 }
 
+
+/**
+ * Declare WooCommerce feature compatibility.
+ *
+ * Runs on the "before_woocommerce_init" hook so that WooCommerce sees the
+ * declaration before its own boot sequence finishes. Feature-detected so the
+ * plugin keeps working on WooCommerce versions older than 7.1 (which is when
+ * FeaturesUtil was introduced) without raising the WC minimum floor.
+ */
+function trackMageDeclareWooCompat() {
+    if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+            'custom_order_tables',
+            TRACKMAGE_PLUGIN_FILE,
+            true
+        );
+    }
+}
 
 /**
  * Initialize trackMage plugin components

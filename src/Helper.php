@@ -180,13 +180,12 @@ class Helper {
      */
     public static function getOrderTrackingPageLink(\WC_Order $order): ?string
     {
-        $order_id = $order->get_id();
-        $link = get_post_meta( $order_id, '_trackmage_tracking_page_link', true );
+        $link = $order->get_meta('_trackmage_tracking_page_link', true);
         if (!is_string($link) || $link === '') {
             $email = $order->get_billing_email();
             $link = Helper::getTrackingPageLink(['email' => $email]);
-            add_post_meta($order_id, '_trackmage_tracking_page_link', $link, true)
-                || update_post_meta($order_id, '_trackmage_tracking_page_link', $link);
+            $order->update_meta_data('_trackmage_tracking_page_link', $link);
+            $order->save();
         }
         return $link;
     }
@@ -257,13 +256,17 @@ class Helper {
      */
     public static function getOrderShipmentsWithJoinedItems($orderId): array
     {
-        $trackmageOrderId = get_post_meta( $orderId, '_trackmage_order_id', true );
-        if (empty($trackmageOrderId))
+        $order = wc_get_order($orderId);
+        if (!$order) {
             return [];
+        }
+        $trackmageOrderId = $order->get_meta('_trackmage_order_id', true);
+        if (empty($trackmageOrderId)) {
+            return [];
+        }
 
         $shipmentRepo = Plugin::instance()->getShipmentRepo();
         $shipmentItemRepo = Plugin::instance()->getShipmentItemsRepo();
-        $order = wc_get_order($orderId);
         $orderItems = self::getOrderItems($order);
         $shipments = $shipmentRepo->findBy(['orderNumbers' => $order->get_order_number()]) ?? [];
         foreach ($shipments as &$shipment) {
@@ -514,11 +517,18 @@ class Helper {
      */
     public static function getScreenIds(): array
     {
-        return [
+        $screenIds = [
             'toplevel_page_trackmage-settings',
             'trackmage_page_trackmage-status-manager',
-            'shop_order'
+            'shop_order',
         ];
+        if (function_exists('wc_get_page_screen_id')) {
+            $hposScreenId = wc_get_page_screen_id('shop-order');
+            if ($hposScreenId && !in_array($hposScreenId, $screenIds, true)) {
+                $screenIds[] = $hposScreenId;
+            }
+        }
+        return $screenIds;
     }
 
     /**

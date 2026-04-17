@@ -41,10 +41,14 @@ class OrderSync implements EntitySyncInterface
                 '[billing_address_1]', '[billing_address_2]', '[billing_city]', '[billing_company]', '[billing_country]',
                 '[billing_first_name]', '[billing_last_name]', '[billing_postcode]', '[billing_state]', '[billing_email]', '[billing_phone]',
             ], function($order) {
-                return get_post_meta( $order['id'], '_trackmage_hash', true );
+                $wcOrder = wc_get_order($order['id']);
+                return $wcOrder ? $wcOrder->get_meta('_trackmage_hash', true) : '';
             }, function($order, $hash) {
-                add_post_meta( $order['id'], '_trackmage_hash', $hash, true )
-                    || update_post_meta( $order['id'], '_trackmage_hash', $hash);
+                $wcOrder = wc_get_order($order['id']);
+                if ($wcOrder) {
+                    $wcOrder->update_meta_data('_trackmage_hash', $hash);
+                    $wcOrder->save();
+                }
                 return $order;
             });
             $this->changesDetector = $detector;
@@ -60,7 +64,7 @@ class OrderSync implements EntitySyncInterface
         }
         $workspace = get_option( 'trackmage_workspace' );
         $webhookId = get_option('trackmage_webhook', '');
-        $trackmage_order_id = get_post_meta( $order_id, '_trackmage_order_id', true );
+        $trackmage_order_id = $order->get_meta('_trackmage_order_id', true);
         $client = Plugin::get_client();
 
         // Create order on TrackMage.
@@ -86,8 +90,8 @@ class OrderSync implements EntitySyncInterface
                     ]);
                     $result = TrackMageClient::item($response);
                     $trackmage_order_id = $result['id'];
-                    add_post_meta( $order_id, '_trackmage_order_id', $trackmage_order_id, true )
-                        || update_post_meta($order_id, '_trackmage_order_id', $trackmage_order_id);
+                    $order->update_meta_data('_trackmage_order_id', $trackmage_order_id);
+                    $order->save();
                     $order->add_order_note(__( 'Order was created in TrackMage', 'trackmage' ), false, true);
                 } catch (ClientException $e) {
                     $response = $e->getResponse();
@@ -95,8 +99,8 @@ class OrderSync implements EntitySyncInterface
                         && null !== ($query = $this->matchSearchCriteriaFromValidationError($order, $response))
                         && null !== ($data = $this->lookupByCriteria($query, $workspace))
                     ) {
-                        add_post_meta( $order_id, '_trackmage_order_id', $data['id'], true )
-                            || update_post_meta($order_id, '_trackmage_order_id', $data['id']);
+                        $order->update_meta_data('_trackmage_order_id', $data['id']);
+                        $order->save();
                         $this->sync($order_id);
                         return;
                     }
@@ -120,7 +124,8 @@ class OrderSync implements EntitySyncInterface
                 } catch (ClientException $e) {
                     $response = $e->getResponse();
                     if (null !== $response && 404 === $response->getStatusCode()) {
-                        delete_post_meta( $order_id, '_trackmage_order_id');
+                        $order->delete_meta_data('_trackmage_order_id');
+                        $order->save();
                         $this->sync($order_id);
                         return;
                     }
@@ -138,7 +143,8 @@ class OrderSync implements EntitySyncInterface
     {
         $client = Plugin::get_client();
 
-        $trackmage_order_id = get_post_meta( $id, '_trackmage_order_id', true );
+        $order = wc_get_order($id);
+        $trackmage_order_id = $order ? $order->get_meta('_trackmage_order_id', true) : '';
         if (empty($trackmage_order_id)) {
             return;
         }
@@ -151,14 +157,22 @@ class OrderSync implements EntitySyncInterface
         } catch ( \Throwable $e ) {
             throw new SynchronizationException('An error happened during synchronization: '.$e->getMessage(), $e->getCode(), $e);
         } finally {
-            delete_post_meta($id, '_trackmage_order_id');
+            if ($order) {
+                $order->delete_meta_data('_trackmage_order_id');
+                $order->save();
+            }
         }
     }
 
     public function unlink($id)
     {
-        delete_post_meta( $id, '_trackmage_order_id');
-        delete_post_meta( $id, '_trackmage_hash');
+        $order = wc_get_order($id);
+        if (!$order) {
+            return;
+        }
+        $order->delete_meta_data('_trackmage_order_id');
+        $order->delete_meta_data('_trackmage_hash');
+        $order->save();
     }
 
     /**

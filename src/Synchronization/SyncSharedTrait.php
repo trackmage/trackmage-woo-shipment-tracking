@@ -12,7 +12,7 @@ trait SyncSharedTrait
      */
     private function canSyncOrder($order)
     {
-        $trackmage_order_id = get_post_meta( $order->get_id(), '_trackmage_order_id', true );
+        $trackmage_order_id = $order->get_meta('_trackmage_order_id', true);
         if (!empty($trackmage_order_id)) { //if linked
             return true;
         }

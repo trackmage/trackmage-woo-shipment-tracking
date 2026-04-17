@@ -111,16 +111,30 @@ class Plugin {
 
     private function bindEventDeleteShipment()
     {
-        add_action('before_delete_post', function ($postId) {
-            $type = get_post_type($postId);
-            if ($type === 'shop_order'){
-                foreach ($this->getShipmentRepo()->findBy(['orderNumbers' => $postId]) as $shipment) {
-                    if (in_array($postId, $shipment['orderNumbers'] ?? [], true)) {
-                        Helper::deleteShipment($shipment['id']);
-                    }
+        // Deletes TrackMage shipments that reference a WooCommerce order when
+        // that order is deleted. Registers parallel handlers for classic CPT
+        // storage (before_delete_post) and HPOS storage
+        // (woocommerce_before_delete_order); a static dedupe guard prevents
+        // double-processing when both fire on classic stores.
+        $handler = function ($orderId) {
+            static $seen = [];
+            $orderId = (int) $orderId;
+            if (isset($seen[$orderId])) {
+                return;
+            }
+            $seen[$orderId] = true;
+            foreach ($this->getShipmentRepo()->findBy(['orderNumbers' => $orderId]) as $shipment) {
+                if (in_array($orderId, $shipment['orderNumbers'] ?? [], true)) {
+                    Helper::deleteShipment($shipment['id']);
                 }
             }
+        };
+        add_action('before_delete_post', function ($postId) use ($handler) {
+            if (get_post_type($postId) === 'shop_order') {
+                $handler($postId);
+            }
         }, 10, 1);
+        add_action('woocommerce_before_delete_order', $handler, 10, 1);
     }
 
     /**
