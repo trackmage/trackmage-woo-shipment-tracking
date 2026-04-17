@@ -5,10 +5,38 @@ apt-get -y update && apt-get install -y jq libicu-dev mariadb-client rsync zip u
 
 # Newer mariadb-client packages default to requiring TLS to the server, but
 # the pinned mariadb:10.3.6 service does not advertise SSL. Disable SSL
-# globally for every client invocation (wp-cli, mysql, mysqldump) so the
-# test bootstrap can talk to the DB.
-mkdir -p /etc/mysql/conf.d
-printf '[client]\nssl=0\n\n[mysql]\nssl=0\n\n[mysqldump]\nssl=0\n' > /etc/mysql/conf.d/disable-ssl.cnf
+# globally for every client invocation (wp-cli, mysql, mysqldump,
+# mariadb-dump) so the test bootstrap can talk to the DB.
+# Writing to multiple locations covers every default search path and both
+# the legacy ([mysqldump]) and renamed ([mariadb-dump]) group names.
+mkdir -p /etc/mysql/conf.d /etc/mysql/mariadb.conf.d /root
+SSL_OFF='[client]
+ssl=0
+ssl-verify-server-cert=0
+
+[client-server]
+ssl=0
+
+[mysql]
+ssl=0
+
+[mysqldump]
+ssl=0
+
+[mariadb-dump]
+ssl=0
+
+[mariadb]
+ssl=0
+'
+printf '%s' "$SSL_OFF" > /etc/my.cnf
+printf '%s' "$SSL_OFF" > /etc/mysql/conf.d/disable-ssl.cnf
+printf '%s' "$SSL_OFF" > /etc/mysql/mariadb.conf.d/99-disable-ssl.cnf
+printf '%s' "$SSL_OFF" > /root/.my.cnf
+chmod 600 /root/.my.cnf
+# Sanity check — will print to job log if anything is off.
+mysql --print-defaults 2>/dev/null || true
+mysqldump --print-defaults 2>/dev/null || true
 
 docker-php-ext-configure intl && docker-php-ext-install intl
 
