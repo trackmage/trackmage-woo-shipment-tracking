@@ -26,4 +26,14 @@ composer --version
 curl -L -o wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && chmod +x ./wp && mv ./wp /usr/local/bin/
 wp --info
 
+# Skip theme loading in every subsequent wp-cli invocation. The docker
+# image ships themes from its WP baseline (e.g. wordpress:php8.2-fpm
+# carries twentytwentyfive from WP 6.9, which calls
+# register_block_bindings_source - a WP 6.5+ API). After "wp core update
+# --version=X" downgrades core to an older WORDPRESS_VERSION the active
+# theme'\''s functions.php explodes on every wp init hook. Tests do not
+# use the theme, so skip-themes is the cleanest fix for all legacy jobs.
+mkdir -p /root/.wp-cli
+printf 'skip-themes: true\n' > /root/.wp-cli/config.yml
+
 chown -R www-data:www-data /var/www
