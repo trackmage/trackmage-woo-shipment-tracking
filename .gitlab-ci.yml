@@ -78,21 +78,25 @@ php83_wp69_wc107_test:
         WOOCOMMERCE_VERSION: '10.7.0'
         ZIP_BUILD: 'true'
 
-php74_wp53_wc45_test:
-    <<: *test_tpl
-    variables:
-        <<: *test_vars
-        PHP_VERSION: '7.4'
-        WORDPRESS_VERSION: '5.3'
-        WOOCOMMERCE_VERSION: '4.5.0'
-#
-#php74_wp58_wc61_test:
+# WP 5.3 is our declared floor but wp-browser 3.x will not bootstrap
+# against it (PHPMailer was moved to wp-includes/PHPMailer in WP 5.5
+# and the harness require_once()s the new path unconditionally).
+# WP 5.8 is the oldest combination the test harness can actually run.
+#php74_wp53_wc45_test:
 #    <<: *test_tpl
 #    variables:
 #        <<: *test_vars
 #        PHP_VERSION: '7.4'
-#        WORDPRESS_VERSION: '5.8.3'
-#        WOOCOMMERCE_VERSION: '6.1.0'
+#        WORDPRESS_VERSION: '5.3'
+#        WOOCOMMERCE_VERSION: '4.5.0'
+
+php74_wp58_wc61_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '7.4'
+        WORDPRESS_VERSION: '5.8.3'
+        WOOCOMMERCE_VERSION: '6.1.0'
 #
 #php74_wp59_wc63_test:
 #    <<: *test_tpl
