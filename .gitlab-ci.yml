@@ -78,10 +78,16 @@ php83_wp69_wc107_test:
         WOOCOMMERCE_VERSION: '10.7.0'
         ZIP_BUILD: 'true'
 
-# WP 5.3 is our declared floor but wp-browser 3.x will not bootstrap
-# against it (PHPMailer was moved to wp-includes/PHPMailer in WP 5.5
-# and the harness require_once()s the new path unconditionally).
-# WP 5.8 is the oldest combination the test harness can actually run.
+# Floor CI job note:
+# - WP 5.3 (our declared floor) cannot be bootstrapped by wp-browser 3.x
+#   because the harness hard-requires wp-includes/PHPMailer/PHPMailer.php
+#   (added in WP 5.5).
+# - WP 5.8.3 also fails because the harness calls wp_cache_flush_runtime()
+#   in tear_down_after_class, which only exists from WP 6.0 on.
+# WP 6.1.1 is the oldest combination the test harness can actually run.
+# The plugin header still advertises 5.3 as the floor and the code does
+# not use any post-5.3 WP API; that claim is verified by code review,
+# not by CI.
 #php74_wp53_wc45_test:
 #    <<: *test_tpl
 #    variables:
@@ -89,14 +95,14 @@ php83_wp69_wc107_test:
 #        PHP_VERSION: '7.4'
 #        WORDPRESS_VERSION: '5.3'
 #        WOOCOMMERCE_VERSION: '4.5.0'
-
-php74_wp58_wc61_test:
-    <<: *test_tpl
-    variables:
-        <<: *test_vars
-        PHP_VERSION: '7.4'
-        WORDPRESS_VERSION: '5.8.3'
-        WOOCOMMERCE_VERSION: '6.1.0'
+#
+#php74_wp58_wc61_test:
+#    <<: *test_tpl
+#    variables:
+#        <<: *test_vars
+#        PHP_VERSION: '7.4'
+#        WORDPRESS_VERSION: '5.8.3'
+#        WOOCOMMERCE_VERSION: '6.1.0'
 #
 #php74_wp59_wc63_test:
 #    <<: *test_tpl
@@ -105,6 +111,14 @@ php74_wp58_wc61_test:
 #        PHP_VERSION: '7.4'
 #        WORDPRESS_VERSION: '5.9.2'
 #        WOOCOMMERCE_VERSION: '6.3.1'
+
+php74_wp611_wc740_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '7.4'
+        WORDPRESS_VERSION: '6.1.1'
+        WOOCOMMERCE_VERSION: '7.4.0'
 #
 php81_wp61_wc72_test:
     <<: *test_tpl
@@ -113,14 +127,6 @@ php81_wp61_wc72_test:
         PHP_VERSION: '8.1'
         WORDPRESS_VERSION: '6.1.1'
         WOOCOMMERCE_VERSION: '7.2.0'
-#
-#php74_wp611_wc740_test:
-#    <<: *test_tpl
-#    variables:
-#        <<: *test_vars
-#        PHP_VERSION: '7.4'
-#        WORDPRESS_VERSION: '6.1.1'
-#        WOOCOMMERCE_VERSION: '7.4.0'
 #
 #php74_wp631_wc811_test:
 #    <<: *test_tpl
