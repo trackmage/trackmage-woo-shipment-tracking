@@ -82,6 +82,7 @@ class Orders {
         if (!$order) {
             return;
         }
+        $order->read_meta_data(true);
         $trackmage_order_id = $order->get_meta('_trackmage_order_id', true);
         if (in_array($trackmage_order_id, [null, false, ''], true)) {
             return;

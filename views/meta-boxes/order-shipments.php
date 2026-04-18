@@ -8,6 +8,9 @@ use TrackMage\WordPress\Helper;
 defined('WPINC') || exit;
 /** @var int $orderId */
 $order = wc_get_order($orderId);
+if ($order) {
+    $order->read_meta_data(true);
+}
 $trackmage_order_id = $order ? $order->get_meta('_trackmage_order_id', true) : '';
 if($order && !in_array($trackmage_order_id, [null, false, ''], true)){
     $orderItems = $order->get_items();

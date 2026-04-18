@@ -180,6 +180,10 @@ class Helper {
      */
     public static function getOrderTrackingPageLink(\WC_Order $order): ?string
     {
+        // Refresh meta so raw post_meta writes from callers are honoured
+        // on older WooCommerce where the cached meta_data is not
+        // invalidated on external updates.
+        $order->read_meta_data(true);
         $link = $order->get_meta('_trackmage_tracking_page_link', true);
         if (!is_string($link) || $link === '') {
             $email = $order->get_billing_email();
@@ -260,6 +264,7 @@ class Helper {
         if (!$order) {
             return [];
         }
+        $order->read_meta_data(true);
         $trackmageOrderId = $order->get_meta('_trackmage_order_id', true);
         if (empty($trackmageOrderId)) {
             return [];

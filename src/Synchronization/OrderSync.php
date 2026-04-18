@@ -42,7 +42,15 @@ class OrderSync implements EntitySyncInterface
                 '[billing_first_name]', '[billing_last_name]', '[billing_postcode]', '[billing_state]', '[billing_email]', '[billing_phone]',
             ], function($order) {
                 $wcOrder = wc_get_order($order['id']);
-                return $wcOrder ? $wcOrder->get_meta('_trackmage_hash', true) : '';
+                if (!$wcOrder) {
+                    return '';
+                }
+                // Force a meta reload so values written via raw post_meta
+                // APIs between wc_get_order() calls are not read stale on
+                // older WooCommerce versions (the object cache does not
+                // invalidate meta_data on external post_meta writes).
+                $wcOrder->read_meta_data(true);
+                return $wcOrder->get_meta('_trackmage_hash', true);
             }, function($order, $hash) {
                 $wcOrder = wc_get_order($order['id']);
                 if ($wcOrder) {
@@ -64,6 +72,8 @@ class OrderSync implements EntitySyncInterface
         }
         $workspace = get_option( 'trackmage_workspace' );
         $webhookId = get_option('trackmage_webhook', '');
+        // Refresh meta to pick up external post_meta writes (see note above).
+        $order->read_meta_data(true);
         $trackmage_order_id = $order->get_meta('_trackmage_order_id', true);
         $client = Plugin::get_client();
 
@@ -144,6 +154,9 @@ class OrderSync implements EntitySyncInterface
         $client = Plugin::get_client();
 
         $order = wc_get_order($id);
+        if ($order) {
+            $order->read_meta_data(true);
+        }
         $trackmage_order_id = $order ? $order->get_meta('_trackmage_order_id', true) : '';
         if (empty($trackmage_order_id)) {
             return;

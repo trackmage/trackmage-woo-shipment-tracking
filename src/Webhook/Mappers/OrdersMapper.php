@@ -77,6 +77,9 @@ class OrdersMapper extends AbstractMapper {
         }
 
         $this->entity = wc_get_order( $orderId );
+        if ($this->entity) {
+            $this->entity->read_meta_data(true);
+        }
         $trackmage_order_id = $this->entity ? $this->entity->get_meta('_trackmage_order_id', true) : '';
 
         $this->validateData();

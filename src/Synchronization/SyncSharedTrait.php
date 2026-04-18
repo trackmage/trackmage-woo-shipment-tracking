@@ -12,6 +12,9 @@ trait SyncSharedTrait
      */
     private function canSyncOrder($order)
     {
+        // Refresh meta to pick up external post_meta writes that older WC
+        // versions do not invalidate on the cached WC_Order instance.
+        $order->read_meta_data(true);
         $trackmage_order_id = $order->get_meta('_trackmage_order_id', true);
         if (!empty($trackmage_order_id)) { //if linked
             return true;
