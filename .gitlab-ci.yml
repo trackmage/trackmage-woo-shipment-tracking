@@ -19,6 +19,11 @@ before_script:
 
 .run_test: &test_tpl
     stage: test
+    # Serialize all test jobs onto the shared runner so the nine matrix
+    # entries do not race for disk. Running them all in parallel exhausts
+    # the runner's docker storage (9 mariadb + 9 wordpress + 9 waiter
+    # containers = overlayfs out of space).
+    resource_group: trackmage_ci_test
     variables: &test_vars
         COMPOSE_PROJECT_NAME: 'tm_wp_plugin_test${CI_JOB_ID}'
         COMPOSE_FILE: 'docker/docker-compose.yml'
