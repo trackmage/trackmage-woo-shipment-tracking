@@ -151,22 +151,22 @@ php83_wp69_wc107_test:
 #        WORDPRESS_VERSION: '6.3.1'
 #        WOOCOMMERCE_VERSION: '8.1.1'
 #
-#php83_wp69_wc107_hpos_test:
-#    <<: *test_tpl
-#    variables:
-#        <<: *test_vars
-#        PHP_VERSION: '8.3'
-#        WORDPRESS_VERSION: '6.9'
-#        WOOCOMMERCE_VERSION: '10.7.0'
-#        HPOS_ENABLED: 'yes'
-#
-#php84_wp69_wc107_test:
-#    <<: *test_tpl
-#    variables:
-#        <<: *test_vars
-#        PHP_VERSION: '8.4'
-#        WORDPRESS_VERSION: '6.9'
-#        WOOCOMMERCE_VERSION: '10.7.0'
+php83_wp69_wc107_hpos_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '8.3'
+        WORDPRESS_VERSION: '6.9'
+        WOOCOMMERCE_VERSION: '10.7.0'
+        HPOS_ENABLED: 'yes'
+
+php84_wp69_wc107_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '8.4'
+        WORDPRESS_VERSION: '6.9'
+        WOOCOMMERCE_VERSION: '10.7.0'
 
 publish:
     stage: deploy
