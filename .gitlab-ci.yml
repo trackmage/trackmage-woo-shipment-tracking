@@ -78,14 +78,13 @@ php83_wp69_wc107_test:
         WOOCOMMERCE_VERSION: '10.7.0'
         ZIP_BUILD: 'true'
 
-#php74_wp53_wc45_test:
-#    <<: *test_tpl
-#    variables:
-#        <<: *test_vars
-#        PHP_VERSION: '7.4'
-#        WORDPRESS_VERSION: '5.3'
-#        WOOCOMMERCE_VERSION: '4.5.0'
-#        ZIP_BUILD: 'true'
+php74_wp53_wc45_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '7.4'
+        WORDPRESS_VERSION: '5.3'
+        WOOCOMMERCE_VERSION: '4.5.0'
 #
 #php74_wp58_wc61_test:
 #    <<: *test_tpl
@@ -103,13 +102,13 @@ php83_wp69_wc107_test:
 #        WORDPRESS_VERSION: '5.9.2'
 #        WOOCOMMERCE_VERSION: '6.3.1'
 #
-#php81_wp61_wc72_test:
-#    <<: *test_tpl
-#    variables:
-#        <<: *test_vars
-#        PHP_VERSION: '8.1'
-#        WORDPRESS_VERSION: '6.1.1'
-#        WOOCOMMERCE_VERSION: '7.2.0'
+php81_wp61_wc72_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '8.1'
+        WORDPRESS_VERSION: '6.1.1'
+        WOOCOMMERCE_VERSION: '7.2.0'
 #
 #php74_wp611_wc740_test:
 #    <<: *test_tpl
@@ -143,13 +142,13 @@ php83_wp69_wc107_test:
 #        WORDPRESS_VERSION: '6.3.1'
 #        WOOCOMMERCE_VERSION: '8.1.1'
 #
-#php82_wp631_wc811_test:
-#    <<: *test_tpl
-#    variables:
-#        <<: *test_vars
-#        PHP_VERSION: '8.2'
-#        WORDPRESS_VERSION: '6.3.1'
-#        WOOCOMMERCE_VERSION: '8.1.1'
+php82_wp631_wc811_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '8.2'
+        WORDPRESS_VERSION: '6.3.1'
+        WOOCOMMERCE_VERSION: '8.1.1'
 #
 php83_wp69_wc107_hpos_test:
     <<: *test_tpl
