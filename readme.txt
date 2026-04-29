@@ -1,7 +1,7 @@
 === TrackMage - Woo Shipment Tracking ===
 Contributors: trackmage,karser,harbuzniak
 Tags: shipping, tracking, order, status, delivery, shipment tracking, order tracking, order status, carrier, carriers
-Stable tag: 2.1.0
+Stable tag: 2.1.1
 Requires at least: 5.3
 Tested up to: 6.9
 Requires PHP: 7.4
@@ -97,6 +97,12 @@ TrackMage can send automatic emails to your customers to let them know about the
 3. Go through the Onboarding wizard in the Plugin
 
 == Changelog ==
+= 2.1.1 =
+* Fix order sync silently skipped on the same day the wizard finishes (canSyncOrder parsed the start date with the current H:i:s instead of midnight)
+* Fix flood of "Unable to sync remote order" warnings during Reset Plugin and workspace switch (sync events now disabled while unlinkAllOrders saves orders under a cleared workspace)
+* Bump workflow-DELETE timeout to 120s so Reset doesn't get killed mid-wipe on busy workspaces
+* Wizard now defaults sync statuses to Processing + Completed (instead of "sync everything"), and pre-fills the start date with today
+
 = 2.1.0 =
 * Declare "Requires Plugins: woocommerce" header (WordPress 6.5+)
 * Bump tested compatibility up to WordPress 6.9 and WooCommerce 10.7
