@@ -41,7 +41,10 @@ class ShipmentSync implements EntitySyncInterface
 
         $client = Plugin::get_client();
 
-        $trackmage_order_id = get_post_meta( $orderId, '_trackmage_order_id', true );
+        if ($order) {
+            $order->read_meta_data(true);
+        }
+        $trackmage_order_id = $order ? $order->get_meta('_trackmage_order_id', true) : '';
 
         try {
             if (empty($trackmage_id)) {

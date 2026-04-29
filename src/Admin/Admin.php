@@ -83,6 +83,15 @@ class Admin {
             'trackmage-status-manager',
             [$this, 'renderStatusManager']
         );
+
+        add_submenu_page(
+            'trackmage-settings',
+            __('Logs', 'trackmage'),
+            __('Logs', 'trackmage'),
+            'manage_options',
+            'trackmage-logs',
+            [$this, 'renderLogs']
+        );
     }
 
     /**
@@ -122,6 +131,15 @@ class Admin {
      */
     public function renderStatusManager() {
         require_once TRACKMAGE_VIEWS_DIR . 'admin-page-status-manager.php';
+    }
+
+    /**
+     * Renders the Logs page.
+     *
+     * @since 2.1.2
+     */
+    public function renderLogs() {
+        require_once TRACKMAGE_VIEWS_DIR . 'admin-page-logs.php';
     }
 
     /**
@@ -212,6 +230,9 @@ class Admin {
         $deleteData = isset($_POST['trackmage_delete_data']) && $_POST['trackmage_delete_data'] === '1';
 
         $workspaces = Helper::get_workspaces(true);
+        if (!is_array($workspaces)) {
+            $workspaces = [];
+        }
         if (!empty($value) && !in_array($value, array_column($workspaces, 'id'))) {
             add_settings_error('trackmage_workspace', 0, 'Trackmage cannot be connected to selected workspace: '.$value);
             return $old_value;
@@ -317,8 +338,20 @@ class Admin {
             update_option('trackmage_team', $workspaces[$idx]['team']);
         }
 
+        // Disable sync events while wiping the link state. unlinkAllOrders
+        // saves every order, which would re-enter syncOrder under the old
+        // (about-to-be-cleared) workspace and POST to TM with an empty IRI.
+        $synchronizer = Plugin::instance()->getSynchronizer();
+        $wasDisabled = false;
+        if ($synchronizer) {
+            $synchronizer->setDisableEvents(true);
+            $wasDisabled = true;
+        }
         Helper::unlinkAllOrders();
         Helper::unlinkAllProducts();
+        if ($wasDisabled) {
+            $synchronizer->setDisableEvents(false);
+        }
 
         update_option( 'trackmage_order_status_aliases', [] );
         update_option('trackmage_webhook', $data['id']);
@@ -365,6 +398,13 @@ class Admin {
             $integration = get_option('trackmage_integration', '');
             $client_id = get_option('trackmage_client_id', '');
             $client_secret = get_option('trackmage_client_secret', '');
+            // Disable sync events for the duration of the reset. unlinkAllOrders
+            // saves every order, which fires woocommerce_update_order; with the
+            // hook still attached the plugin would try to POST each order to
+            // an already-cleared workspace and flood wp_trackmage_log with
+            // 400 "Invalid IRI" warnings.
+            $synchronizer = Plugin::instance()->getSynchronizer();
+            $synchronizer->setDisableEvents(true);
             Helper::clearTransients();
             Helper::clearOptions();
             Helper::unlinkAllOrders();
@@ -372,7 +412,14 @@ class Admin {
             try{
                 if(!empty($integration)){
                     $client = Plugin::get_client(['client_id' => $client_id, 'client_secret' => $client_secret]);
-                    $client->delete('/workflows/' . $integration, [RequestOptions::QUERY => ['deleteData' => $deleteData]]);
+                    // The DELETE with deleteData=1 deletes every order linked
+                    // to this integration on TM and can take 30+ s for a busy
+                    // workspace; bump the timeout so PHP doesn't kill us mid-wipe.
+                    $client->delete('/workflows/' . $integration, [
+                        RequestOptions::QUERY => ['deleteData' => $deleteData],
+                        RequestOptions::TIMEOUT => 120,
+                        RequestOptions::CONNECT_TIMEOUT => 10,
+                    ]);
                 }
                 set_transient( 'trackmage-wizard-notice', true );
                 $logger->info('Finish Reset all plugin settings and data');

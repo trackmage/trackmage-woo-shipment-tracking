@@ -336,25 +336,61 @@
     return false;
   });
 
-  $("button#btn-reset-plugin").on('click', function(e){
+  // Disconnect Plugin (safe path).
+  $("button#btn-disconnect-plugin").on('click', function(e){
     window.trackmageConfirmDialog(
       '#reset-dialog',
-      function(){
-          if(!$('#agree_reset').is(':checked')) {
-            $('#agree_reset').parent().addClass('error').find('p.description').show();
-            return false;
-          }
-          return true;
-      },
-      'Reset Plugin Confirmation',
-      'Reset'
+      function(){ return true; },
+      'Disconnect Plugin',
+      'Disconnect'
     ).then(function(yesno) {
       if(yesno == 'yes'){
         $('#reset-plugin').val("1");
+        $('#delete-data').val("0");
         $("form#general-settings-form").attr('cansubmit',true).submit();
-      }else{
-        return false;
       }
+    });
+    return false;
+  });
+
+  // Delete TrackMage Data (destructive path with type-to-confirm).
+  $("button#btn-delete-tm-data").on('click', function(e){
+    var $confirmInput = $('#delete-tm-data-confirm');
+    $confirmInput.val('');
+    window.trackmageConfirmDialog(
+      '#delete-tm-data-dialog',
+      function(){
+        var expected = ($confirmInput.attr('data-expected') || '').trim();
+        var typed = ($confirmInput.val() || '').trim();
+        if (expected === '' || typed !== expected) {
+          $confirmInput.addClass('error').focus();
+          return false;
+        }
+        return true;
+      },
+      'Delete TrackMage Data',
+      'Delete & Disconnect'
+    ).then(function(yesno) {
+      if(yesno == 'yes'){
+        $('#reset-plugin').val("1");
+        $('#delete-data').val("1");
+        $("form#general-settings-form").attr('cansubmit',true).submit();
+      }
+    });
+    // Live-enable the OK button when the typed text matches the workspace.
+    $(document).off('input.tmDeleteData').on('input.tmDeleteData', '#delete-tm-data-confirm', function(){
+      var $i = $(this);
+      var expected = ($i.attr('data-expected') || '').trim();
+      var typed = ($i.val() || '').trim();
+      var match = (expected !== '' && typed === expected);
+      // Confirm-dialog OK button has class .ui-button on the rendered jQuery UI dialog.
+      $('.ui-dialog-buttonset .ui-button').each(function(){
+        var $b = $(this);
+        if ($b.text().trim().toLowerCase().indexOf('delete') === 0) {
+          $b.prop('disabled', !match).toggleClass('ui-state-disabled', !match);
+        }
+      });
+      $i.toggleClass('error', !match && typed.length > 0);
     });
     return false;
   });

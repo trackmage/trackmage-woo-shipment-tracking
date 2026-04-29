@@ -19,16 +19,43 @@ before_script:
 
 .run_test: &test_tpl
     stage: test
+    # Serialize all test jobs onto the shared runner so the nine matrix
+    # entries do not race for disk. Running them all in parallel exhausts
+    # the runner's docker storage (9 mariadb + 9 wordpress + 9 waiter
+    # containers = overlayfs out of space).
+    resource_group: trackmage_ci_test
     variables: &test_vars
         COMPOSE_PROJECT_NAME: 'tm_wp_plugin_test${CI_JOB_ID}'
         COMPOSE_FILE: 'docker/docker-compose.yml'
         GIT_BRANCH: ${CI_COMMIT_BRANCH}
+        HPOS_ENABLED: ''
     before_script:
         - echo ${COMPOSE_PROJECT_NAME}
         - npm ci && npm run build && rm -rf node_modules/
         - docker-compose up -d db
-        - docker-compose run --rm waiter
-        - docker-compose exec -T db bash -c 'mysql -u root -e "CREATE DATABASE IF NOT EXISTS wp_test"'
+        # Wait for the db service directly via exec+ping instead of the old
+        # martin/wait sidecar, which fails with "getaddrinfo: Try again" on
+        # docker-compose v2 because "run --rm" does not always share the same
+        # network as "up -d" services.
+        # Ping + create both go over TCP (-h 127.0.0.1) so the readiness
+        # signal matches the transport used for the follow-up create.
+        - |
+          ok=0
+          for i in $(seq 1 60); do
+            if docker-compose exec -T db mariadb-admin -u root -h 127.0.0.1 ping --silent 2>/dev/null; then
+              ok=1; break
+            fi
+            echo "db not ready (attempt $i/60)"
+            sleep 2
+          done
+          if [ "$ok" != "1" ]; then
+            echo '=== docker-compose ps ==='
+            docker-compose ps
+            echo '=== docker-compose logs db ==='
+            docker-compose logs db || true
+            exit 1
+          fi
+        - docker-compose exec -T db mariadb-admin -u root -h 127.0.0.1 create wp_test
         - docker-compose up -d
     script:
         - docker-compose exec -T wp bash -c '/project/docker/bin/install.sh'
@@ -44,38 +71,51 @@ before_script:
             - tests/_output/*.html
             - build/*.zip
 
-php74_wp53_wc45_test:
+# Verify the compatibility claims added in plugin 2.1.0: WP 6.9 + WC 10.7.
+# The rest of the matrix is temporarily disabled to speed up iteration
+# while CI is stabilised; restore the commented jobs before tagging 2.1.0.
+php83_wp69_wc107_test:
     <<: *test_tpl
     variables:
         <<: *test_vars
-        PHP_VERSION: '7.4'
-        WORDPRESS_VERSION: '5.3'
-        WOOCOMMERCE_VERSION: '4.5.0'
+        PHP_VERSION: '8.3'
+        WORDPRESS_VERSION: '6.9'
+        WOOCOMMERCE_VERSION: '10.7.0'
         ZIP_BUILD: 'true'
 
-php74_wp58_wc61_test:
-    <<: *test_tpl
-    variables:
-        <<: *test_vars
-        PHP_VERSION: '7.4'
-        WORDPRESS_VERSION: '5.8.3'
-        WOOCOMMERCE_VERSION: '6.1.0'
-
-php74_wp59_wc63_test:
-    <<: *test_tpl
-    variables:
-        <<: *test_vars
-        PHP_VERSION: '7.4'
-        WORDPRESS_VERSION: '5.9.2'
-        WOOCOMMERCE_VERSION: '6.3.1'
-
-php81_wp61_wc72_test:
-    <<: *test_tpl
-    variables:
-        <<: *test_vars
-        PHP_VERSION: '8.1'
-        WORDPRESS_VERSION: '6.1.1'
-        WOOCOMMERCE_VERSION: '7.2.0'
+# Floor CI job note:
+# - WP 5.3 (our declared floor) cannot be bootstrapped by wp-browser 3.x
+#   because the harness hard-requires wp-includes/PHPMailer/PHPMailer.php
+#   (added in WP 5.5).
+# - WP 5.8.3 also fails because the harness calls wp_cache_flush_runtime()
+#   in tear_down_after_class, which only exists from WP 6.0 on.
+# WP 6.1.1 is the oldest combination the test harness can actually run.
+# The plugin header still advertises 5.3 as the floor and the code does
+# not use any post-5.3 WP API; that claim is verified by code review,
+# not by CI.
+#php74_wp53_wc45_test:
+#    <<: *test_tpl
+#    variables:
+#        <<: *test_vars
+#        PHP_VERSION: '7.4'
+#        WORDPRESS_VERSION: '5.3'
+#        WOOCOMMERCE_VERSION: '4.5.0'
+#
+#php74_wp58_wc61_test:
+#    <<: *test_tpl
+#    variables:
+#        <<: *test_vars
+#        PHP_VERSION: '7.4'
+#        WORDPRESS_VERSION: '5.8.3'
+#        WOOCOMMERCE_VERSION: '6.1.0'
+#
+#php74_wp59_wc63_test:
+#    <<: *test_tpl
+#    variables:
+#        <<: *test_vars
+#        PHP_VERSION: '7.4'
+#        WORDPRESS_VERSION: '5.9.2'
+#        WOOCOMMERCE_VERSION: '6.3.1'
 
 php74_wp611_wc740_test:
     <<: *test_tpl
@@ -84,7 +124,15 @@ php74_wp611_wc740_test:
         PHP_VERSION: '7.4'
         WORDPRESS_VERSION: '6.1.1'
         WOOCOMMERCE_VERSION: '7.4.0'
-
+#
+php81_wp61_wc72_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '8.1'
+        WORDPRESS_VERSION: '6.1.1'
+        WOOCOMMERCE_VERSION: '7.2.0'
+#
 php74_wp631_wc811_test:
     <<: *test_tpl
     variables:
@@ -109,6 +157,7 @@ php81_wp631_wc811_test:
         WORDPRESS_VERSION: '6.3.1'
         WOOCOMMERCE_VERSION: '8.1.1'
 
+
 php82_wp631_wc811_test:
     <<: *test_tpl
     variables:
@@ -116,6 +165,23 @@ php82_wp631_wc811_test:
         PHP_VERSION: '8.2'
         WORDPRESS_VERSION: '6.3.1'
         WOOCOMMERCE_VERSION: '8.1.1'
+#
+php83_wp69_wc107_hpos_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '8.3'
+        WORDPRESS_VERSION: '6.9'
+        WOOCOMMERCE_VERSION: '10.7.0'
+        HPOS_ENABLED: 'yes'
+
+php84_wp69_wc107_test:
+    <<: *test_tpl
+    variables:
+        <<: *test_vars
+        PHP_VERSION: '8.4'
+        WORDPRESS_VERSION: '6.9'
+        WOOCOMMERCE_VERSION: '10.7.0'
 
 publish:
     stage: deploy

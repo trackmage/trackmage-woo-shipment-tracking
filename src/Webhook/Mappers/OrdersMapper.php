@@ -77,7 +77,10 @@ class OrdersMapper extends AbstractMapper {
         }
 
         $this->entity = wc_get_order( $orderId );
-        $trackmage_order_id = get_post_meta( $orderId, '_trackmage_order_id', true );
+        if ($this->entity) {
+            $this->entity->read_meta_data(true);
+        }
+        $trackmage_order_id = $this->entity ? $this->entity->get_meta('_trackmage_order_id', true) : '';
 
         $this->validateData();
         if($trackMageId !== $trackmage_order_id) {
@@ -85,15 +88,23 @@ class OrdersMapper extends AbstractMapper {
         }
 
         try {
+            $metaChanged = false;
             foreach ($this->updatedFields as $field){
                 if($field === 'orderStatus'){
                     $this->entity->update_status($this->getWpStatus($this->data['orderStatus']));
                 }else{
                     $parts = explode('.', $field);
                     if(isset($parts[0], $this->map[$parts[0]], $parts[1], $this->map[$parts[0]][$parts[1]])){
-                        update_post_meta($orderId, $this->map[$parts[0]][$parts[1]], $this->data[$parts[0]][$parts[1]]);
+                        $this->entity->update_meta_data(
+                            $this->map[$parts[0]][$parts[1]],
+                            $this->data[$parts[0]][$parts[1]]
+                        );
+                        $metaChanged = true;
                     }
                 }
+            }
+            if ($metaChanged) {
+                $this->entity->save();
             }
             $this->entity->add_order_note("Order was updated from TrackMage");
         }catch (\Throwable $e){

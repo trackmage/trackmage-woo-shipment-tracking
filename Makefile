@@ -3,6 +3,7 @@ SHELL := /bin/bash
 PHP_VERSION ?= 7.4
 WORDPRESS_VERSION ?= 5.3.0
 WOOCOMMERCE_VERSION ?= 4.5.0
+HPOS_ENABLED ?=
 ZIP_BUILD ?= false
 GIT_BRANCH ?= master
 TEST_PLUGIN_NAME := trackmage-woo-shipment-tracking
@@ -78,6 +79,13 @@ init:
 	fi
 	wp plugin activate woocommerce --allow-root --path=/var/www/html
 
+	# Enable High-Performance Order Storage (HPOS) when requested by the CI
+	# job. Fresh install with no existing orders, so no migration is needed.
+	if [ "${HPOS_ENABLED}" = "yes" ]; then \
+		wp option update woocommerce_feature_custom_order_tables_enabled yes --allow-root --path=/var/www/html; \
+		wp option update woocommerce_custom_orders_table_enabled yes --allow-root --path=/var/www/html; \
+	fi
+
 	# setup the plugin
 	rm -rf ${WP_FOLDER}/wp-content/plugins/${TEST_PLUGIN_NAME} || true
 	cp -r ${BUILD_PLUGIN_FOLDER} ${WP_FOLDER}/wp-content/plugins/${TEST_PLUGIN_NAME}/
@@ -86,7 +94,10 @@ init:
 	# Make sure everyone can write to the tests/_data folder.
 	# sudo chmod -R 777 tests/_data
 	# Export a dump of the just installed database to the _data folder of the project.
-	wp db export /project/tests/_data/dump.sql --allow-root --path=/var/www/html
+	# Using mariadb-dump directly with --skip-ssl bypasses wp-cli's internal
+	# mysqli charset query which, under PHP 8.3 + mariadb 10.11 (no server
+	# SSL advertised), errors with "SSL is required" before the dump starts.
+	mariadb-dump -h db -u root --skip-ssl wp_site > /project/tests/_data/dump.sql
 
 test: export BUILD_FLAVOR := PHP${PHP_VERSION}WP${WORDPRESS_VERSION}WC${WOOCOMMERCE_VERSION}
 test:
@@ -98,7 +109,7 @@ test:
 	vendor/bin/codecept run wpunit
 #	vendor/bin/codecept run functional
 	if [ "${ZIP_BUILD}" = true ]; then \
-		make comment; \
+		make comment || echo "PR comment step failed (likely invalid GITHUB_TOKEN); not failing the build"; \
 	fi
 
 comment: export COMMENT := Download build ${CI_JOB_URL}/artifacts/browse

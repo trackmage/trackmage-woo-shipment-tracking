@@ -10,13 +10,26 @@ services:
 #            - "wp.test:127.0.0.1"
 
     db:
-        image: mariadb:10.3.6
+        # 10.11 is the current LTS; the previous pin (10.3.6, 2018) was not
+        # built with SSL support and the modern mariadb-client requires TLS
+        # by default, which made wp db export fail with "SSL is required".
+        image: mariadb:10.11
+        # mariadb 10.5+ uses POSIX timer_create() which the default docker
+        # seccomp profile on older daemons (the shared CI runner) blocks,
+        # causing "Can't initialize timers" on startup. The wp service has
+        # the same unconfined profile for the PHP test runner.
+        security_opt:
+            - seccomp:unconfined
         environment:
-            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+            MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "yes"
+            MARIADB_DATABASE: wp_site
+            MARIADB_USER: wordpress
+            MARIADB_PASSWORD: wordpress
+            # Legacy MYSQL_* aliases kept for older mariadb images, harmless on 10.11.
+            MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
             MYSQL_DATABASE: wp_site
-            MYSQL_USER: wordrpess
+            MYSQL_USER: wordpress
             MYSQL_PASSWORD: wordpress
-        command: mysqld --debug-no-sync
 
     wp:
         image: wordpress:php${PHP_VERSION:-7.4}-fpm
@@ -34,6 +47,7 @@ services:
             PHP_VERSION: ${PHP_VERSION}
             WORDPRESS_VERSION: ${WORDPRESS_VERSION}
             WOOCOMMERCE_VERSION: ${WOOCOMMERCE_VERSION}
+            HPOS_ENABLED: ${HPOS_ENABLED}
             ZIP_BUILD: ${ZIP_BUILD}
             GIT_BRANCH: ${GIT_BRANCH}
             GITHUB_TOKEN: ${GITHUB_TOKEN}

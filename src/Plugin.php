@@ -111,16 +111,30 @@ class Plugin {
 
     private function bindEventDeleteShipment()
     {
-        add_action('before_delete_post', function ($postId) {
-            $type = get_post_type($postId);
-            if ($type === 'shop_order'){
-                foreach ($this->getShipmentRepo()->findBy(['orderNumbers' => $postId]) as $shipment) {
-                    if (in_array($postId, $shipment['orderNumbers'] ?? [], true)) {
-                        Helper::deleteShipment($shipment['id']);
-                    }
+        // Deletes TrackMage shipments that reference a WooCommerce order when
+        // that order is deleted. Registers parallel handlers for classic CPT
+        // storage (before_delete_post) and HPOS storage
+        // (woocommerce_before_delete_order); a static dedupe guard prevents
+        // double-processing when both fire on classic stores.
+        $handler = function ($orderId) {
+            static $seen = [];
+            $orderId = (int) $orderId;
+            if (isset($seen[$orderId])) {
+                return;
+            }
+            $seen[$orderId] = true;
+            foreach ($this->getShipmentRepo()->findBy(['orderNumbers' => $orderId]) as $shipment) {
+                if (in_array($orderId, $shipment['orderNumbers'] ?? [], true)) {
+                    Helper::deleteShipment($shipment['id']);
                 }
             }
+        };
+        add_action('before_delete_post', function ($postId) use ($handler) {
+            if (get_post_type($postId) === 'shop_order') {
+                $handler($postId);
+            }
         }, 10, 1);
+        add_action('woocommerce_before_delete_order', $handler, 10, 1);
     }
 
     /**
@@ -206,8 +220,66 @@ class Plugin {
 
         Helper::scheduleNextBackgroundTask(1);
 
+        $this->scheduleLogRotation();
+
         if(Helper::canSync()) {
             $this->getShortcodes()->init();
+        }
+    }
+
+    /**
+     * Hook the daily log-rotation cron event and bind its handler.
+     *
+     * Idempotent: re-runs on every plugin load but only adds the schedule
+     * once. The schedule is cleared on plugin deactivation
+     * (see trackMageDeactivate in trackmage.php).
+     *
+     * @since 2.1.2
+     */
+    private function scheduleLogRotation(): void
+    {
+        add_action('trackmage_rotate_logs', [$this, 'runLogRotation']);
+        if (!wp_next_scheduled('trackmage_rotate_logs')) {
+            // Stagger the first run an hour out so back-to-back activations
+            // of multiple plugins don't all fire at exactly the same minute.
+            wp_schedule_event(time() + HOUR_IN_SECONDS, 'daily', 'trackmage_rotate_logs');
+        }
+    }
+
+    /**
+     * Cron handler: trims the log table down to at most
+     * apply_filters('trackmage_log_max_rows', 1000) rows.
+     *
+     * Filter `trackmage_log_max_rows` lets a high-volume shop bump the cap
+     * (or set 0 to wipe the table on each rotation) without editing the
+     * plugin source.
+     *
+     * @since 2.1.2
+     */
+    public function runLogRotation(): void
+    {
+        /**
+         * Filter: maximum number of rows to keep in wp_trackmage_log after
+         * the daily rotation pass. Default 1000.
+         *
+         * Set to 0 to clear the table on every rotation, or to a larger
+         * value (e.g. 10000) on a busy store.
+         *
+         * @param int $max Default 1000.
+         */
+        $max = (int) apply_filters('trackmage_log_max_rows', 1000);
+        if ($max < 0) {
+            return;
+        }
+        $repo = $this->getLogRepo();
+        if ($repo === null) {
+            return;
+        }
+        $deleted = $repo->rotate($max);
+        if ($deleted > 0) {
+            $this->getLogger()->info(
+                sprintf('Log rotation: removed %d entries, keeping %d most recent', $deleted, $max)
+            );
         }
     }
 

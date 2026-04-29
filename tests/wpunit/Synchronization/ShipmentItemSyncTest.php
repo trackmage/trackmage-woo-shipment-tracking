@@ -58,7 +58,7 @@ class ShipmentItemSyncTest extends WPTestCase
         $product->save();
         self::$product = $product;
 
-        add_option('trackmage_workspace', self::TM_WS_ID);
+        delete_option('trackmage_workspace'); add_option('trackmage_workspace', self::TM_WS_ID);
         add_option('trackmage_webhook', self::TM_WEBHOOK_ID);
     }
 

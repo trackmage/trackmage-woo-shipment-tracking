@@ -152,9 +152,11 @@ if($error) {
     <p class="actions mt-4" >
         <button class="btn btn-primary <?php echo (!$apiKeysError)?'disabled':''?>" id="btn-save-form"  <?php echo (!$apiKeysError)? 'disabled="disabled"':''; ?> type="submit" title="<?php _e('Save Changes', 'trackmage');?>"><?php _e('Save Changes', 'trackmage');?></button>
         <button class="btn btn-outline-primary <?php echo (!$credentials || empty($workspace) || $apiKeysError)?'disabled':''?>" type="button" id="btn-trigger-sync" title="<?php _e('Trigger Sync', 'trackmage');?>"><?php _e('Trigger Sync', 'trackmage');?></button>
-        <button type="button" class="btn btn-outline-secondary" id="btn-reset-plugin"><?php _e('Reset Plugin', 'trackmage');?></button>
+        <button type="button" class="btn btn-outline-secondary" id="btn-disconnect-plugin"><?php _e('Disconnect Plugin', 'trackmage');?></button>
+        <button type="button" class="btn btn-outline-danger" id="btn-delete-tm-data"><?php _e('Delete TrackMage Data…', 'trackmage');?></button>
     </p>
 </form>
 <?php include( TRACKMAGE_VIEWS_DIR . "modals/admin-page-settings-general-trigger-sync.php" ); ?>
 <?php include( TRACKMAGE_VIEWS_DIR . "modals/admin-page-settings-general-change-workspace.php" ); ?>
 <?php include( TRACKMAGE_VIEWS_DIR . "modals/admin-page-settings-general-reset-settings.php" ); ?>
+<?php include( TRACKMAGE_VIEWS_DIR . "modals/admin-page-settings-general-delete-tm-data.php" ); ?>

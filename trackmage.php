@@ -3,7 +3,7 @@
  * Plugin Name:       TrackMage - Woo Shipment Tracking
  * Plugin URI:        https://trackmage.com/
  * Description:       TrackMage integrates shipments tracking into your WooCommerce store.
- * Version:           2.0.2
+ * Version:           2.1.1
  * Author:            TrackMage
  * Author URI:        https://trackmage.com
  * Text Domain:       trackmage
@@ -12,11 +12,12 @@
  * GitHub Plugin URI: https://github.com/trackmage/trackmage-woo-shipment-tracking
  * Requires PHP: 7.4
  * Requires at least: 5.3
- * Tested up to: 6.4.1
+ * Tested up to: 6.9
+ * Requires Plugins: woocommerce
  * WC requires at least: 4.5.0
- * WC tested up to: 8.2.2
+ * WC tested up to: 10.7
  *
- * Copyright (c) 2019-2023 TrackMage
+ * Copyright (c) 2019-2026 TrackMage
  *
  * License: GNU General Public License v3.0
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -32,7 +33,7 @@ if ( ! defined( 'WPINC' ) ) {
 
 require_once ABSPATH . '/wp-admin/includes/plugin.php';
 
-if (PHP_VERSION_ID < 50600 || (!is_plugin_active('woocommerce/woocommerce.php') && !is_plugin_active_for_network('woocommerce/woocommerce.php'))) {
+if (PHP_VERSION_ID < 70400 || (!is_plugin_active('woocommerce/woocommerce.php') && !is_plugin_active_for_network('woocommerce/woocommerce.php'))) {
 	add_action( 'plugins_loaded', 'trackmage_init_deactivation' );
 
 	/**
@@ -56,11 +57,11 @@ if (PHP_VERSION_ID < 50600 || (!is_plugin_active('woocommerce/woocommerce.php') 
 	 * Show deactivation admin notice.
 	 */
 	function trackmage_deactivation_notice() {
-	    if(PHP_VERSION_ID < 50600) {
+	    if(PHP_VERSION_ID < 70400) {
             $notice = sprintf(
             // Translators: 1: Required PHP version, 2: Current PHP version.
                 __( '<strong>TrackMage for WordPress</strong> requires PHP %1$s to run. This site uses %2$s, so the plugin has been <strong>deactivated</strong>.', 'trackmage' ),
-                '5.6',
+                '7.4',
                 PHP_VERSION
             );
         }else{
@@ -82,7 +83,7 @@ if (PHP_VERSION_ID < 50600 || (!is_plugin_active('woocommerce/woocommerce.php') 
 
 if ( ! defined( 'TRACKMAGE_VERSION' ) ) {
     // phpcs:ignore NeutronStandard.Constants.DisallowDefine.Define
-    define( 'TRACKMAGE_VERSION', '2.0.0' );
+    define( 'TRACKMAGE_VERSION', '2.1.1' );
 }
 
 if ( ! defined( 'TRACKMAGE_DIR' ) ) {
@@ -120,12 +121,16 @@ if (!defined('TRACKMAGE_APP_DOMAIN')) {
     define('TRACKMAGE_APP_DOMAIN', 'https://app.trackmage.com');
 }
 
+add_action('before_woocommerce_init', 'trackMageDeclareWooCompat');
 add_action('plugins_loaded', 'trackMageInit');
+add_action('init', 'trackMageLoadTextdomain');
 register_activation_hook(__FILE__, 'trackMageActivate');
 register_deactivation_hook(__FILE__, 'trackMageDeactivate');
 register_uninstall_hook( __FILE__, 'trackMageUninstall');
 
-load_plugin_textdomain( 'trackmage', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+function trackMageLoadTextdomain() {
+    load_plugin_textdomain( 'trackmage', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+}
 
 /**
  * trackMageActivate
@@ -152,9 +157,42 @@ function trackMageActivate() {
  * Plugin deactivate event
  */
 function trackMageDeactivate() {
+    wp_clear_scheduled_hook('trackmage_rotate_logs');
     Helper::clearTransients();
 }
 
+
+/**
+ * Declare WooCommerce feature compatibility.
+ *
+ * Runs on the "before_woocommerce_init" hook so that WooCommerce sees the
+ * declaration before its own boot sequence finishes. Feature-detected so the
+ * plugin keeps working on WooCommerce versions older than 7.1 (which is when
+ * FeaturesUtil was introduced) without raising the WC minimum floor.
+ *
+ * Features declared:
+ * - custom_order_tables: HPOS compatibility (see the WC_Order CRUD usage
+ *   throughout the plugin).
+ * - cart_checkout_blocks: the plugin does not inject fields or content into
+ *   the cart/checkout forms (tracking info is surfaced post-purchase via
+ *   order meta, emails, and the [woocommerce_order_tracking] shortcode), so
+ *   it is compatible with the React-based Cart and Checkout blocks.
+ */
+function trackMageDeclareWooCompat() {
+    if (!class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+        return;
+    }
+    \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+        'custom_order_tables',
+        TRACKMAGE_PLUGIN_FILE,
+        true
+    );
+    \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+        'cart_checkout_blocks',
+        TRACKMAGE_PLUGIN_FILE,
+        true
+    );
+}
 
 /**
  * Initialize trackMage plugin components
