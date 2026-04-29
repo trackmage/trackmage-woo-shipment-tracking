@@ -157,6 +157,7 @@ function trackMageActivate() {
  * Plugin deactivate event
  */
 function trackMageDeactivate() {
+    wp_clear_scheduled_hook('trackmage_rotate_logs');
     Helper::clearTransients();
 }
 

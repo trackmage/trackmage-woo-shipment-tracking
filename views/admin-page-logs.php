@@ -211,4 +211,24 @@ $level_class = static function ( $lvl ) {
         <input type="hidden" name="trackmage_logs_action" value="clear">
         <button type="submit" class="button button-secondary"><?php _e( 'Clear all log entries', 'trackmage' ); ?></button>
     </form>
+
+    <p class="description" style="margin-top:18px;color:#646970;">
+        <?php
+            $rotation_max = (int) apply_filters( 'trackmage_log_max_rows', 1000 );
+            $next_rotation = wp_next_scheduled( 'trackmage_rotate_logs' );
+            if ( $next_rotation ) {
+                printf(
+                    /* translators: 1: max rows kept, 2: human-readable time until next rotation */
+                    esc_html__( 'Auto-rotation keeps the %1$d most recent entries. Next pass: %2$s. Override the cap with the trackmage_log_max_rows filter.', 'trackmage' ),
+                    $rotation_max,
+                    esc_html( human_time_diff( time(), $next_rotation ) )
+                );
+            } else {
+                printf(
+                    esc_html__( 'Auto-rotation keeps the %d most recent entries. Override the cap with the trackmage_log_max_rows filter.', 'trackmage' ),
+                    $rotation_max
+                );
+            }
+        ?>
+    </p>
 </div>

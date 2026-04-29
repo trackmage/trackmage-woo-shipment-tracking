@@ -8,10 +8,10 @@ require_once ABSPATH . '/wp-admin/includes/upgrade.php';
 
 class AbstractRepository implements EntityRepositoryInterface
 {
-    private $table;
+    protected $table;
     private $createQuery;
     private $dropOnDeactivate;
-    private $db;
+    protected $db;
 
     /**
      * @param \wpdb $db
