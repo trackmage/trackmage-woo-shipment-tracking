@@ -102,6 +102,10 @@ TrackMage can send automatic emails to your customers to let them know about the
 * Fix flood of "Unable to sync remote order" warnings during Reset Plugin and workspace switch (sync events now disabled while unlinkAllOrders saves orders under a cleared workspace)
 * Bump workflow-DELETE timeout to 120s so Reset doesn't get killed mid-wipe on busy workspaces
 * Wizard now defaults sync statuses to Processing + Completed (instead of "sync everything"), and pre-fills the start date with today
+* Split "Reset Plugin" into two flows: "Disconnect Plugin" (clears local credentials only) and "Delete TrackMage Data" (destructive, requires typing the workspace name to confirm)
+* Add a TrackMage > Logs admin page with severity filter, pagination, and one-click clear so shop owners can see sync activity without opening the database
+* Surface the customer tracking page URL in the order edit screen with Open and Copy-link buttons
+* Auto-rotate the wp_trackmage_log table daily, keeping the 1000 most recent rows (override with the trackmage_log_max_rows filter)
 
 = 2.1.0 =
 * Declare "Requires Plugins: woocommerce" header (WordPress 6.5+)
