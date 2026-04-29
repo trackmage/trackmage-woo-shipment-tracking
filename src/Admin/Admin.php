@@ -83,6 +83,15 @@ class Admin {
             'trackmage-status-manager',
             [$this, 'renderStatusManager']
         );
+
+        add_submenu_page(
+            'trackmage-settings',
+            __('Logs', 'trackmage'),
+            __('Logs', 'trackmage'),
+            'manage_options',
+            'trackmage-logs',
+            [$this, 'renderLogs']
+        );
     }
 
     /**
@@ -122,6 +131,15 @@ class Admin {
      */
     public function renderStatusManager() {
         require_once TRACKMAGE_VIEWS_DIR . 'admin-page-status-manager.php';
+    }
+
+    /**
+     * Renders the Logs page.
+     *
+     * @since 2.1.2
+     */
+    public function renderLogs() {
+        require_once TRACKMAGE_VIEWS_DIR . 'admin-page-logs.php';
     }
 
     /**
