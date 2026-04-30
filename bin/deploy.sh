@@ -3,6 +3,10 @@
 # This script is based on the article written by Iain Poulson
 # https://deliciousbrains.com/deploying-wordpress-plugins-travis/
 
+# Fail loudly on any error. Without this the final `svn commit` could fail on
+# auth and the job would still report success — masking a missed release.
+set -e
+
 if [[ -z "$CI_SERVER" ]]; then
     echo "Script is only to be run by CI" 1>&2
     exit 1
@@ -101,9 +105,11 @@ mkdir svn/tags/$VERSION
 rsync -r -p $BUILD_DIRECTORY/* svn/tags/$VERSION
 
 # Add new files to SVN
-svn stat svn | grep '^?' | awk '{print $2}' | xargs -I x svn add x@
+# `grep` exits 1 when there are no matches — tolerate that under `set -e`
+# since a release with no new files is still a valid case.
+svn stat svn | { grep '^?' || true; } | awk '{print $2}' | xargs -I x svn add x@
 # Remove deleted files from SVN
-svn stat svn | grep '^!' | awk '{print $2}' | xargs -I x svn rm --force x@
+svn stat svn | { grep '^!' || true; } | awk '{print $2}' | xargs -I x svn rm --force x@
 svn stat svn
 
 # Commit to SVN
